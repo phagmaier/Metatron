@@ -153,7 +153,7 @@ test("SQLite enforces WAL, foreign keys and append-only event history", async ()
   try {
     assert.equal(db.prepare("PRAGMA journal_mode").get()?.journal_mode, "wal");
     assert.equal(db.prepare("PRAGMA foreign_keys").get()?.foreign_keys, 1);
-    assert.equal(db.prepare("PRAGMA user_version").get()?.user_version, 2);
+    assert.equal(db.prepare("PRAGMA user_version").get()?.user_version, 3);
     assert.throws(
       () => db.exec("UPDATE events SET type = 'changed'"),
       /append-only/,
@@ -464,7 +464,7 @@ test("migration v2 preserves v1 runs while correcting legacy mode names and save
   const f = await domainFixture();
   try {
     f.store.db.exec(
-      "DROP INDEX one_writer; DROP INDEX one_lead; DROP TABLE reservations; DROP TABLE dispatches; PRAGMA user_version=1;",
+      "DROP TABLE worktrees; DROP INDEX one_writer; DROP INDEX one_lead; DROP TABLE reservations; DROP TABLE dispatches; PRAGMA user_version=1;",
     );
     f.store.db
       .prepare("UPDATE runs SET data=json_set(data,'$.mode','chat') WHERE id=?")
@@ -490,7 +490,7 @@ test("migration v2 preserves v1 runs while correcting legacy mode names and save
     assert.deepEqual(f.store.events(), before);
     assert.equal(
       f.store.db.prepare("PRAGMA user_version").get()?.user_version,
-      2,
+      3,
     );
   } finally {
     await f.close();

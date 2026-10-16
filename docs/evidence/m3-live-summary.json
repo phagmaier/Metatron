@@ -1,0 +1,51 @@
+{
+  "fixture": "/tmp/lao-git-fixture-Ggrjs9/repo with spaces",
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "attempts": [
+    {
+      "id": "76c6c71e-f7d7-446e-8e8d-4cb5e12d850d",
+      "adapter": "pi",
+      "status": "completed",
+      "worktreePath": "/tmp/lao-m3-live-data/local-agent-orchestrator/worktrees/8c35e512-c2b8-41a8-ab84-fba2b169a91b-fcec9662-3667-4206-8e3e-e3ed57488f41/checkout",
+      "baseSha": "a53c14bbeaf51a6b61aed225ad75e5d0ee966633"
+    },
+    {
+      "id": "40c4619d-5630-4719-996a-9311ad2c0caf",
+      "adapter": "pi",
+      "status": "completed",
+      "worktreePath": "/tmp/lao-m3-live-data/local-agent-orchestrator/worktrees/8baab40c-7b16-494a-a597-05d25341c274-a4966ed8-2923-423c-ae67-a2b56375d524/checkout",
+      "baseSha": "a53c14bbeaf51a6b61aed225ad75e5d0ee966633"
+    }
+  ],
+  "gitEvidence": [
+    {
+      "attemptId": "76c6c71e-f7d7-446e-8e8d-4cb5e12d850d",
+      "path": "/tmp/lao-m3-live-data/local-agent-orchestrator/worktrees/8c35e512-c2b8-41a8-ab84-fba2b169a91b-fcec9662-3667-4206-8e3e-e3ed57488f41/checkout",
+      "baseSha": "a53c14bbeaf51a6b61aed225ad75e5d0ee966633",
+      "headSha": "a53c14bbeaf51a6b61aed225ad75e5d0ee966633",
+      "files": [],
+      "stagedDiffStat": "",
+      "unstagedDiffStat": "",
+      "diffCheck": "passed",
+      "tests": "not_run: shell tools are disabled in M3"
+    },
+    {
+      "attemptId": "40c4619d-5630-4719-996a-9311ad2c0caf",
+      "path": "/tmp/lao-m3-live-data/local-agent-orchestrator/worktrees/8baab40c-7b16-494a-a597-05d25341c274-a4966ed8-2923-423c-ae67-a2b56375d524/checkout",
+      "baseSha": "a53c14bbeaf51a6b61aed225ad75e5d0ee966633",
+      "headSha": "a53c14bbeaf51a6b61aed225ad75e5d0ee966633",
+      "files": [
+        {
+          "path": "README.md",
+          "status": " M",
+          "sensitive": false
+        }
+      ],
+      "stagedDiffStat": "",
+      "unstagedDiffStat": " README.md | 1 +\n 1 file changed, 1 insertion(+)\n",
+      "diffCheck": "passed",
+      "tests": "not_run: shell tools are disabled in M3"
+    }
+  ]
+}

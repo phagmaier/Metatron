@@ -76,6 +76,9 @@ CREATE TABLE reservations (
 CREATE UNIQUE INDEX one_writer ON reservations(cwd) WHERE kind = 'writer';
 CREATE UNIQUE INDEX one_lead ON reservations(run_id) WHERE kind = 'lead';
 `;
+const migration3 = `
+CREATE TABLE worktrees (attempt_id TEXT PRIMARY KEY REFERENCES attempts(id), path TEXT NOT NULL UNIQUE, data TEXT NOT NULL CHECK(json_valid(data))) STRICT;
+`;
 function migrateModes(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(migrateModes);
   if (value && typeof value === "object")
@@ -107,7 +110,7 @@ export function openDatabase(path: string) {
       if (version === 0) {
         database.exec(migration1);
         database.exec("PRAGMA user_version=1");
-      } else if (version !== 1 && version !== 2) {
+      } else if (version !== 1 && version !== 2 && version !== 3) {
         throw new DomainError("STORAGE", "Unsupported database schema version");
       }
       if (version === 0 || version === 1) {
@@ -132,6 +135,10 @@ export function openDatabase(path: string) {
               String(row.key),
             );
         database.exec("PRAGMA user_version=2");
+      }
+      if (version === 0 || version === 1 || version === 2) {
+        database.exec(migration3);
+        database.exec("PRAGMA user_version=3");
       }
       database.exec("COMMIT");
     } catch (error) {

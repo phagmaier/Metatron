@@ -1,0 +1,90 @@
+import { lstat, readdir, realpath } from "node:fs/promises";
+import { resolve } from "node:path";
+import { inside, physicalPath, sensitivePath } from "../git/paths.ts";
+
+type ToolCall = { toolName: string; input: Record<string, unknown> };
+type Block = { block: true; reason: string };
+type GuardAPI = {
+  on: (
+    name: "tool_call",
+    callback: (event: ToolCall) => Promise<Block | undefined>,
+  ) => void;
+  registerCommand: (
+    name: string,
+    definition: { description: string; handler: () => Promise<void> },
+  ) => void;
+};
+
+export async function checkPiTool(
+  root: string,
+  permission: string,
+  event: ToolCall,
+): Promise<Block | undefined> {
+  const deny = (reason: string): Block => ({ block: true, reason });
+  const allowed =
+    permission === "workspace_write"
+      ? ["read", "grep", "find", "ls", "edit", "write"]
+      : ["read", "grep", "find", "ls"];
+  if (!allowed.includes(event.toolName))
+    return deny("Tool is outside this worker's allowlist");
+  const path = event.input.path ?? ".";
+  if (typeof path !== "string" || path.includes("\0"))
+    return deny("Invalid tool path");
+  const target = resolve(root, path);
+  try {
+    const physical = await physicalPath(target);
+    if (
+      !inside(root, target) ||
+      sensitivePath(target.slice(root.length + 1)) ||
+      !inside(root, physical) ||
+      sensitivePath(physical.slice(root.length + 1))
+    )
+      return deny("Path is outside the assigned worktree or is sensitive");
+    // Recursive search tools could follow links or read secrets below a clean
+    // directory path. Refuse such trees, rather than trusting prompt guidance.
+    if (["grep", "find", "ls"].includes(event.toolName)) {
+      const inspect = async (directory: string): Promise<boolean> => {
+        const stat = await lstat(directory);
+        if (stat.isSymbolicLink()) return false;
+        if (!stat.isDirectory()) return true;
+        for (const entry of await readdir(directory, { withFileTypes: true })) {
+          if (entry.name === ".git") continue;
+          if (sensitivePath(entry.name) || entry.isSymbolicLink()) return false;
+          if (
+            entry.isDirectory() &&
+            !(await inspect(resolve(directory, entry.name)))
+          )
+            return false;
+        }
+        return true;
+      };
+      if (!(await inspect(target)))
+        return deny(
+          "Recursive inspection includes a symlink or sensitive path; use explicit safe file reads",
+        );
+    }
+  } catch {
+    return deny("Cannot validate tool path safely");
+  }
+  return undefined;
+}
+
+// This deliberately small structural API avoids importing the entire Pi SDK.
+// Pi loads this explicit extension even with extension discovery disabled.
+export default function installGuard(pi: GuardAPI) {
+  pi.on("tool_call", async (event) => {
+    try {
+      return await checkPiTool(
+        await realpath(process.cwd()),
+        process.env.LAO_PI_PERMISSION ?? "read_only",
+        event,
+      );
+    } catch {
+      return { block: true, reason: "Cannot validate the assigned worktree" };
+    }
+  });
+  pi.registerCommand("lao_guard", {
+    description: "App file-tool policy is installed",
+    handler: async () => {},
+  });
+}

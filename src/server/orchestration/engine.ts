@@ -23,24 +23,38 @@ import {
   toolSchema,
 } from "../../shared/orchestration.ts";
 import { fakeTeamSnapshot } from "../../shared/presets.ts";
+import type { HarnessAdapter } from "../adapters/contract.ts";
+import { PiAdapter } from "../adapters/pi.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
+import { Worktrees } from "../git/worktrees.ts";
 import { mutate } from "../storage/mutations.ts";
 import { Scheduling } from "../storage/scheduling.ts";
 import type { Store } from "../storage/store.ts";
 import { executeFakeTurn } from "./execute.ts";
+import { executeNativeTurn } from "./native-execute.ts";
+import { createNativeRun } from "./native-run.ts";
 import { authorize } from "./policy.ts";
 
 export class Engine {
   readonly store: Store;
   readonly scheduling: Scheduling;
   readonly directory: string;
+  readonly pi: HarnessAdapter;
+  readonly worktrees: Worktrees;
+  readonly nativeStops = new Map<string, () => Promise<void>>();
   private readonly running = new Map<string, Promise<void>>();
   private pumping = false;
   private stopping = false;
   private readonly timer;
-  constructor(store: Store, directory: string) {
+  constructor(
+    store: Store,
+    directory: string,
+    pi: HarnessAdapter = new PiAdapter(directory),
+  ) {
     this.store = store;
     this.directory = directory;
+    this.pi = pi;
+    this.worktrees = new Worktrees(store, directory);
     this.scheduling = new Scheduling(store, directory);
     for (const role of fakeTeamSnapshot.roles)
       store.db
@@ -68,6 +82,12 @@ export class Engine {
   }
   presets() {
     return fakeTeamSnapshot;
+  }
+  isStopping() {
+    return this.stopping;
+  }
+  startNativeRun(input: unknown, key: string) {
+    return createNativeRun(this, input, key);
   }
   async openProject(input: unknown, key: string) {
     const data = openProjectSchema.parse(input);
@@ -252,7 +272,7 @@ export class Engine {
     }
   }
   cancel(taskId: string, key: string) {
-    return mutate(
+    const cancelled = mutate(
       this.store.db,
       key,
       "cancelTask",
@@ -287,6 +307,24 @@ export class Engine {
         return task;
       },
     );
+    const stop = this.nativeStops.get(taskId);
+    if (stop)
+      void stop().catch(() =>
+        this.store.recordEvent(
+          {
+            runId: cancelled.runId,
+            taskId,
+            type: "cancel.diagnostic",
+            correlationId: key,
+            payload: {
+              diagnostic:
+                "Native abort did not acknowledge; bounded process shutdown/recovery required",
+            },
+          },
+          `${key}:abort-diagnostic`,
+        ),
+      );
+    return cancelled;
   }
   async pump() {
     if (this.pumping || this.stopping) return;
@@ -336,7 +374,11 @@ export class Engine {
             );
           if (!reserved)
             throw new DomainError("CONFLICT", "Reserved dispatch is missing");
-          const execution = executeFakeTurn(this, reserved, attemptId)
+          const execution = (
+            run.execution === "native"
+              ? executeNativeTurn(this, reserved, attemptId)
+              : executeFakeTurn(this, reserved, attemptId)
+          )
             .catch((error: unknown) => {
               this.fail(
                 dispatch.taskId,
@@ -458,7 +500,10 @@ export class Engine {
       kind: "report",
       path,
       mediaType: "text/plain",
-      summary: "FAKE worker report",
+      summary:
+        this.store.getRun(task.runId).execution === "fake"
+          ? "FAKE worker report"
+          : "Native Pi worker report",
     });
     return artifact;
   }
@@ -476,17 +521,20 @@ export class Engine {
     );
   }
   async idle() {
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 8000; i++) {
       await this.pump();
       if (!this.pumping && this.running.size === 0) return;
       await delay(25);
     }
-    throw new Error("Fake engine did not become idle");
+    throw new Error("Engine did not become idle within its deadline");
   }
   async close() {
     this.stopping = true;
     clearInterval(this.timer);
     while (this.pumping) await delay(10);
+    await Promise.allSettled(
+      [...this.nativeStops.values()].map((stop) => stop()),
+    );
     await Promise.all(this.running.values());
   }
 }

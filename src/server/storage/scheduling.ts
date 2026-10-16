@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import { z } from "zod";
 import { type AgentProfile, taskSchema } from "../../shared/domain/entities.ts";
@@ -107,9 +108,16 @@ export class Scheduling {
           .run(JSON.stringify(task), task.id);
         // Fake writers own simulated paths, never the owner's source checkout.
         const cwd =
-          profile.permission === "workspace_write"
-            ? join(this.directory, "fake-workspaces", task.id)
-            : this.store.getProject(run.projectId).repositoryPath;
+          run.execution === "native"
+            ? join(
+                this.directory,
+                "worktrees",
+                `${task.id}-${randomUUID()}`,
+                "checkout",
+              )
+            : profile.permission === "workspace_write"
+              ? join(this.directory, "fake-workspaces", task.id)
+              : this.store.getProject(run.projectId).repositoryPath;
         this.store.db
           .prepare(
             `INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,state) VALUES (?,?,?,?,?,'queued') ON CONFLICT(task_id) DO UPDATE SET profile_id=excluded.profile_id,cwd=excluded.cwd,scenario=excluded.scenario,state='queued',diagnostic=NULL`,
@@ -124,7 +132,7 @@ export class Scheduling {
             payload: {
               profileId: profile.id,
               ownerPinned: task.ownerPinned,
-              execution: "fake",
+              execution: run.execution,
             },
           },
           `${key}:event`,
@@ -259,9 +267,10 @@ export class Scheduling {
           {
             taskId: task.id,
             profileId: profile.id,
-            adapter: "fake",
-            intendedOperation: `FAKE ${kind} execution`,
+            adapter: run.execution === "fake" ? "fake" : profile.harness,
+            intendedOperation: `${run.execution === "fake" ? "FAKE" : "Native Pi"} ${kind} execution`,
             cwd: current.cwd,
+            worktreePath: run.execution === "native" ? current.cwd : null,
             baseSha: run.repository?.baseSha ?? null,
           },
           `dispatch:${task.id}:attempt`,

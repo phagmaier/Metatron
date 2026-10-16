@@ -57,26 +57,26 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 - [x] Add owner actions: create task manually, choose worker, change priority, pause scheduling, cancel task.
 - [x] Enforce `chat_plan` mode in backend tool/operation policy: model cannot dispatch or mutate Git.
 - [x] Reject a worker attempting to call a lead-only tool in policy/service unit tests.
-- [ ] Exercise fake success and fake failure via UI and persist task transitions.
-  - Controls and HTTP equivalents are implemented/tested; actual browser exercise is BLOCKED because no browser is connected. See README M2 demo instructions and `docs/progress.md`.
+- [x] Exercise fake success and fake failure via UI and persist task transitions.
+  - Verified through connected Playwright MCP: success/report, failure requiring RETRY_DECISION, and reload/replay. Supervised approval, owner controls, Chat/Plan and dirty-checkout refusal also exercised; see `docs/progress.md` and `docs/evidence/m2-browser-success-failure.png`.
 - [x] Record a GIF/screenshot or reproducible manual demo instructions in `docs/progress.md` (no need for elaborate design assets).
 
 **M2 gate:** complete owner -> lead -> task -> worker -> result loop is visible and replayable in GUI, even before live harness integration.
 
 ## M3 - Git worktree isolation and one real worker [spec §5, 8, 10, 13.2-13.3]
 
-- [ ] Implement safe Git subprocess wrapper using argv arrays; path and repository validations; base SHA capture.
-- [ ] Require clean target checkout by default; never auto-stash, auto-reset or modify the original checkout during launch.
-- [ ] Create uniquely named app-owned branch/worktree per implementation attempt under XDG app data; persist path+ownership metadata.
-- [ ] Add Git fixture tests: same filename edited in two independent worktrees, clean/dirty repo detection, lock ownership, crash retention.
-- [ ] Implement Pi RPC adapter as the first **candidate** real adapter after confirming installed-version compatibility; if Codex is demonstrably simpler on machine, record an ADR and switch ordering.
-- [ ] Start a real harness in a disposable worktree with explicit cwd and isolated app session; collect native session ID, streaming events, errors and terminal status.
-- [ ] Implement supported model and thinking configuration; reject unsupported selections with diagnostics rather than silently substituting.
-- [ ] Make a read-only worker answer a harmless test repository question; then a writer modify a disposable file.
-- [ ] Map native completion, abort and auth/quota failures to correct internal state; do not equate process exit with task success.
-- [ ] Capture changed files, tracked/unstaged/untracked state, and test execution metadata on worker completion.
-- [ ] Confirm no temporary harness configuration overwrote the user's global settings or active personal sessions.
-- [ ] Add live adapter smoke script requiring explicit opt-in and disposable fixture path.
+- [x] Implement safe Git subprocess wrapper using argv arrays; path and repository validations; base SHA capture.
+- [x] Require clean target checkout by default; never auto-stash, auto-reset or modify the original checkout during launch.
+- [x] Create uniquely named app-owned branch/worktree per implementation attempt under XDG app data; persist path+ownership metadata.
+- [x] Add Git fixture tests: same filename edited in two independent worktrees, clean/dirty repo detection, lock ownership, crash retention.
+- [x] Implement Pi RPC adapter as the first **candidate** real adapter after confirming installed-version compatibility; if Codex is demonstrably simpler on machine, record an ADR and switch ordering.
+- [x] Start a real harness in a disposable worktree with explicit cwd and isolated app session; collect native session ID, streaming events, errors and terminal status.
+- [x] Implement supported model and thinking configuration; reject unsupported selections with diagnostics rather than silently substituting.
+- [x] Make a read-only worker answer a harmless test repository question; then a writer modify a disposable file.
+- [x] Map native completion, abort and auth/quota failures to correct internal state; do not equate process exit with task success.
+- [x] Capture changed files, tracked/unstaged/untracked state, and test execution metadata on worker completion.
+- [x] Confirm no temporary harness configuration overwrote the user's global settings or active personal sessions.
+- [x] Add live adapter smoke script requiring explicit opt-in and disposable fixture path.
 
 **M3 gate:** the first real native harness session edits **only a disposable worktree** and its events/state appear in the GUI.
 

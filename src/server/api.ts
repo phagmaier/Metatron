@@ -21,6 +21,7 @@ import {
 } from "../shared/domain/inputs.ts";
 import { DomainError } from "../shared/domain/states.ts";
 import { dispatchSchema } from "../shared/orchestration.ts";
+import { capabilitiesSchema } from "./adapters/contract.ts";
 import { inspectRepository } from "./git/inspect.ts";
 import type { Engine } from "./orchestration/engine.ts";
 import type { Store } from "./storage/store.ts";
@@ -134,6 +135,14 @@ export function createApi(store: Store, engine: Engine) {
               z.strictObject({}).parse(query);
               result = engine.presets();
               break;
+            case "/api/adapters/pi":
+              z.strictObject({}).parse(query);
+              result = capabilitiesSchema.parse(await engine.pi.discover());
+              break;
+            case "/api/worktrees":
+              z.strictObject({}).parse(query);
+              result = engine.worktrees.list();
+              break;
             case "/api/dispatches":
               z.strictObject({}).parse(query);
               result = z.array(dispatchSchema).parse(engine.scheduling.list());
@@ -223,6 +232,8 @@ export function createApi(store: Store, engine: Engine) {
             "POST /api/projects": (input, key) =>
               engine.openProject(input, key),
             "POST /api/runs": (input, key) => engine.startRun(input, key),
+            "POST /api/runs/native": (input, key) =>
+              engine.startNativeRun(input, key),
             "POST /api/tasks": (input, key) => engine.createTask(input, key),
             "PATCH /api/tasks": (input, key) => engine.updateTask(input, key),
             "PATCH /api/runs": (input, key) => engine.updateRun(input, key),

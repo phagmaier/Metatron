@@ -2,9 +2,9 @@
 
 This is the working repo for a **single-user, local-first multi-agent coding-harness orchestrator** targeting Arch Linux / Omarchy. Design docs and implementation live here side by side.
 
-The planned application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. The implemented M2 slice adds a fake owner → Lead → worker → report loop, bounded scheduling, validated Git selection, and owner controls to the M1 persisted domain and event journal. Native adapters and real worktree creation follow in M3. The final M2 browser exercise is pending because this environment has no connected browser.
+The planned application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 adds owner-directed **native Pi workers** in isolated Git worktrees, alongside M2's explicitly simulated Lead/team demonstration. Both persist tasks, reports and events. The native Lead and orchestration gateway remain M4 scope; the beta is incomplete.
 
-## Run the M2 app
+## Run the app
 
 Prerequisites: Git and mise with the existing `.mise.toml` pins installed (Node **26.7.0**, pnpm **11.22.0**). Use mise for every Node/pnpm command. The pinned Node release currently reports `lts: false`; it is retained as required by `AGENTS.md`. No global packages or harness configuration changes are needed.
 
@@ -26,7 +26,7 @@ mise x -- pnpm start
 `GET /api/health` returns:
 
 ```json
-{"status":"ok","app":"Local Agent Orchestrator","milestone":"M2"}
+{"status":"ok","app":"Local Agent Orchestrator","milestone":"M3"}
 ```
 
 ## Checks and current coverage
@@ -41,7 +41,7 @@ mise x -- pnpm smoke
 
 `smoke` starts and closes real development and production servers on temporary loopback ports, checking health, HTML, and every script entry. Run `build` first. `test:fixtures` runs only the disposable Git fixture checks. `format` applies Biome formatting and safe lint fixes to project code/configuration.
 
-All default checks use temporary databases and no model tokens. Tests cover task/process transition matrices, atomic rollback (including process exit before commit), idempotency across reopen, causal event ordering, SSE reconnect/live delivery, session identity, recovery decisions, and API validation/token protection. FakeAdapter tests exercise permission waits, steering, cancellation, completion, quota failure, crashes, disconnects, and explicit resume. M2 tests also cover Git safety, queue reservations and launch caps, active Lead accounting, cross-run reader caps, simulated writer locks, mode/role denials, owner pins, pause/cancel, reports, and the complete HTTP loop. Native harness tests are intentionally omitted (cost); installed-version findings remain in [adapter reconnaissance](docs/adapter-recon.md).
+All default checks use temporary databases and no model tokens. Tests cover task/process transition matrices, atomic rollback (including process exit before commit), idempotency across reopen, causal event ordering, SSE reconnect/live delivery, session identity, recovery decisions, and API validation/token protection. FakeAdapter tests exercise permission waits, steering, cancellation, completion, quota failure, crashes, disconnects, and explicit resume. M2 tests also cover Git safety, queue reservations and launch caps, active Lead accounting, cross-run reader caps, simulated writer locks, mode/role denials, owner pins, pause/cancel, reports, and the complete HTTP loop. Native harness turns are excluded from default checks. M3's explicit live Pi reader/writer smoke passed; cancellation, auth/quota and ambiguous-exit failure paths also have token-free protocol fixtures. Installed-version findings remain in [adapter reconnaissance](docs/adapter-recon.md).
 
 Git fixture tests retain their M0 safety checks: each fixture is created under the OS temporary directory with a local commit and isolated Git configuration; cleanup happens only after verification and ownership checks succeed. Failed fixtures are retained. No important repository is used as a fixture.
 
@@ -58,7 +58,7 @@ Open **http://127.0.0.1:4317**. The seed command initializes a disposable Git fi
 
 Repeat the seed command to browse its existing run; an existing or partially seeded run is never replayed. Restart the server with the same data directory to verify preserved tasks, reports and session IDs. Use a new temporary data directory for a separate demonstration. Set `XDG_DATA_HOME` **inside** `mise x -- env`, as shown, so mise's own tool lookup directory stays unchanged. Keep the printed disposable fixture while browsing its project. `demo:fake` remains the legacy M1 persistence seed.
 
-The following browser exercise is **pending**; no browser was available to the development agent. HTTP equivalents and built-asset checks passed.
+The M2 browser gate **passed** through connected Playwright MCP: success/report, failure requiring a retry decision, reload/replay, supervised approval, priority/worker selection, pause/resume, owner task cancellation, Chat/Plan without worker launches, and dirty-checkout refusal. See the [browser evidence](docs/evidence/m2-browser-success-failure.png) and [progress](docs/progress.md). Server restart persistence is covered by automated integration tests; the owner's running server was left running. The following procedure remains available for manual verification:
 
 1. In the saved run, inspect **Lead conversation**, **View report**, **Session event detail**, and the event journal. Review is distinct from integration or Done.
 2. Send an owner message with worker simulation **Success**, then **Failure**, and observe new tasks/results without reloading.
@@ -68,15 +68,44 @@ The following browser exercise is **pending**; no browser was available to the d
 6. Use **Check repository** on the printed fixture. A dirty tracked, staged or untracked file must prevent opening/starting work; commit or clean changes manually. The app never resets/stashes them. Do not use this repo's dirty development checkout as a demo fixture.
 7. Stop/restart the server and verify the same tasks, reports and events remain. Failed/disconnected work is never automatically retried; M6 will add recovery controls.
 
+## M3 native Pi demonstration
+
+The live reader and writer used **Pi 1.3.0**, discovered model `deepseek/deepseek-flash`, and discovered thinking level `off`. The reader read README.md; the writer appended one line in its own worktree. Both exited cleanly and stopped at AWAITING_REVIEW. The owner checkout and checked personal configuration metadata stayed unchanged. See [live evidence](docs/evidence/m3-live-summary.json), [GUI screenshot](docs/evidence/m3-native-writer.png), and [policy ADR](docs/adr/2026-10-15-pi-worker-policy.md).
+
+To inspect the retained demonstration without calling a model:
+
+```sh
+mise x -- env XDG_DATA_HOME=/tmp/lao-m3-live-data pnpm dev
+```
+
+Open **http://127.0.0.1:4317**, select **M3 live Pi workspace_write**, then **View report**, **Worktree and Git evidence**, and **Session event detail**. The retained temporary fixture is `/tmp/lao-git-fixture-Ggrjs9/repo with spaces`; it must remain available. Stop the existing app on that port before starting another. This data is temporary and may be removed by the OS.
+
+For a new deliberately cost-bearing reader/writer smoke, stop the server using the same database, create a marked disposable fixture, and pass its printed path explicitly:
+
+```sh
+mise x -- pnpm test:live --create-fixture
+mise x -- env XDG_DATA_HOME=/tmp/lao-m3-new-demo pnpm test:live \
+  --allow-live --fixture '/tmp/lao-git-fixture-REPLACE/repo with spaces' \
+  --model deepseek/deepseek-flash --thinking off
+```
+
+Replace the fixture path and choose a model/thinking level actually returned by **Discover Pi models**. Catalog availability is not proof of authentication or provider entitlement. Pi uses inherited provider environment credentials or its supported login in the app-owned configuration directory; personal native credentials/configuration are never copied. If authentication is missing, use Pi's supported login with `PI_CODING_AGENT_DIR` set to the app data directory's `pi/` subdirectory, then retry only after inspecting the retained failed attempt. Do not paste keys into this GUI.
+
+For normal GUI use, open a clean project, expand **Run a real Pi worker**, discover models, select permissions/model/thinking, and enter an objective. **Start real Pi worker** explicitly launches one owner-directed worker in Supervised mode. Subsequent owner-created tasks can be assigned from the same saved roster. M3 has no native Lead session.
+
+Readers have read/grep/find/ls; writers additionally have edit/write. Shell, MCP, discovered extensions and personal context files are disabled. The app's explicit Pi extension rejects paths outside the worktree, sensitive paths and unsafe symlink/recursive searches. Tests in the managed project are explicitly **not run**; engine `git diff --check` is recorded separately. Sessions and bounded redacted wire headers live under app data's `pi-sessions/<attempt-id>/`. Settings/auth live under app data's `pi/`. Resume, steering and native interactive per-call permission prompts are not exposed by this adapter; unknown exits require an owner retry decision. Retained worktrees are never cleaned automatically.
+
 ## State, API and safety boundaries
 
-The database is `$XDG_DATA_HOME/local-agent-orchestrator/state.sqlite`, falling back to `~/.local/share/local-agent-orchestrator/state.sqlite`; report files are in its sibling `artifacts/` directory. SQLite migration v2 adds durable dispatches/reservations and converts M1's legacy mode names to the spec's `chat_plan` / `supervised` / `autonomous_bounded`. Run/team snapshots and historical events remain durable. WAL, foreign keys and full synchronous transactions are enabled. Run only one app or demo process against a database.
+The database is `$XDG_DATA_HOME/local-agent-orchestrator/state.sqlite`, falling back to `~/.local/share/local-agent-orchestrator/state.sqlite`; report files are in its sibling `artifacts/` directory. SQLite migration v3 adds durable worktree ownership manifests; v2 adds durable dispatches/reservations and converts M1's legacy mode names to the spec's `chat_plan` / `supervised` / `autonomous_bounded`. Run/team snapshots and historical events remain durable. WAL, foreign keys and full synchronous transactions are enabled. Run only one app or demo process against a database.
 
 Opening a project validates its absolute canonical root, common Git directory, committed HEAD, branch and clean state. Starting a run captures a fresh base SHA; dispatch checks for dirtiness, identity changes and HEAD drift. Repository probes use argv arrays and read-only Git settings. App metadata must remain outside the managed repository. The scheduler uses priority plus FIFO ties, durable launch counts, global active-slot checks, and atomic simulated writer ownership. Active Lead turns consume total capacity; idle sessions do not. Pausing holds queued work while current fake turns finish. Owner assignments are pinned against Lead changes.
 
-M2 executes **only FakeAdapter**. Writer reservation paths are simulations under app data, not real isolated worktrees. No tools write managed source. Saved profile harness/model fields are configuration, not claims of native availability. Real Git isolation/native execution is M3; scoped native tool transport is M4; review/integration is M5; interactive recovery is M6; reusable configuration/workflow CRUD is M7. The app is not an OS sandbox and the beta is incomplete.
+Fake runs execute **only FakeAdapter** and keep simulated reservation paths. Native runs execute installed Pi in unique app-owned worktrees outside the original checkout. No automatic merge, commit, worktree deletion or retry is performed. Worktree creation updates Git's registration metadata and app-owned branch refs; it does not reset, stage, stash or edit the owner's working files. Native file-tool allowlists and a path-policy extension restrict operations; these are not an OS sandbox. Native Lead/tool transport is M4; review/integration is M5; interactive recovery is M6; reusable configuration/workflow CRUD is M7.
 
 Read APIs: `/api/projects`, `/api/runs?projectId=...`, `/api/tasks?runId=...`, `/api/attempts`, `/api/sessions`, `/api/presets`, `/api/dispatches`, `/api/reports?taskId=...`, `/api/human-requests`, `/api/events?after=0&limit=100&runId=...`, and `/api/events/stream`. SSE supports `Last-Event-ID` or an initial `after` cursor. The GUI retains the latest 200 received events; older history remains queryable.
+
+Additional M3 routes: `GET /api/adapters/pi` discovers installed native capabilities without a model turn; `GET /api/worktrees` reads manifests; `POST /api/runs/native` validates and starts an owner-directed Pi run.
 
 `GET /api/local-session` provides the per-process CSRF token. Writes require `X-Local-Token`, `Idempotency-Key` and JSON. The GUI reuses an unconfirmed request's key when retried. Writes are `POST /api/projects/inspect`, `/api/projects`, `/api/runs`, `/api/runs/messages`, `/api/tasks`, `/api/tasks/assign`, `/api/tasks/cancel`, and `PATCH /api/runs` or `/api/tasks`. Run creation accepts project/title/initialPrompt/leadProfileId/mode/limits/scenario; worker outcomes are explicit `success`, `failure` or `disconnect` simulations. All UI commands use the same engine services as fake Lead/worker tools. Arbitrary task-status mutation is no longer exposed over HTTP.
 
@@ -86,17 +115,17 @@ Read APIs: `/api/projects`, `/api/runs?projectId=...`, `/api/tasks?runId=...`, `
 - `src/web`: React page and styles; Vite bundles the production assets into `dist/web`.
 - `src/shared/domain`: strict Zod schemas/types for all M1 entities, input contracts, and task/session transition tables.
 - `src/server/storage`: SQLite migration, transactional services, append-only journal, idempotency, conservative restart recovery.
-- `src/server/adapters`: capability/event contracts and FakeAdapter; no native adapter is implemented yet.
+- `src/server/adapters`: capability/event contracts, FakeAdapter, Pi RPC transport/normalization and file-tool policy.
 - `src/server/orchestration`: owner commands, session-scoped policy checks, fake Lead/worker execution and durable reports.
-- `src/server/git/inspect.ts`: non-mutating Git repository inspection; real worktree management remains M3 scope.
-- `src/server/storage/scheduling.ts`: transactional queue, resource reservations and simulated writer ownership.
+- `src/server/git`: safe argv Git commands, repository inspection, path checks, durable worktree creation and evidence capture.
+- `src/server/storage/scheduling.ts`: transactional queue, resource reservations and per-worktree writer ownership.
 - `tests`: Node's built-in test runner and disposable Git helper.
 - `scripts/smoke.ts`: development/production HTTP launch check.
 - `scripts/demo-m2.ts`: opt-in fake orchestration demonstration on a disposable Git fixture.
 
 The server rejects foreign Host/Origin headers and cross-site browser requests, sends no permissive CORS headers, and requires its random per-process token on writes. Worktrees will isolate working copies; they will not provide OS filesystem isolation. Fake playback never implies that a native harness or policy sandbox was exercised.
 
-Next, complete the pending M2 browser exercise above before proceeding to M3. See [progress](docs/progress.md) for verified commands and [todo.md](todo.md) for milestone gates.
+Next is M4: the live Lead and session-scoped orchestration tools. See [progress](docs/progress.md) for verified commands and [todo.md](todo.md) for milestone gates.
 
 ## Files
 
@@ -129,7 +158,7 @@ Next, complete the pending M2 browser exercise above before proceeding to M3. Se
 
 ## Technology
 
-M2 uses Node HTTP + TypeScript, built-in `node:sqlite`, React + Vite, Zod, Biome and Node's built-in test runner. Native harness adapters, the session-scoped orchestration tool gateway and local Git worktree coordination follow in later milestones. No dependencies were added for M1 or M2.
+M3 uses Node HTTP + TypeScript, built-in `node:sqlite`, React + Vite, Zod, Biome, Node's built-in test runner, Git CLI worktrees and installed Pi RPC. No dependencies were added for M1–M3. The native Lead, other harness adapters and the session-scoped orchestration gateway follow in later milestones.
 
 Exact library versions are pinned in `package.json` and `pnpm-lock.yaml`. Harness interfaces were checked against this machine for M0; live capabilities still require explicit opt-in validation. The spec's candidate interfaces are subject to version-specific findings in `docs/adapter-recon.md`.
 

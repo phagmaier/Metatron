@@ -88,6 +88,7 @@ export const startSessionSchema = z.strictObject({
 export type StartSessionInput = z.infer<typeof startSessionSchema>;
 export type ResumeInput = StartSessionInput;
 export type ManagedSession = {
+  processId?: number;
   nativeSessionId: string;
   adapter: AdapterCapabilities["adapter"];
   input: StartSessionInput;

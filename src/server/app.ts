@@ -56,7 +56,7 @@ export async function startApp(options: {
       const health = healthSchema.parse({
         status: "ok",
         app: "Local Agent Orchestrator",
-        milestone: "M2",
+        milestone: "M3",
       });
       response.setHeader("Content-Type", "application/json; charset=utf-8");
       response.end(

@@ -1,0 +1,350 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { z } from "zod";
+import { DomainError } from "../../shared/domain/states.ts";
+import {
+  type AdapterCapabilities,
+  type HarnessAdapter,
+  type ManagedSession,
+  type ResumeInput,
+  type SessionEvent,
+  type StartSessionInput,
+  startSessionSchema,
+} from "./contract.ts";
+import { PiEvents } from "./pi-events.ts";
+import { PiRpc, type RpcRecord } from "./pi-rpc.ts";
+
+const modelsSchema = z.object({
+  models: z.array(
+    z.object({ id: z.string(), name: z.string(), provider: z.string() }),
+  ),
+});
+const levelsSchema = z.object({ levels: z.array(z.string()) });
+const stateSchema = z.object({
+  sessionId: z.string().min(1),
+  model: z.object({ id: z.string(), provider: z.string() }).optional(),
+  thinkingLevel: z.string().optional(),
+});
+type Active = { rpc: PiRpc; managed: ManagedSession; busy: boolean };
+export class PiAdapter implements HarnessAdapter {
+  private readonly directory: string;
+  private readonly spawnRpc: (
+    args: string[],
+    cwd: string,
+    env: NodeJS.ProcessEnv,
+  ) => PiRpc;
+  private readonly sessions = new Map<string, Active>();
+  constructor(
+    directory: string,
+    spawnRpc: (args: string[], cwd: string, env: NodeJS.ProcessEnv) => PiRpc = (
+      args,
+      cwd,
+      env,
+    ) => new PiRpc("pi", args, cwd, env),
+  ) {
+    this.directory = resolve(directory);
+    this.spawnRpc = spawnRpc;
+  }
+  private async launch(
+    cwd: string,
+    tools: string,
+    sessionDirectory: string | null,
+    permission = "read_only",
+    instructions = "",
+  ) {
+    const config = join(this.directory, "pi");
+    await mkdir(config, { recursive: true, mode: 0o700 });
+    try {
+      await writeFile(
+        join(config, "settings.json"),
+        JSON.stringify({
+          retry: { enabled: false, provider: { maxRetries: 0 } },
+          compaction: { enabled: false },
+        }),
+        { flag: "wx", mode: 0o600 },
+      );
+    } catch (error) {
+      if (
+        !(error instanceof Error && "code" in error && error.code === "EEXIST")
+      )
+        throw error;
+    }
+    const args = [
+      "--mode",
+      "rpc",
+      "--offline",
+      "--no-extensions",
+      "--no-mcp",
+      "--no-skills",
+      "--no-prompt-templates",
+      "--no-themes",
+      "--no-context-files",
+      "--no-approve",
+      "--tools",
+      tools,
+      "--system-prompt",
+      instructions ||
+        "Report concise evidence. Use only the assigned repository. Never read credentials.",
+    ];
+    if (sessionDirectory) {
+      await mkdir(sessionDirectory, { recursive: true, mode: 0o700 });
+      args.push(
+        "--session-dir",
+        sessionDirectory,
+        "--extension",
+        fileURLToPath(new URL("./pi-guard.ts", import.meta.url)),
+      );
+    } else args.push("--no-session");
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      PI_CODING_AGENT_DIR: config,
+      PI_CODING_AGENT_SESSION_DIR:
+        sessionDirectory ?? join(config, "discovery-sessions"),
+      PI_OFFLINE: "1",
+      PI_TELEMETRY: "0",
+      LAO_PI_PERMISSION: permission,
+    };
+    // Repository selectors and caller overlays must not redirect native tools.
+    for (const key of Object.keys(env))
+      if (key.startsWith("GIT_")) delete env[key];
+    return this.spawnRpc(args, cwd, env);
+  }
+  async discover(): Promise<AdapterCapabilities> {
+    const result: AdapterCapabilities = {
+      adapter: "pi",
+      installed: false,
+      authenticated: "unknown",
+      models: [],
+      supportsResume: false,
+      supportsLiveSteer: false,
+      supportsCancel: true,
+      supportsPermissionPrompts: false,
+      supportsToolGateway: false,
+      diagnostics: [
+        "App-owned Pi configuration; provider environment credentials or app-owned Pi login required. Catalog presence does not prove entitlement.",
+        "M3 exposes file tools only; shell, MCP and discovered extensions are disabled. No OS sandbox. Resume and steering are not exposed yet.",
+      ],
+    };
+    let rpc: PiRpc | undefined;
+    try {
+      await mkdir(this.directory, { recursive: true, mode: 0o700 });
+      rpc = await this.launch(this.directory, "", null);
+      const models = modelsSchema.parse(
+        await rpc.request("get_available_models"),
+      );
+      result.installed = true;
+      for (const model of models.models) {
+        await rpc.request("set_model", {
+          provider: model.provider,
+          modelId: model.id,
+        });
+        const levels = levelsSchema.parse(
+          await rpc.request("get_available_thinking_levels"),
+        );
+        result.models.push({
+          id: `${model.provider}/${model.id}`,
+          label: `${model.name} (${model.provider})`,
+          thinking: levels.levels.map((id) => ({ id, label: id })),
+        });
+      }
+    } catch (error) {
+      result.diagnostics.push(
+        error instanceof DomainError
+          ? error.message
+          : "Pi discovery failed; verify Pi installation and configuration",
+      );
+    } finally {
+      if (rpc) await rpc.close();
+    }
+    return result;
+  }
+  async startSession(input: StartSessionInput): Promise<ManagedSession> {
+    const data = startSessionSchema.parse(input);
+    if (
+      data.permission === "coordinator" ||
+      data.toolEndpoint ||
+      Object.keys(data.environment).length ||
+      data.contextPolicy === "resume"
+    )
+      throw new DomainError(
+        "UNSUPPORTED",
+        "M3 Pi supports fresh file-tool workers without caller environment overlays or gateways",
+      );
+    const rpc = await this.launch(
+      data.cwd,
+      data.permission === "read_only"
+        ? "read,grep,find,ls"
+        : "read,grep,find,ls,edit,write",
+      join(this.directory, "pi-sessions", data.attemptId),
+      data.permission,
+      data.roleInstructions,
+    );
+    try {
+      const models = modelsSchema.parse(
+        await rpc.request("get_available_models"),
+      );
+      const model = models.models.find(
+        (m) => `${m.provider}/${m.id}` === data.model,
+      );
+      if (!model)
+        throw new DomainError(
+          "UNSUPPORTED",
+          "Requested Pi model is absent from the native catalog",
+        );
+      await rpc.request("set_model", {
+        provider: model.provider,
+        modelId: model.id,
+      });
+      const levels = levelsSchema.parse(
+        await rpc.request("get_available_thinking_levels"),
+      );
+      if (data.thinking !== null) {
+        if (!levels.levels.includes(data.thinking))
+          throw new DomainError(
+            "UNSUPPORTED",
+            "Requested thinking level is unsupported by this Pi model",
+          );
+        await rpc.request("set_thinking_level", { level: data.thinking });
+      }
+      const state = stateSchema.parse(await rpc.request("get_state"));
+      const commands = z
+        .object({ commands: z.array(z.object({ name: z.string() })) })
+        .parse(await rpc.request("get_commands"));
+      if (!commands.commands.some((command) => command.name === "lao_guard"))
+        throw new DomainError(
+          "POLICY_DENIED",
+          "Pi path policy extension did not load; refusing all model prompts",
+        );
+      if (
+        `${state.model?.provider}/${state.model?.id}` !== data.model ||
+        (data.thinking !== null && state.thinkingLevel !== data.thinking)
+      )
+        throw new DomainError(
+          "UNSUPPORTED",
+          "Pi did not apply the requested model/thinking configuration",
+        );
+      const managed: ManagedSession = {
+        nativeSessionId: state.sessionId,
+        adapter: "pi",
+        input: data,
+        ...(rpc.child.pid ? { processId: rpc.child.pid } : {}),
+      };
+      this.sessions.set(managed.nativeSessionId, { rpc, managed, busy: false });
+      return managed;
+    } catch (error) {
+      await rpc.close();
+      throw error;
+    }
+  }
+  private active(session: ManagedSession) {
+    const current = this.sessions.get(session.nativeSessionId);
+    if (!current || current.managed !== session)
+      throw new DomainError(
+        "CONFLICT",
+        "Pi session identity is not owned by this adapter",
+      );
+    return current;
+  }
+  async *prompt(
+    session: ManagedSession,
+    text: string,
+  ): AsyncIterable<SessionEvent> {
+    const current = this.active(session);
+    if (current.busy)
+      throw new DomainError("CONFLICT", "Pi already has an active prompt");
+    current.busy = true;
+    const queue: RpcRecord[] = [];
+    let wake: (() => void) | undefined;
+    let overflow = false;
+    const unsubscribe = current.rpc.subscribe((event) => {
+      if (queue.length >= 4096) {
+        overflow = true;
+        current.rpc.child.kill("SIGTERM");
+      } else queue.push(event);
+      wake?.();
+    });
+    const mapper = new PiEvents();
+    const deadline = setTimeout(() => {
+      queue.push({ type: "transport_error", reason: "deadline" });
+      current.rpc.child.kill("SIGTERM");
+      wake?.();
+    }, 180_000);
+    try {
+      const response = z.object({ disposition: z.string() }).parse(
+        await current.rpc.request("prompt", {
+          message: `${session.input.contextPacket}\n\n${text}`,
+        }),
+      );
+      if (response.disposition !== "started")
+        throw new DomainError(
+          "CONFLICT",
+          "Pi did not start this prompt; no automatic replay",
+        );
+      for (;;) {
+        if (overflow)
+          throw new DomainError(
+            "CONFLICT",
+            "Pi event queue exceeded its bound; attempt requires recovery",
+          );
+        const record = queue.shift();
+        if (!record) {
+          await new Promise<void>((resolve) => {
+            wake = resolve;
+          });
+          wake = undefined;
+          continue;
+        }
+        for (const event of mapper.consume(record)) yield event;
+        if (
+          ["agent_settled", "transport_exit", "transport_error"].includes(
+            record.type,
+          )
+        )
+          return;
+      }
+    } finally {
+      clearTimeout(deadline);
+      unsubscribe();
+      current.busy = false;
+    }
+  }
+  async cancel(session: ManagedSession) {
+    await this.active(session).rpc.request("abort", {}, 10_000);
+  }
+  async steer(_session: ManagedSession, _text: string): Promise<"unsupported"> {
+    return "unsupported";
+  }
+  async resume(_id: string, _input: ResumeInput): Promise<ManagedSession> {
+    throw new DomainError(
+      "UNSUPPORTED",
+      "Pi resume is not exposed in M3; retained sessions require an owner recovery decision",
+    );
+  }
+  async respondToApproval(): Promise<void> {
+    throw new DomainError(
+      "UNSUPPORTED",
+      "Pi file tools have no native per-call approval callback",
+    );
+  }
+  async dispose(session: ManagedSession) {
+    const active = this.active(session);
+    await active.rpc.close();
+    // Keep bounded wire headers, never arbitrary provider error bodies or tool
+    // payloads. The native session transcript remains separately app-owned.
+    await writeFile(
+      join(
+        this.directory,
+        "pi-sessions",
+        session.input.attemptId,
+        "rpc-diagnostics.json",
+      ),
+      JSON.stringify(active.rpc.diagnostics),
+      { mode: 0o600 },
+    );
+    this.sessions.delete(session.nativeSessionId);
+  }
+  async exit(session: ManagedSession) {
+    return this.active(session).rpc.close();
+  }
+}

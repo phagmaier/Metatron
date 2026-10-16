@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { z } from "zod";
 import {
   attemptsResponseSchema,
+  eventsResponseSchema,
   projectsResponseSchema,
   runsResponseSchema,
   sessionsResponseSchema,
@@ -108,14 +109,50 @@ function App() {
   const runSessions = sessions.filter((session) =>
     runAttempts.some((attempt) => attempt.id === session.attemptId),
   );
-  const runEvents = events.filter((event) => event.runId === selectedRun?.id);
+  const [savedRunEvents, setSavedRunEvents] = useState<Event[]>([]);
+  const selectedRunId = selectedRun?.id;
+  useEffect(() => {
+    const controller = new AbortController();
+    setSavedRunEvents([]);
+    if (selectedRunId)
+      void (async () => {
+        let after = 0;
+        let saved: Event[] = [];
+        // Other runs' token streams must not evict this run's persisted history.
+        for (;;) {
+          const page = eventsResponseSchema.parse(
+            await readApi(
+              `events?runId=${selectedRunId}&after=${after}&limit=500`,
+              controller.signal,
+            ),
+          ).events;
+          saved = [...saved, ...page].slice(-200);
+          if (page.length < 500) break;
+          after = page.at(-1)?.sequence ?? after;
+        }
+        if (!controller.signal.aborted) setSavedRunEvents(saved);
+      })().catch(() => {
+        if (!controller.signal.aborted)
+          setStatus("Cannot load saved run events. Reload to retry.");
+      });
+    return () => controller.abort();
+  }, [selectedRunId]);
+  const runEvents = [
+    ...new Map(
+      [...savedRunEvents, ...events]
+        .filter((event) => event.runId === selectedRunId)
+        .map((event) => [event.sequence, event]),
+    ).values(),
+  ]
+    .sort((a, b) => a.sequence - b.sequence)
+    .slice(-200);
   return (
     <main>
-      <p className="eyebrow">LOCAL WORKSPACE · M2</p>
+      <p className="eyebrow">LOCAL WORKSPACE · M3</p>
       <h1>Local Agent Orchestrator</h1>
       <p className="intro">
-        Coordinate a fake Lead and workers with durable state and bounded
-        scheduling.
+        Coordinate saved tasks, simulated teams and native Pi workers in
+        isolated worktrees.
       </p>
       <p className="status" role="status">
         {status}
@@ -142,8 +179,8 @@ function App() {
             demo command.
           </p>
           <p className="note">
-            M2 runs only explicit FakeAdapter simulations. No native harness is
-            connected.
+            Choose a fake team demonstration or explicitly start a real Pi
+            worker after discovering its models.
           </p>
         </section>
       ) : (
@@ -188,7 +225,7 @@ function App() {
                   <span className="badge">
                     {selectedRun.execution === "fake"
                       ? "FAKE · NO MODEL TOKENS"
-                      : "NATIVE CONFIGURATION"}
+                      : "LIVE PI · OWNER-DIRECTED"}
                   </span>
                 </div>
                 <p>{selectedRun.initialPrompt}</p>
@@ -219,7 +256,11 @@ function App() {
                   / {selectedRun.limits.maxTotalWorkerLaunchesPerRun} worker
                   launches
                 </p>
-                <h3>Lead conversation</h3>
+                <h3>
+                  {selectedRun.execution === "fake"
+                    ? "Lead conversation"
+                    : "Owner-directed native work"}
+                </h3>
                 <ol className="chat">
                   {runEvents
                     .filter((event) =>
@@ -297,6 +338,14 @@ function App() {
                               dispatch={dispatches.find(
                                 (d) => d.taskId === task.id,
                               )}
+                              attempt={runAttempts.find(
+                                (a) => a.taskId === task.id,
+                              )}
+                              evidence={runEvents.find(
+                                (e) =>
+                                  e.taskId === task.id &&
+                                  e.type === "worktree.captured",
+                              )}
                               onError={setError}
                             />
                           ))}
@@ -324,6 +373,10 @@ function App() {
                         </div>
                         <div>
                           <code>{session.state}</code>
+                          <p className="note">
+                            PID {session.processId ?? "unavailable"} · exit{" "}
+                            {session.exitCode ?? "not recorded"}
+                          </p>
                           {session.recovery !== "none" && (
                             <p className="warning">{session.recovery}</p>
                           )}

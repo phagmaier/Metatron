@@ -19,7 +19,8 @@
     "test:fixtures": "node --test tests/git-fixture.test.ts",
     "smoke": "node scripts/smoke.ts",
     "demo:fake": "node scripts/seed-fake.ts",
-    "demo:m2": "node scripts/demo-m2.ts"
+    "demo:m2": "node scripts/demo-m2.ts",
+    "test:live": "node scripts/live-pi.ts"
   },
   "dependencies": {
     "react": "19.3.1",

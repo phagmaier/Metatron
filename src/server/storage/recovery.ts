@@ -111,6 +111,7 @@ export function recoverInterrupted(
   // Reservations represent live execution only. Recovered ambiguous attempts
   // retain their dispatch history but must never be considered queued again.
   db.exec(`BEGIN IMMEDIATE;
+    UPDATE worktrees SET data=json_set(data,'$.state','retained') WHERE json_extract(data,'$.state')='ready' AND attempt_id IN (SELECT id FROM attempts WHERE json_extract(data,'$.status')='RECOVERY_REQUIRED');
     DELETE FROM reservations WHERE attempt_id IN (SELECT id FROM attempts WHERE json_extract(data,'$.status') NOT IN ('created','running'));
     UPDATE dispatches SET state='released',diagnostic='Recovery decision required after restart' WHERE state='active' AND attempt_id IN (SELECT id FROM attempts WHERE json_extract(data,'$.status')='RECOVERY_REQUIRED');
     COMMIT;`);

@@ -1,0 +1,66 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { absolutePathSchema } from "../../shared/domain/entities.ts";
+import { DomainError } from "../../shared/domain/states.ts";
+
+const exec = promisify(execFile);
+export class GitError extends DomainError {
+  readonly exitCode: number | null;
+  readonly signal: string | null;
+  constructor(message: string, error?: unknown) {
+    super("GIT", message);
+    this.exitCode =
+      error instanceof Error &&
+      "code" in error &&
+      typeof error.code === "number"
+        ? error.code
+        : null;
+    this.signal =
+      error instanceof Error &&
+      "signal" in error &&
+      typeof error.signal === "string"
+        ? error.signal
+        : null;
+  }
+}
+
+export async function git(cwd: string, args: readonly string[]) {
+  absolutePathSchema.parse(cwd);
+  if (args.some((arg) => arg.includes("\0")))
+    throw new GitError("Git argument contains NUL");
+  // Do not inherit repository selectors, aliases, hooks, external diff drivers,
+  // fsmonitor or global config. No shell, automatic cleanup, reset or stash.
+  const env = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
+  );
+  Object.assign(env, {
+    GIT_OPTIONAL_LOCKS: "0",
+    GIT_TERMINAL_PROMPT: "0",
+    GIT_CONFIG_NOSYSTEM: "1",
+    GIT_CONFIG_GLOBAL: "/dev/null",
+  });
+  try {
+    return (
+      await exec(
+        "git",
+        [
+          "-c",
+          "core.fsmonitor=false",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "-c",
+          "core.untrackedCache=false",
+          "-c",
+          "commit.gpgSign=false",
+          ...args,
+        ],
+        { cwd, env, timeout: 15_000, maxBuffer: 4 * 1024 * 1024 },
+      )
+    ).stdout;
+  } catch (error) {
+    throw new GitError(
+      `Git ${args[0] ?? "command"} failed; retained working copies require inspection`,
+      error,
+    );
+  }
+}

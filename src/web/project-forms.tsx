@@ -9,6 +9,7 @@ import {
 } from "../shared/domain/entities.ts";
 import { fakeTeamSnapshot } from "../shared/presets.ts";
 import { writeApi } from "./api.ts";
+import { NativeRunForm } from "./native-run-form.tsx";
 
 export function ProjectForms({
   project,
@@ -232,6 +233,9 @@ export function ProjectForms({
             Start fake run
           </button>
         </form>
+      )}
+      {project && (
+        <NativeRunForm project={project} onRun={onRun} onError={onError} />
       )}
     </section>
   );

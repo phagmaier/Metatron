@@ -69,48 +69,50 @@ export function RunControls({
         </div>
       </div>
       <p className="note">
-        Pause holds queued work; active fake turns finish. Chat/Plan cannot
-        dispatch workers.
+        Pause holds queued work; active turns finish. Chat/Plan cannot dispatch
+        workers.
       </p>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          void act(async () => {
-            await writeApi("runs/messages", {
-              runId: run.id,
-              text: message,
-              scenario,
+      {run.execution === "fake" && (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void act(async () => {
+              await writeApi("runs/messages", {
+                runId: run.id,
+                text: message,
+                scenario,
+              });
+              setMessage("");
             });
-            setMessage("");
-          });
-        }}
-      >
-        <label>
-          Message the fake Lead
-          <textarea
-            required
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            rows={2}
-          />
-        </label>
-        <div className="actions">
+          }}
+        >
           <label>
-            Worker simulation
-            <select
-              value={scenario}
-              onChange={(event) => setScenario(event.target.value)}
-            >
-              <option value="success">Success</option>
-              <option value="failure">Failure</option>
-              <option value="disconnect">Disconnect</option>
-            </select>
+            Message the fake Lead
+            <textarea
+              required
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              rows={2}
+            />
           </label>
-          <button type="submit" disabled={busy || run.status !== "active"}>
-            Send to Lead
-          </button>
-        </div>
-      </form>
+          <div className="actions">
+            <label>
+              Worker simulation
+              <select
+                value={scenario}
+                onChange={(event) => setScenario(event.target.value)}
+              >
+                <option value="success">Success</option>
+                <option value="failure">Failure</option>
+                <option value="disconnect">Disconnect</option>
+              </select>
+            </label>
+            <button type="submit" disabled={busy || run.status !== "active"}>
+              Send to Lead
+            </button>
+          </div>
+        </form>
+      )}
       <form
         onSubmit={(event) => {
           event.preventDefault();

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import {
+  type Attempt,
   artifactSchema,
+  type Event,
   type Run,
   type Session,
   type Task,
@@ -14,12 +16,16 @@ export function TaskCard({
   run,
   session,
   dispatch,
+  attempt,
+  evidence,
   onError,
 }: {
   task: Task;
   run: Run;
   session: Session | undefined;
   dispatch: Dispatch | undefined;
+  attempt: Attempt | undefined;
+  evidence: Event | undefined;
   onError: (error: string) => void;
 }) {
   const profiles =
@@ -65,7 +71,7 @@ export function TaskCard({
       {dispatch?.diagnostic && <p className="warning">{dispatch.diagnostic}</p>}
       {session && (
         <p className="worker-status">
-          FAKE worker ·{" "}
+          {session.adapter === "fake" ? "FAKE worker" : "Native Pi worker"} ·{" "}
           {
             run.teamSnapshot?.profiles.find(
               (profile) => profile.id === task.assignedProfileId,
@@ -93,17 +99,19 @@ export function TaskCard({
             ))}
           </select>
         </label>
-        <label>
-          Simulation
-          <select
-            value={scenario}
-            onChange={(event) => setScenario(event.target.value)}
-          >
-            <option value="success">Success</option>
-            <option value="failure">Failure</option>
-            <option value="disconnect">Disconnect</option>
-          </select>
-        </label>
+        {run.execution === "fake" && (
+          <label>
+            Simulation
+            <select
+              value={scenario}
+              onChange={(event) => setScenario(event.target.value)}
+            >
+              <option value="success">Success</option>
+              <option value="failure">Failure</option>
+              <option value="disconnect">Disconnect</option>
+            </select>
+          </label>
+        )}
       </div>
       <div className="actions">
         <button
@@ -197,6 +205,35 @@ export function TaskCard({
           Work was not rerun. Recovery/resume controls arrive in M6; this task
           can be cancelled.
         </p>
+      )}
+      {attempt?.adapter === "pi" && (
+        <details>
+          <summary>Worktree and Git evidence</summary>
+          <p className="path">{attempt.worktreePath}</p>
+          <p className="note">
+            Base {attempt.baseSha} · retained for inspection; no integration
+            performed.
+          </p>
+          <p>
+            {
+              run.teamSnapshot?.profiles.find((p) => p.id === attempt.profileId)
+                ?.model
+            }{" "}
+            · thinking{" "}
+            {run.teamSnapshot?.profiles.find((p) => p.id === attempt.profileId)
+              ?.thinking ?? "native default"}
+          </p>
+          {evidence ? (
+            <pre className="report">
+              {JSON.stringify(evidence.payload, null, 2)}
+            </pre>
+          ) : (
+            <p className="note">
+              Git capture is pending or outside the latest 200 events. Full
+              evidence remains in the persisted journal.
+            </p>
+          )}
+        </details>
       )}
       {report && <pre className="report">{report}</pre>}
     </li>
