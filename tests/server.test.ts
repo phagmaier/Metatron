@@ -1,0 +1,95 @@
+import assert from "node:assert/strict";
+import { request } from "node:http";
+import { after, before, test } from "node:test";
+import { startApp } from "../src/server/app.ts";
+import { healthSchema } from "../src/shared/health.ts";
+
+let app: Awaited<ReturnType<typeof startApp>>;
+before(async () => {
+  app = await startApp({ development: false, port: 0 });
+});
+after(async () => {
+  await app.close();
+});
+
+test("health is served by a loopback-only socket with a validated response", async () => {
+  const address = app.server.address();
+  assert.ok(address && typeof address !== "string");
+  assert.equal(address.address, "127.0.0.1");
+  const response = await fetch(`${app.origin}/api/health`);
+  assert.equal(response.status, 200);
+  assert.equal(healthSchema.parse(await response.json()).milestone, "M0");
+  assert.equal(response.headers.get("access-control-allow-origin"), null);
+});
+
+test("same-origin requests are allowed", async () => {
+  const response = await fetch(`${app.origin}/api/health`, {
+    headers: { Origin: app.origin },
+  });
+  assert.equal(response.status, 200);
+});
+
+for (const origin of ["https://example.invalid", "null"]) {
+  test(`foreign Origin ${origin} is refused`, async () => {
+    const response = await fetch(`${app.origin}/api/health`, {
+      headers: { Origin: origin },
+    });
+    assert.equal(response.status, 403);
+  });
+}
+
+test("cross-site browser requests are refused even without an Origin", async () => {
+  const response = await fetch(`${app.origin}/api/health`, {
+    headers: { "Sec-Fetch-Site": "cross-site" },
+  });
+  assert.equal(response.status, 403);
+});
+
+test("foreign Host is refused to guard against DNS rebinding", async () => {
+  const status = await new Promise<number | undefined>((resolve, reject) => {
+    const req = request(
+      `${app.origin}/api/health`,
+      { headers: { Host: "example.invalid" } },
+      (response) => {
+        response.resume();
+        response.on("end", () => resolve(response.statusCode));
+      },
+    );
+    req.on("error", reject);
+    req.end();
+  });
+  assert.equal(status, 403);
+});
+
+test("malformed request URLs are rejected without crashing the server", async () => {
+  const status = await new Promise<number | undefined>((resolve, reject) => {
+    const req = request(app.origin, { path: "http://[" }, (response) => {
+      response.resume();
+      response.on("end", () => resolve(response.statusCode));
+    });
+    req.on("error", reject);
+    req.end();
+  });
+  assert.equal(status, 400);
+  assert.equal((await fetch(`${app.origin}/api/health`)).status, 200);
+});
+
+test("mutating methods are disabled before any write routes exist", async () => {
+  for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
+    const response = await fetch(`${app.origin}/api/health`, { method });
+    assert.equal(response.status, 405);
+  }
+});
+
+test("unknown API routes and private files are not served as a page", async () => {
+  for (const path of [
+    "/api/missing",
+    "/package.json",
+    "/.env",
+    "/src/server/main.ts",
+    "/assets/%2e%2e%2fpackage.json",
+  ]) {
+    const response = await fetch(`${app.origin}${path}`);
+    assert.equal(response.status, 404);
+  }
+});

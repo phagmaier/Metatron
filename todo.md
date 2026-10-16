@@ -17,16 +17,16 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 
 ## M0 - Repository preparation and adapter reconnaissance [spec §0, 3, 5, 8, 10, 13]
 
-- [ ] Read `spec.md` (especially sections 0, 3, 4, 5, 8, 10, 13) and `AGENTS.md`; make a one-paragraph scope summary in `docs/progress.md`.
-- [ ] Inspect the development machine via mise shims only (`mise current`, `mise ls`, `mise x -- node --version`, `mise x -- pnpm --version`, `git --version`) and availability/versions of `codex`, `claude`, `opencode`, and `pi`; **do not install or modify global configurations automatically**. If `.mise.toml` pins are not installed, run `mise install` (user-scoped only); anything needing `sudo`/global install becomes a `BLOCKED` note, not a workaround.
-- [ ] Verify official current SDK/protocol docs and installed API surfaces; create `docs/adapter-recon.md` with per-harness version, interface choice, model/thinking handling, authentication assumptions, feature flags, known unknowns, and smoke commands.
-- [ ] Choose a lightweight repository layout (single package vs small workspace). Record any substantive deviation from `spec.md` as ADR.
-- [ ] Set up TypeScript strict mode, package scripts, formatting/linting, testing framework, React + Vite (or equivalent simple local bundler), and a minimal server.
-- [ ] Configure local server to bind `127.0.0.1`, not public interfaces, with basic Origin/CSRF protection plan and clear local start command.
-- [ ] Create disposable Git fixture generator and a script that verifies a temporary repo is cleaned up only after all fixture tests succeed.
-- [ ] Establish a baseline `pnpm test` / `pnpm typecheck` / `pnpm lint` (or documented equivalent) pipeline.
-- [ ] Write `README.md` for the actual codebase (setup, start, prerequisites, current coverage). Replace the starter-pack navigation text once the real start command exists.
-- [ ] Create `docs/progress.md` with M0 verification output and immediate next step.
+- [x] Read `spec.md` (especially sections 0, 3, 4, 5, 8, 10, 13) and `AGENTS.md`; make a one-paragraph scope summary in `docs/progress.md`.
+- [x] Inspect the development machine via mise shims only (`mise current`, `mise ls`, `mise x -- node --version`, `mise x -- pnpm --version`, `git --version`) and availability/versions of `codex`, `claude`, `opencode`, and `pi`; **do not install or modify global configurations automatically**. If `.mise.toml` pins are not installed, run `mise install` (user-scoped only); anything needing `sudo`/global install becomes a `BLOCKED` note, not a workaround.
+- [x] Verify official current SDK/protocol docs and installed API surfaces; create `docs/adapter-recon.md` with per-harness version, interface choice, model/thinking handling, authentication assumptions, feature flags, known unknowns, and smoke commands.
+- [x] Choose a lightweight repository layout (single package vs small workspace). Record any substantive deviation from `spec.md` as ADR.
+- [x] Set up TypeScript strict mode, package scripts, formatting/linting, testing framework, React + Vite (or equivalent simple local bundler), and a minimal server.
+- [x] Configure local server to bind `127.0.0.1`, not public interfaces, with basic Origin/CSRF protection plan and clear local start command.
+- [x] Create disposable Git fixture generator and a script that verifies a temporary repo is cleaned up only after all fixture tests succeed.
+- [x] Establish a baseline `pnpm test` / `pnpm typecheck` / `pnpm lint` (or documented equivalent) pipeline.
+- [x] Write `README.md` for the actual codebase (setup, start, prerequisites, current coverage). Replace the starter-pack navigation text once the real start command exists.
+- [x] Create `docs/progress.md` with M0 verification output and immediate next step.
 
 **M0 gate:** UI serves a simple project-start placeholder locally; tests and typechecking run; adapter reconnaissance is documented, not guessed.
 

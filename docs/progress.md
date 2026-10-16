@@ -1,0 +1,16 @@
+# Progress
+
+## 2026-10-15 — M0: preparation and reconnaissance
+
+Scope: build a single-user loopback Node/React control plane for the four native coding harnesses, with durable domain state, bounded scheduling, scoped tools, human authority, and isolated Git worktrees in later milestones. M0 establishes only the runnable shell, toolchain, reconnaissance and fixture baseline; no model turns, orchestrator adapters or managed-repository mutations.
+
+- Initial state: existing `main` at `477ad29`; preserved staged `.mise.toml` and owner edits to `AGENTS.md`/`todo.md`. `kickoff-prompt.md` was absent. No source files existed.
+- Toolchain: preserved mise pins Node 26.7.0 / pnpm 11.22.0; Git 2.55.0. See `adapter-recon.md` for harness versions and isolated probes.
+- Dependency justification: React/React DOM implement the agreed UI; Vite bundles/serves it; TypeScript and matching `@types/*` enforce strict typing; Biome supplies lint/format checks; Zod validates the shared HTTP contract. Node stdlib supplies HTTP, tests, Git process spawning and SQLite (no SQLite addon).
+- Built `src/server`, `src/web`, `src/shared`, strict/lint/build configuration, `tests/helpers/git-fixture.ts`, server/fixture tests, `scripts/smoke.ts`, lockfile and actual README setup instructions. All 10 M0 checklist items verified; M1 remains untouched.
+- Setup PASS: `mise x -- pnpm install --store-dir /tmp/lao-pnpm-store --cache-dir /tmp/lao-pnpm-cache` (28 packages), then `mise x -- pnpm install --frozen-lockfile --store-dir /tmp/lao-pnpm-store --cache-dir /tmp/lao-pnpm-cache` (lockfile current). Pinned versions resolve.
+- Checks PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` (12/12), `mise x -- pnpm test:fixtures` (3/3), `mise x -- pnpm build`, `mise x -- pnpm smoke` (development + production health/HTML/all script entries), `git diff --check`.
+- Launch PASS: `mise x -- pnpm dev` and `mise x -- pnpm start` at `http://127.0.0.1:4317`; actual health/page/React entry or production bundle returned 200. Both were stopped after checks. Initial `node --watch` launch looped on Vite config output and failed a health request; removing backend watch fixed it, verified by repeated healthy requests.
+- ADRs: [runtime/SQLite](adr/2026-10-15-runtime-and-sqlite.md) preserves Current Node pin and selects release-candidate built-in SQLite (3.53.4 probe); [OpenCode v2](adr/2026-10-15-opencode-v2-interface.md) selects the matching native client/private server. No product redesign or spec changes.
+- Recon PASS within M0: Codex 0.162.1 schema, Claude CLI 2.1.301/Agent SDK 0.3.301 declarations, OpenCode 2.0.29/v2 client, Pi 1.3.0 offline RPC. [Recon notes](adapter-recon.md) distinguish observed surfaces from unverified behavior; live model tests intentionally omitted (cost). Auth, native permission/cancel/resume turns and OpenCode private-server auth are future validation gaps, not M0 blockers.
+- Next: M1's first item — define schemas/types for Project, Run, RoleTemplate, AgentProfile, TeamPreset, WorkflowTemplate, Task, Attempt, Session, Event, HumanRequest, Review, IntegrationCandidate and Artifact. Resume: “Implement M1 only, starting with domain schemas/types”; baseline command: `mise x -- pnpm test`. Beta remains incomplete.
