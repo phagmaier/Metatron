@@ -1,0 +1,61 @@
+{
+  "execution": "protocol fixtures only; no native harness/provider calls",
+  "database": "/tmp/lao-review-result-gGljj3/state.sqlite",
+  "repository": "/tmp/lao-git-fixture-DoRd9i/repo with spaces",
+  "runId": "608d6de3-d8af-455b-ad76-00b844af5210",
+  "implementationTaskId": "abb5c7cb-f865-46d7-b685-a342d44727a4",
+  "reviewTaskId": "7aee558f-df62-4e84-8544-11cb0cc24315",
+  "candidate": {
+    "id": "92818002-ef25-42c7-9d5e-734e56bfdc04",
+    "createdAt": "2026-10-16T09:25:01.760Z",
+    "updatedAt": "2026-10-16T09:25:02.549Z",
+    "taskId": "abb5c7cb-f865-46d7-b685-a342d44727a4",
+    "attemptId": "5302ddf7-a7f5-48db-bec0-e29774d2bc18",
+    "baseSha": "48d99bd9aab8a46166f21cfea5e9cf74b66b1ede",
+    "candidateSha": "7a4200630c5631d2bc4b705e73e6142235fe8479",
+    "reportSubmitted": true,
+    "reviewIds": [
+      "ae0463c2-eca2-4ad8-a122-1035ec589346"
+    ],
+    "status": "reviewed",
+    "humanDecision": null,
+    "decidedAt": null
+  },
+  "review": {
+    "summary": "Fixture review: README loses the project heading",
+    "recommendation": "changes_requested",
+    "findings": [
+      {
+        "severity": "important",
+        "file": "README.md",
+        "line": 1,
+        "justification": "Restore the project heading so readers can identify the project.",
+        "evidence": "The candidate replaces the heading with 'Protocol fixture result'.",
+        "confidence": 0.95
+      }
+    ],
+    "tests": [
+      {
+        "command": "Tests unavailable: shell is disabled",
+        "result": "not_run"
+      }
+    ],
+    "id": "ae0463c2-eca2-4ad8-a122-1035ec589346",
+    "createdAt": "2026-10-16T09:25:02.549Z",
+    "updatedAt": "2026-10-16T09:25:02.549Z",
+    "taskId": "abb5c7cb-f865-46d7-b685-a342d44727a4",
+    "reviewerAttemptId": "2f86bd0c-a917-4265-89b7-aa9281c0c50c",
+    "candidateId": "92818002-ef25-42c7-9d5e-734e56bfdc04"
+  },
+  "verified": [
+    "POST /api/tasks/review",
+    "structured report exposed through GET /api/reports",
+    "separate reviewer attempt at candidate SHA",
+    "clean reviewer and owner checkout",
+    "candidate branch unchanged",
+    "reviews and reports survive app restart",
+    "no attempts replayed",
+    "implementation stays AWAITING_REVIEW; no approval or integration"
+  ],
+  "liveTests": "intentionally omitted (cost)"
+}

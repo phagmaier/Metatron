@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
+import { findingsReview, passReview } from "./review-result.ts";
 
 // Deterministic subprocess protocol fixture. It never starts a native harness
 // or contacts a provider, and only writes inside its disposable test cwd.
@@ -8,7 +9,7 @@ import { z } from "zod";
 async function gateway(name: string, args: object) {
   const url = process.env.LAO_GATEWAY_URL;
   if (!url) return;
-  await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -21,6 +22,14 @@ async function gateway(name: string, args: object) {
       params: { name, arguments: args },
     }),
   });
+  return z
+    .object({
+      result: z.object({
+        isError: z.boolean(),
+        structuredContent: z.object({ result: z.unknown().optional() }),
+      }),
+    })
+    .parse(await response.json()).result;
 }
 let buffer = "";
 let model = "fixture/model";
@@ -114,24 +123,50 @@ process.stdin.on("data", (chunk) => {
     // "tracked" edits an existing file instead of creating a new one, and its
     // read-only sessions report the README they see. In "tamper" a read-only
     // session also writes, as a policy bypass would.
-    const tracked = scenario === "tracked" || scenario === "tamper";
+    const tracked =
+      scenario === "tracked" ||
+      scenario === "tamper" ||
+      scenario?.startsWith("review-");
     const written = tracked ? "README.md" : "fixture-result.txt";
     const writer = process.env.LAO_PI_PERMISSION === "workspace_write";
     void (async () => {
-      await gateway("read_assignment", {});
+      const assignment = await gateway("read_assignment", {});
+      const review =
+        assignment &&
+        z
+          .object({ review: z.unknown() })
+          .parse(assignment.structuredContent.result).review;
       if (scenario === "urgent")
         await gateway("report_issue", {
           summary: "Fixture urgent issue",
           details: "Deterministic urgent issue",
           urgency: "urgent",
         });
-      await gateway("submit_result", {
-        outcome: "completed",
-        summary: "Protocol fixture structured summary",
-        changedFiles: writer ? [written] : [],
-        tests: [{ command: "not run", result: "not_run" }],
-      });
-      if (writer || scenario === "tamper")
+      if (scenario !== "review-missing") {
+        const result = await gateway(
+          "submit_result",
+          review
+            ? scenario === "review-invalid"
+              ? {
+                  ...findingsReview,
+                  findings: [{ ...findingsReview.findings[0], line: 0 }],
+                }
+              : scenario === "review-findings"
+                ? findingsReview
+                : passReview
+            : {
+                outcome: "completed",
+                summary: "Protocol fixture structured summary",
+                changedFiles: writer ? [written] : [],
+                tests: [{ command: "not run", result: "not_run" }],
+              },
+        );
+        if (result?.isError && scenario !== "review-invalid")
+          throw new Error("Fixture result was unexpectedly rejected");
+      }
+      if (scenario === "review-exit") process.exit(0);
+      if (scenario === "review-hold") return;
+      if (writer || scenario === "tamper" || scenario === "review-tamper")
         await writeFile(
           join(process.cwd(), written),
           writer ? "Protocol fixture result\n" : "Tampered by a reader\n",

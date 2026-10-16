@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { reviewResultSchema } from "../../shared/domain/entities.ts";
 import {
   type Dispatch,
   handoffReportSchema,
@@ -9,6 +10,7 @@ import { PiAdapter } from "../adapters/pi.ts";
 import { GitError } from "../git/command.ts";
 import { createIntegrationCandidate } from "../storage/candidates.ts";
 import { mutate } from "../storage/mutations.ts";
+import { createReview } from "../storage/reviews.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 import { reviewPacket } from "./review.ts";
@@ -81,12 +83,15 @@ export async function executeNativeTurn(
     }
     if (!role || profile.harness !== "pi")
       throw new Error("Native worker configuration is unsupported");
+    const resultInstructions = task.reviewCandidateId
+      ? "Submit your structured review using the contract in the prompt and read_assignment. A recommendation grants no integration authority."
+      : "Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.";
     managed = await engine.pi.startSession({
       runId: run.id,
       taskId: task.id,
       attemptId,
       cwd: dispatch.cwd,
-      roleInstructions: `${role.instructions}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.${token ? "\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once with your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate." : ""}`,
+      roleInstructions: `${role.instructions}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.${token ? `\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. ${resultInstructions}` : ""}`,
       model: profile.model,
       thinking: profile.thinking,
       permission: profile.permission,
@@ -268,6 +273,9 @@ export async function executeNativeTurn(
         .parse(JSON.parse(String(submitted.payload))).report
     : null;
   const report = handoffReportSchema.safeParse(structured);
+  const review = task.reviewCandidateId
+    ? reviewResultSchema.safeParse(structured)
+    : null;
   let candidate: Candidate | null = null;
   let blocked: string | null = null;
   if (profile.permission === "workspace_write") {
@@ -308,7 +316,8 @@ export async function executeNativeTurn(
   const text =
     output ||
     "Pi completed without text output. Inspect native events and Git evidence.";
-  // A missing tool submission is survivable (spec §6.2) but stays unverified.
+  // Ordinary text-only reports stay unverified (spec §6.2). A reviewer needs
+  // an explicit validated recommendation; text alone never clears that gate.
   const artifact = await engine.saveReport(
     task,
     attemptId,
@@ -360,6 +369,21 @@ export async function executeNativeTurn(
         engine.fail(task.id, attemptId, blocked);
         return true;
       }
+      if (task.reviewCandidateId) {
+        if (!review?.success) {
+          engine.fail(
+            task.id,
+            attemptId,
+            "Review requires a valid structured recommendation and findings submitted through the gateway; text-only or invalid output needs an explicit retry decision",
+          );
+          return true;
+        }
+        createReview(
+          store,
+          { reviewerAttemptId: attemptId, result: review.data },
+          `review:${attemptId}`,
+        );
+      }
       if (candidate?.status === "captured")
         createIntegrationCandidate(
           store,
@@ -380,8 +404,9 @@ export async function executeNativeTurn(
           id: task.id,
           expectedStatus: "RUNNING",
           status: "AWAITING_REVIEW",
-          reason:
-            candidate?.status === "captured"
+          reason: review?.success
+            ? `Independent review saved: ${review.data.recommendation}; no integration approved`
+            : candidate?.status === "captured"
               ? `Candidate ${candidate.candidateSha} captured on ${candidate.branch}; not integrated`
               : "Native result and Git evidence captured; not integrated",
         },
@@ -391,9 +416,13 @@ export async function executeNativeTurn(
         engine,
         task.id,
         "completed",
-        structured && typeof structured === "object" && "summary" in structured
-          ? String(structured.summary)
-          : "text-only report (no structured submission)",
+        review?.success
+          ? `${review.data.recommendation}: ${review.data.summary}`
+          : structured &&
+              typeof structured === "object" &&
+              "summary" in structured
+            ? String(structured.summary)
+            : "text-only report (no structured submission)",
         `notify:${attemptId}`,
       );
       return true;

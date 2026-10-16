@@ -17,6 +17,8 @@ import { authorize } from "./policy.ts";
 
 const requestSchema = z.strictObject({ taskId: idSchema, profileId: idSchema });
 const maxDiff = 48_000;
+export const reviewInstructions =
+  "Submit a structured review through submit_result: summary, recommendation (pass or changes_requested), findings [{severity: blocking|important|suggestion|nit, file, line, justification, evidence, confidence: 0..1}], tests [{command, result: not_run}]. Use repository-relative paths and positive candidate line numbers (base lines for deleted files). A pass cannot include blocking/important findings; changes_requested requires an actionable finding. Shell is disabled, so report tests as not_run. Text alone is not a completed review.";
 
 // A review is a child task bound to one immutable candidate. Only read-only
 // profiles may run it (enforced again at enqueue), and the reviewer's context
@@ -138,6 +140,7 @@ export async function reviewPacket(
     task.objective,
     `Original task: ${original.title}\n${original.objective}`,
     `Acceptance criteria:\n${original.acceptanceCriteria.map((c) => `- ${c}`).join("\n") || "- none recorded"}`,
+    reviewInstructions,
     `Changed files (base ${candidate.baseSha} -> candidate ${candidate.candidateSha}):\n${files}`,
     `Candidate diff${truncated ? ` (first ${maxDiff} characters; read the changed files for the rest)` : ""}:\n${diff.slice(0, maxDiff)}`,
   ].join("\n\n");

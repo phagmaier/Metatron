@@ -3,16 +3,22 @@ import { z } from "zod";
 import {
   artifactSchema,
   type Run,
+  reviewResultSchema,
   type Task,
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
-import { type Actor, toolSchema } from "../../shared/orchestration.ts";
+import {
+  type Actor,
+  handoffReportSchema,
+  toolSchema,
+} from "../../shared/orchestration.ts";
 import { listIntegrationCandidates } from "../storage/candidates.ts";
 import { mutate } from "../storage/mutations.ts";
+import { listReviews } from "../storage/reviews.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 import { authorize } from "./policy.ts";
-import { requestReview } from "./review.ts";
+import { requestReview, reviewInstructions } from "./review.ts";
 
 const summary = (task: Task) => ({
   taskId: task.id,
@@ -205,7 +211,8 @@ export function runTool(
               declaredUnchanged: candidate.payload.declaredUnchanged,
             }
           : null,
-        note: "Git evidence and candidates are engine-captured; model claims are not verified by them.",
+        reviews: listReviews(store, task.id),
+        note: "Git evidence and candidates are engine-captured; model claims are not verified by them. Review submissions stay provisional until completion and clean Git checks; only reviews contains recorded reviews. A recommendation grants no integration approval.",
       };
     }
     case "propose_task":
@@ -358,11 +365,12 @@ export function runTool(
         review: task.reviewCandidateId
           ? {
               ...latestPayload(engine, task.id, "review.packet")?.payload,
-              rule: "Your worktree is the candidate commit; your prompt carried the diff. Do not modify files. Report findings with file:line locations.",
+              rule: "Independently inspect the candidate and surrounding code. Do not modify files. Findings use repository-relative file paths and positive line numbers (candidate lines, or base lines for deleted files). Shell is disabled: tests must be not_run. Submit a structured recommendation through submit_result; text alone cannot complete a review.",
             }
           : null,
-        reportShape:
-          "submit_result: outcome, summary, changedFiles (every created, changed or deleted path relative to the worktree root; undeclared new files block the candidate), tests (not_run when shell is unavailable), findings, knownRisks, questions",
+        reportShape: task.reviewCandidateId
+          ? reviewInstructions
+          : "submit_result: outcome, summary, changedFiles (every created, changed or deleted path relative to the worktree root; undeclared new files block the candidate), tests (not_run when shell is unavailable), findings, knownRisks, questions",
       };
     }
     case "report_progress": {
@@ -392,6 +400,12 @@ export function runTool(
       );
     }
     case "submit_result": {
+      const task = store.getTask(data.taskId);
+      const report = task.reviewCandidateId
+        ? reviewResultSchema.parse(data.report)
+        : typeof data.report === "string"
+          ? data.report
+          : handoffReportSchema.parse(data.report);
       if (
         attemptId &&
         store.db
@@ -412,7 +426,7 @@ export function runTool(
           sessionId,
           type: "worker.result",
           correlationId: key,
-          payload: { report: data.report },
+          payload: { report },
         },
         key,
       );

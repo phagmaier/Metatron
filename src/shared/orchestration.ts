@@ -5,6 +5,7 @@ import {
   idSchema,
   limitsSchema,
   modeSchema,
+  reviewResultSchema,
   textSchema,
 } from "./domain/entities.ts";
 
@@ -121,7 +122,7 @@ export const toolSchema = z.discriminatedUnion("name", [
   z.strictObject({
     name: z.literal("submit_result"),
     taskId: idSchema,
-    report: z.union([textSchema, handoffReportSchema]),
+    report: z.union([textSchema, handoffReportSchema, reviewResultSchema]),
   }),
   z.strictObject({
     name: z.literal("report_issue"),

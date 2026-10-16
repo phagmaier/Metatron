@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { z } from "zod";
+import { reviewResultSchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import {
   handoffReportSchema,
@@ -11,7 +12,7 @@ import {
 import type { Engine } from "../orchestration/engine.ts";
 import { toolsFor } from "../orchestration/policy.ts";
 
-export const TOOL_SCHEMA_VERSION = "lao-tools/1";
+export const TOOL_SCHEMA_VERSION = "lao-tools/2";
 type Binding = {
   role: "lead" | "worker";
   sessionId: string;
@@ -45,17 +46,22 @@ const descriptions: Record<ToolName, string> = {
     "Read your assigned task, scope, worktree and the report shape expected by submit_result.",
   report_progress: "Report a short progress note to the Lead.",
   submit_result:
-    "Submit your final structured handoff report once. Changed files are verified separately from Git.",
+    "Submit your final structured result once, using this assignment's schema. Reviewer recommendations remain provisional until native completion and clean Git checks; they never approve integration.",
   report_issue:
     "Report a problem; high/urgent issues wake the Lead. Grants no extra authority.",
 };
 const variants = new Map(
   toolSchema.options.map((option) => [option.shape.name.value, option]),
 );
-function argsSchema(name: ToolName, role: Binding["role"]): z.ZodType {
+function argsSchema(
+  name: ToolName,
+  role: Binding["role"],
+  review: boolean,
+): z.ZodType {
   const option = variants.get(name);
   if (!option) throw new Error(`Missing tool schema ${name}`);
-  if (role === "worker" && name === "submit_result") return handoffReportSchema;
+  if (role === "worker" && name === "submit_result")
+    return review ? reviewResultSchema : handoffReportSchema;
   const shape = Object.fromEntries(
     Object.entries(option.shape).filter(
       ([key]) =>
@@ -119,6 +125,9 @@ export class Gateway {
   }
   private listTools(binding: Binding) {
     const run = this.engine.store.getRun(binding.runId);
+    const review = Boolean(
+      this.engine.store.getTask(binding.taskId).reviewCandidateId,
+    );
     if (!binding.listed) {
       binding.listed = true;
       this.journal(binding, "gateway.connected", {
@@ -129,7 +138,7 @@ export class Gateway {
     }
     return toolsFor(binding.role, run.mode).map((name) => {
       const { $schema: _, ...inputSchema } = z.toJSONSchema(
-        argsSchema(name, binding.role),
+        argsSchema(name, binding.role, review),
         { io: "input" },
       );
       return {
@@ -160,7 +169,10 @@ export class Gateway {
       };
     };
     if (!known) return fail("POLICY_DENIED", `${name} is not a ${role} tool`);
-    const args = argsSchema(name as ToolName, role).safeParse(
+    const review = Boolean(
+      this.engine.store.getTask(binding.taskId).reviewCandidateId,
+    );
+    const args = argsSchema(name as ToolName, role, review).safeParse(
       params.arguments ?? {},
     );
     if (!args.success)

@@ -11,6 +11,7 @@ import { Store } from "../src/server/storage/store.ts";
 import { defaultLimits, type Run } from "../src/shared/domain/entities.ts";
 import { leadTeam } from "../src/shared/native.ts";
 import { workerTools } from "../src/shared/orchestration.ts";
+import { findingsReview, passReview } from "./helpers/review-result.ts";
 
 const writer = "00000000-0000-4000-8000-000000000011";
 const reviewer = "00000000-0000-4000-8000-000000000012";
@@ -184,6 +185,7 @@ async function gatewayFixture(
     list,
     worker,
     candidateTask,
+    live,
     newRun,
     async close() {
       server.close();
@@ -383,6 +385,110 @@ test("a Lead review request needs a captured candidate and a read-only profile, 
       feedback: "Revise the review",
     });
     assert.equal(revision.structuredContent.error.code, "POLICY_DENIED");
+  } finally {
+    await f.close();
+  }
+});
+
+test("review sessions receive and enforce their own result schema; ordinary workers cannot submit recommendations", async () => {
+  const f = await gatewayFixture("autonomous_bounded");
+  try {
+    const { task, candidate } = f.candidateTask("impl");
+    const queued = await f.tool(f.lead, "request_review", {
+      taskId: task.id,
+      profileId: reviewer,
+    });
+    const reviewId = queued.structuredContent.result.reviewTaskId;
+    const binding = f.live(reviewId);
+    const token = f.engine.gateway.issue({ role: "worker", ...binding });
+    const list = await f.call(token, "tools/list");
+    const schema = list.body.result.tools.find(
+      (t: { name: string }) => t.name === "submit_result",
+    ).inputSchema;
+    assert.ok(schema.required.includes("recommendation"));
+    assert.ok(!("changedFiles" in schema.properties));
+    const assignment = await f.tool(token, "read_assignment");
+    assert.equal(assignment.structuredContent.result.taskId, reviewId);
+    assert.match(assignment.structuredContent.result.reportShape, /confidence/);
+    const handoff = { outcome: "completed", summary: "Not a review" };
+    assert.equal(
+      (await f.tool(token, "submit_result", handoff)).structuredContent.error
+        .code,
+      "INVALID_INPUT",
+    );
+    assert.equal(
+      (
+        await f.tool(token, "submit_result", {
+          ...findingsReview,
+          recommendation: "pass",
+        })
+      ).structuredContent.error.code,
+      "INVALID_INPUT",
+    );
+    assert.throws(
+      () =>
+        f.engine.tool(
+          { role: "worker", sessionId: binding.sessionId },
+          f.run.id,
+          { name: "submit_result", taskId: reviewId, report: handoff },
+          "bypass",
+        ),
+      z.ZodError,
+    );
+    assert.equal(
+      (await f.tool(token, "read_report", { taskId: task.id }))
+        .structuredContent.error.code,
+      "POLICY_DENIED",
+    );
+    assert.equal(
+      (
+        await f.tool(token, "submit_result", {
+          ...passReview,
+          candidateId: candidate.id,
+        })
+      ).structuredContent.error.code,
+      "INVALID_INPUT",
+    );
+    const ordinary = f.worker("ordinary");
+    const ordinarySession = f.store
+      .listSessions()
+      .find((s) => f.store.getAttempt(s.attemptId).taskId === ordinary.task.id);
+    assert.ok(ordinarySession);
+    assert.equal(
+      (await f.tool(ordinary.token, "submit_result", passReview))
+        .structuredContent.error.code,
+      "INVALID_INPUT",
+    );
+    assert.throws(
+      () =>
+        f.engine.tool(
+          {
+            role: "worker",
+            sessionId: ordinarySession.id,
+          },
+          f.run.id,
+          {
+            name: "submit_result",
+            taskId: ordinary.task.id,
+            report: passReview,
+          },
+          "bypass-worker",
+        ),
+      z.ZodError,
+    );
+    assert.equal(
+      (await f.tool(token, "submit_result", passReview)).isError,
+      false,
+    );
+    assert.equal(
+      (await f.tool(token, "submit_result", passReview)).structuredContent.error
+        .code,
+      "CONFLICT",
+    );
+    assert.equal(
+      f.store.db.prepare("SELECT count(*) AS n FROM reviews").get()?.n,
+      0,
+    );
   } finally {
     await f.close();
   }

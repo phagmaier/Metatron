@@ -281,22 +281,64 @@ export const humanRequestSchema = z.strictObject({
 });
 export type HumanRequest = z.infer<typeof humanRequestSchema>;
 
-export const reviewSchema = z.strictObject({
+export const reviewResultSchema = z
+  .strictObject({
+    summary: textSchema.max(4000),
+    recommendation: z.enum(["pass", "changes_requested"]),
+    findings: z
+      .array(
+        z.strictObject({
+          severity: z.enum(["blocking", "important", "suggestion", "nit"]),
+          file: textSchema
+            .max(1024)
+            .refine(
+              (path) =>
+                !path.includes("\\") &&
+                !Array.from(path).some((char) => char.charCodeAt(0) < 32) &&
+                path
+                  .split("/")
+                  .every((part) => part && part !== "." && part !== ".."),
+              "Use a repository-relative file path without traversal",
+            ),
+          line: z.int().positive(),
+          justification: textSchema.max(4000),
+          evidence: textSchema.max(4000),
+          confidence: z.number().min(0).max(1),
+        }),
+      )
+      .max(100),
+    tests: z
+      .array(
+        z.strictObject({
+          command: textSchema.max(1000),
+          // Current reviewers have file tools only; test claims cannot be accepted.
+          result: z.literal("not_run"),
+        }),
+      )
+      .min(1)
+      .max(100),
+  })
+  .superRefine((review, context) => {
+    const serious = review.findings.some((f) =>
+      ["blocking", "important"].includes(f.severity),
+    );
+    if (
+      (review.recommendation === "pass" && serious) ||
+      (review.recommendation === "changes_requested" && !review.findings.length)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["recommendation"],
+        message:
+          "A pass cannot have blocking/important findings; changes requested needs an actionable finding",
+      });
+  });
+export const reviewSchema = reviewResultSchema.safeExtend({
   ...metadata,
+  // The implementation task; the review child is linked by reviewerAttemptId.
   taskId: idSchema,
   reviewerAttemptId: idSchema,
   candidateId: idSchema,
-  recommendation: z.enum(["pass", "changes_requested"]),
-  findings: z.array(
-    z.strictObject({
-      severity: z.enum(["info", "low", "medium", "high", "critical"]),
-      file: textSchema,
-      line: z.int().positive().nullable(),
-      evidence: textSchema,
-      confidence: z.number().min(0).max(1),
-    }),
-  ),
-  tests: z.array(textSchema),
 });
 export type Review = z.infer<typeof reviewSchema>;
 export const integrationCandidateSchema = z.strictObject({

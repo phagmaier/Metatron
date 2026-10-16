@@ -83,6 +83,11 @@ CREATE TABLE worktrees (attempt_id TEXT PRIMARY KEY REFERENCES attempts(id), pat
 const migration4 = `
 CREATE UNIQUE INDEX one_candidate_per_attempt ON integration_candidates(attempt_id);
 `;
+const migration5 = `
+CREATE UNIQUE INDEX one_review_per_attempt ON reviews(reviewer_attempt_id);
+CREATE TRIGGER reviews_no_update BEFORE UPDATE ON reviews BEGIN SELECT RAISE(ABORT, 'Reviews are append-only'); END;
+CREATE TRIGGER reviews_no_delete BEFORE DELETE ON reviews BEGIN SELECT RAISE(ABORT, 'Reviews are append-only'); END;
+`;
 function migrateModes(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(migrateModes);
   if (value && typeof value === "object")
@@ -114,7 +119,7 @@ export function openDatabase(path: string) {
       if (version === 0) {
         database.exec(migration1);
         database.exec("PRAGMA user_version=1");
-      } else if (![1, 2, 3, 4].includes(Number(version))) {
+      } else if (![1, 2, 3, 4, 5].includes(Number(version))) {
         throw new DomainError("STORAGE", "Unsupported database schema version");
       }
       if (version === 0 || version === 1) {
@@ -144,9 +149,13 @@ export function openDatabase(path: string) {
         database.exec(migration3);
         database.exec("PRAGMA user_version=3");
       }
-      if (version !== 4) {
+      if (Number(version) < 4) {
         database.exec(migration4);
         database.exec("PRAGMA user_version=4");
+      }
+      if (Number(version) < 5) {
+        database.exec(migration5);
+        database.exec("PRAGMA user_version=5");
       }
       database.exec("COMMIT");
     } catch (error) {

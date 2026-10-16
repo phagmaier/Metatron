@@ -312,7 +312,7 @@ async function reviewed(scenario: string) {
   };
   return { f, run, task, candidate, review };
 }
-test("a Reviewer inspects the immutable candidate and its surrounding repository in its own read-only worktree, without the implementer's report", async () => {
+test("a text-only Reviewer inspects the independent candidate snapshot but needs a retry decision without a structured review", async () => {
   const { f, task, candidate, review } = await reviewed("tracked");
   try {
     assert.throws(
@@ -328,7 +328,11 @@ test("a Reviewer inspects the immutable candidate and its surrounding repository
     const reviewTask = review();
     assert.equal(reviewTask.parentTaskId, task.id);
     await f.engine.idle();
-    assert.equal(f.store.getTask(reviewTask.id).status, "AWAITING_REVIEW");
+    assert.equal(f.store.getTask(reviewTask.id).status, "RETRY_DECISION");
+    assert.match(
+      diagnostic(f, reviewTask.id),
+      /valid structured recommendation/,
+    );
     assert.equal(f.store.getTask(task.id).status, "AWAITING_REVIEW");
     const attempts = f.store.listAttempts();
     const writer = attempts.find((a) => a.taskId === task.id);
