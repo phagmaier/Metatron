@@ -13,14 +13,33 @@ type GuardAPI = {
     name: string,
     definition: { description: string; handler: () => Promise<void> },
   ) => void;
+  registerMcpServer: (
+    name: string,
+    config: {
+      url: string;
+      headers: Record<string, string>;
+      exposure: "direct";
+      description: string;
+      timeout: number;
+    },
+  ) => void;
 };
+const gatewayTools = [
+  "read_assignment",
+  "report_progress",
+  "submit_result",
+  "report_issue",
+].map((name) => `mcp__lao__${name}`);
 
 export async function checkPiTool(
   root: string,
   permission: string,
   event: ToolCall,
+  gateway = false,
 ): Promise<Block | undefined> {
   const deny = (reason: string): Block => ({ block: true, reason });
+  // Gateway tools carry no paths; the server authorizes every call itself.
+  if (gateway && gatewayTools.includes(event.toolName)) return undefined;
   const allowed =
     permission === "workspace_write"
       ? ["read", "grep", "find", "ls", "edit", "write"]
@@ -72,12 +91,30 @@ export async function checkPiTool(
 // This deliberately small structural API avoids importing the entire Pi SDK.
 // Pi loads this explicit extension even with extension discovery disabled.
 export default function installGuard(pi: GuardAPI) {
+  const url = process.env.LAO_GATEWAY_URL;
+  const token = process.env.LAO_GATEWAY_TOKEN;
+  const gateway = Boolean(url && token);
+  if (url && token) {
+    pi.registerMcpServer("lao", {
+      url,
+      headers: { Authorization: `Bearer ${token}` },
+      exposure: "direct",
+      description:
+        "Local Agent Orchestrator worker tools: assignment, progress, structured result and issues",
+      timeout: 60,
+    });
+    pi.registerCommand("lao_gateway", {
+      description: "Session-scoped app gateway is registered",
+      handler: async () => {},
+    });
+  }
   pi.on("tool_call", async (event) => {
     try {
       return await checkPiTool(
         await realpath(process.cwd()),
         process.env.LAO_PI_PERMISSION ?? "read_only",
         event,
+        gateway,
       );
     } catch {
       return { block: true, reason: "Cannot validate the assigned worktree" };

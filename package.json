@@ -20,7 +20,8 @@
     "smoke": "node scripts/smoke.ts",
     "demo:fake": "node scripts/seed-fake.ts",
     "demo:m2": "node scripts/demo-m2.ts",
-    "test:live": "node scripts/live-pi.ts"
+    "test:live": "node scripts/live-pi.ts",
+    "test:live:lead": "node scripts/live-lead.ts"
   },
   "dependencies": {
     "react": "19.3.1",

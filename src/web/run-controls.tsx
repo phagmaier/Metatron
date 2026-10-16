@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Run } from "../shared/domain/entities.ts";
+import { hasNativeLead } from "../shared/native.ts";
 import { writeApi } from "./api.ts";
 
 export function RunControls({
@@ -72,7 +73,7 @@ export function RunControls({
         Pause holds queued work; active turns finish. Chat/Plan cannot dispatch
         workers.
       </p>
-      {run.execution === "fake" && (
+      {(run.execution === "fake" || hasNativeLead(run)) && (
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -80,14 +81,16 @@ export function RunControls({
               await writeApi("runs/messages", {
                 runId: run.id,
                 text: message,
-                scenario,
+                ...(run.execution === "fake" ? { scenario } : {}),
               });
               setMessage("");
             });
           }}
         >
           <label>
-            Message the fake Lead
+            {run.execution === "fake"
+              ? "Message the fake Lead"
+              : "Message the Codex Lead"}
             <textarea
               required
               value={message}
@@ -96,17 +99,19 @@ export function RunControls({
             />
           </label>
           <div className="actions">
-            <label>
-              Worker simulation
-              <select
-                value={scenario}
-                onChange={(event) => setScenario(event.target.value)}
-              >
-                <option value="success">Success</option>
-                <option value="failure">Failure</option>
-                <option value="disconnect">Disconnect</option>
-              </select>
-            </label>
+            {run.execution === "fake" && (
+              <label>
+                Worker simulation
+                <select
+                  value={scenario}
+                  onChange={(event) => setScenario(event.target.value)}
+                >
+                  <option value="success">Success</option>
+                  <option value="failure">Failure</option>
+                  <option value="disconnect">Disconnect</option>
+                </select>
+              </label>
+            )}
             <button type="submit" disabled={busy || run.status !== "active"}>
               Send to Lead
             </button>

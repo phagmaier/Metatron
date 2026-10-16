@@ -4,6 +4,7 @@ import type { ManagedSession } from "../adapters/contract.ts";
 import { PiAdapter } from "../adapters/pi.ts";
 import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
+import { notifyLead } from "./lead-run.ts";
 
 export async function executeNativeTurn(
   engine: Engine,
@@ -20,6 +21,15 @@ export async function executeNativeTurn(
     { id: session.id, expectedState: "not_started", state: "starting" },
     `session:${attemptId}:starting`,
   );
+  const token = engine.gatewayUrl
+    ? engine.gateway.issue({
+        role: "worker",
+        sessionId: session.id,
+        runId: run.id,
+        taskId: task.id,
+        attemptId,
+      })
+    : null;
   let managed: ManagedSession | undefined;
   let output = "";
   let terminal = "failed";
@@ -67,14 +77,14 @@ export async function executeNativeTurn(
       taskId: task.id,
       attemptId,
       cwd: dispatch.cwd,
-      roleInstructions: `${role.instructions}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.`,
+      roleInstructions: `${role.instructions}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.${token ? "\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once with your structured report; report tests as not_run." : ""}`,
       model: profile.model,
       thinking: profile.thinking,
       permission: profile.permission,
       contextPolicy: "fresh",
       contextPacket: task.objective,
-      toolEndpoint: null,
-      environment: {},
+      toolEndpoint: token ? engine.gatewayUrl : null,
+      environment: token ? { LAO_GATEWAY_TOKEN: token } : {},
     });
     store.updateSession(
       {
@@ -140,6 +150,7 @@ export async function executeNativeTurn(
     diagnostic =
       error instanceof Error ? error.message : "Native boundary failed";
   } finally {
+    if (token) engine.gateway.revoke(token);
     engine.nativeStops.delete(task.id);
     if (managed) {
       try {
@@ -233,11 +244,26 @@ export async function executeNativeTurn(
     );
     return;
   }
+  const submitted = store.db
+    .prepare(
+      "SELECT payload FROM events WHERE attempt_id=? AND type='worker.result' ORDER BY sequence DESC LIMIT 1",
+    )
+    .get(attemptId);
+  const structured = submitted
+    ? z
+        .object({ report: z.unknown() })
+        .parse(JSON.parse(String(submitted.payload))).report
+    : null;
+  const text =
+    output ||
+    "Pi completed without text output. Inspect native events and Git evidence.";
+  // A missing tool submission is survivable (spec §6.2) but stays unverified.
   const artifact = await engine.saveReport(
     task,
     attemptId,
-    output ||
-      "Pi completed without text output. Inspect native events and Git evidence.",
+    structured
+      ? `Structured report (tool-submitted):\n${JSON.stringify(structured, null, 2)}\n\nFinal text:\n${text}`
+      : `UNVERIFIED: no structured report was submitted through the gateway.\n\n${text}`,
   );
   mutate(
     store.db,
@@ -257,7 +283,11 @@ export async function executeNativeTurn(
           sessionId: session.id,
           type: "report.saved",
           correlationId: attemptId,
-          payload: { artifactId: artifact.id, summary: artifact.summary },
+          payload: {
+            artifactId: artifact.id,
+            summary: artifact.summary,
+            toolSubmitted: Boolean(structured),
+          },
         },
         `report:${attemptId}`,
       );
@@ -273,6 +303,15 @@ export async function executeNativeTurn(
           reason: "Native result and Git evidence captured; not integrated",
         },
         `task:${attemptId}:review`,
+      );
+      notifyLead(
+        engine,
+        task.id,
+        "completed",
+        structured && typeof structured === "object" && "summary" in structured
+          ? String(structured.summary)
+          : "text-only report (no structured submission)",
+        `notify:${attemptId}`,
       );
       return true;
     },

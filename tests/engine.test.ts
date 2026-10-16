@@ -153,13 +153,34 @@ test("Supervised proposals wait for owner assignment; worker sessions cannot sch
       taskId: task.id,
       profileId: fakeTeamSnapshot.preset.workerProfileIds[0],
     };
+    assert.deepEqual(
+      f.engine.tool(
+        { role: "lead", sessionId: leadSession.id },
+        run.id,
+        assignment,
+        "lead-proposal",
+      ),
+      {
+        outcome: "awaiting_owner_approval",
+        taskId: task.id,
+        profileId: assignment.profileId,
+      },
+    );
+    assert.equal(
+      f.store.getTask(task.id).proposedProfileId,
+      assignment.profileId,
+    );
+    assert.equal(f.store.getTask(task.id).status, "BACKLOG");
+    assert.equal(
+      f.engine.scheduling.list().some((d) => d.taskId === task.id),
+      false,
+    );
     assert.throws(
       () =>
-        f.engine.tool(
+        f.engine.scheduling.enqueue(
           { role: "lead", sessionId: leadSession.id },
-          run.id,
-          assignment,
-          "lead-deny",
+          { taskId: task.id, profileId: assignment.profileId },
+          "lead-direct-dispatch",
         ),
       { code: "POLICY_DENIED" },
     );

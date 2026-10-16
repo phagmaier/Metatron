@@ -69,6 +69,22 @@ export class Scheduling {
           );
         if (actor.role !== "owner" && task.ownerPinned)
           throw new DomainError("POLICY_DENIED", "Owner assignment is pinned");
+        if (actor.role === "lead" && run.mode !== "autonomous_bounded")
+          throw new DomainError(
+            "POLICY_DENIED",
+            "Supervised assignments require the owner",
+          );
+        // Queued work counts too, so a Lead cannot overcommit the launch budget
+        // before reservation would otherwise reject it.
+        if (
+          actor.role === "lead" &&
+          this.committedLaunches(run.id) >=
+            run.limits.maxTotalWorkerLaunchesPerRun
+        )
+          throw new DomainError(
+            "BUDGET_EXCEEDED",
+            "Worker launch budget exhausted for this run",
+          );
         if (task.status === "BACKLOG")
           task = this.store.transitionTask(
             {
@@ -97,9 +113,28 @@ export class Scheduling {
         const previous = this.list().find((d) => d.taskId === task.id);
         if (previous && ["active", "released"].includes(previous.state))
           throw new DomainError("CONFLICT", "Task was already dispatched");
+        if (
+          actor.role === "owner" &&
+          task.proposedProfileId &&
+          task.proposedProfileId !== profile.id
+        )
+          this.store.recordEvent(
+            {
+              runId: run.id,
+              taskId: task.id,
+              type: "assignment.overridden",
+              correlationId: key,
+              payload: {
+                proposedProfileId: task.proposedProfileId,
+                chosenProfileId: profile.id,
+              },
+            },
+            `${key}:override`,
+          );
         task = taskSchema.parse({
           ...task,
           assignedProfileId: profile.id,
+          proposedProfileId: null,
           ownerPinned: actor.role === "owner",
           updatedAt: new Date().toISOString(),
         });
@@ -142,6 +177,19 @@ export class Scheduling {
         );
       },
     );
+  }
+  committedLaunches(runId: string) {
+    const attempts = this.store.listAttempts().filter((a) => {
+      const t = this.store.getTask(a.taskId);
+      return t.runId === runId && t.kind === "work";
+    }).length;
+    const queued = this.list().filter(
+      (d) =>
+        d.runId === runId &&
+        d.state === "queued" &&
+        this.store.getTask(d.taskId).kind === "work",
+    ).length;
+    return attempts + queued;
   }
   enqueueLead(taskId: string, scenario: Dispatch["scenario"], key: string) {
     const task = this.store.getTask(taskId);
@@ -268,7 +316,7 @@ export class Scheduling {
             taskId: task.id,
             profileId: profile.id,
             adapter: run.execution === "fake" ? "fake" : profile.harness,
-            intendedOperation: `${run.execution === "fake" ? "FAKE" : "Native Pi"} ${kind} execution`,
+            intendedOperation: `${run.execution === "fake" ? "FAKE" : `Native ${profile.harness}`} ${kind} execution`,
             cwd: current.cwd,
             worktreePath: run.execution === "native" ? current.cwd : null,
             baseSha: run.repository?.baseSha ?? null,

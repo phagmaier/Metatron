@@ -82,16 +82,18 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 
 ## M4 - Live Lead and orchestration tools [spec §4, 5, 6]
 
-- [ ] Implement session-scoped tool gateway (prefer MCP) with separate lead and worker tool authorization.
-- [ ] Implement read-only lead tools: `get_run_status`, `list_tasks`, `get_worker_status`, `read_report`, etc.
-- [ ] Implement bounded lead mutation tools: `propose_task`, `assign_task`, `request_revision`, `escalate_issue`, and `request_human_input`.
-- [ ] Integrate Codex app-server as lead using the official stdio handshake/threads/turns; persist thread ID and stream results.
-- [ ] Verify Codex model/thinking selection, session resume, stopping, tool gateway invocation, and an intentional tool-policy denial in disposable environment.
-- [ ] Give Lead no source-modifying tools or writable project checkout in Chat/Plan; test that a prompt requesting mutation cannot change fixture file hashes.
-- [ ] Implement autonomous bounded delegation and supervised approval of proposed assignments, including owner overrides.
-- [ ] Add serialized event-driven Lead wake-up on task completion, failure and urgent issue; do not concurrently prompt same Lead session.
-- [ ] Enforce launch/revision/wake-up budget and prevent lead from bypassing with exposed native delegation mechanisms where possible.
-- [ ] Demonstrate one real Codex Lead + one real worker, first in Chat/Plan then Autonomous mode.
+- [x] Implement session-scoped tool gateway (prefer MCP) with separate lead and worker tool authorization.
+- [x] Implement read-only lead tools: `get_run_status`, `list_tasks`, `get_worker_status`, `read_report`, etc.
+- [x] Implement bounded lead mutation tools: `propose_task`, `assign_task`, `request_revision`, `escalate_issue`, and `request_human_input`.
+- [x] Integrate Codex app-server as lead using the official stdio handshake/threads/turns; persist thread ID and stream results.
+- [x] Verify Codex model/thinking selection, session resume, stopping, tool gateway invocation, and an intentional tool-policy denial in disposable environment.
+  - Live: model verified in the thread response; effort is passed per turn (not echoed by Codex) and unsupported/delegating efforts are refused before launch. Stop was verified in live run 1, before the gateway approval fix, which doesn't affect cancellation.
+- [x] Give Lead no source-modifying tools or writable project checkout in Chat/Plan; test that a prompt requesting mutation cannot change fixture file hashes.
+  - Live mutation prompts (two runs) left the fixture hash and status unchanged. The model declined to attempt the write, so the OS-level refusal is evidenced by the `command/exec` sandbox probe.
+- [x] Implement autonomous bounded delegation and supervised approval of proposed assignments, including owner overrides.
+- [x] Add serialized event-driven Lead wake-up on task completion, failure and urgent issue; do not concurrently prompt same Lead session.
+- [x] Enforce launch/revision/wake-up budget and prevent lead from bypassing with exposed native delegation mechanisms where possible.
+- [x] Demonstrate one real Codex Lead + one real worker, first in Chat/Plan then Autonomous mode.
 
 **M4 gate:** one live lead can use typed tools to assign one live worker, receive the structured report, and explain the outcome without mutating code itself.
 

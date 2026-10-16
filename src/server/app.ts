@@ -4,6 +4,7 @@ import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 import { healthSchema } from "../shared/health.ts";
+import type { HarnessAdapter } from "./adapters/contract.ts";
 import { createApi } from "./api.ts";
 import { Engine } from "./orchestration/engine.ts";
 import { appLocations } from "./storage/database.ts";
@@ -15,6 +16,7 @@ export async function startApp(options: {
   development: boolean;
   port: number;
   databasePath?: string;
+  adapters?: { pi?: HarnessAdapter; codex?: HarnessAdapter };
 }) {
   const store = new Store(options.databasePath ?? appLocations().database);
   let engine: Engine | undefined;
@@ -56,12 +58,24 @@ export async function startApp(options: {
       const health = healthSchema.parse({
         status: "ok",
         app: "Local Agent Orchestrator",
-        milestone: "M3",
+        milestone: "M4",
       });
       response.setHeader("Content-Type", "application/json; charset=utf-8");
       response.end(
         request.method === "HEAD" ? undefined : JSON.stringify(health),
       );
+      return;
+    }
+    // Agent tool gateway: bearer-token MCP endpoint, never a browser API.
+    if (url.pathname === "/mcp") {
+      if (!engine) {
+        response.writeHead(503).end("Starting");
+        return;
+      }
+      void engine.gateway.handle(request, response).catch(() => {
+        if (!response.headersSent) response.writeHead(500);
+        response.end();
+      });
       return;
     }
     if (url.pathname.startsWith("/api/")) {
@@ -139,10 +153,11 @@ export async function startApp(options: {
     origin = `http://127.0.0.1:${address.port}`;
     // An occupied app port must be rejected before recovering live attempts.
     store.recoverInterrupted();
-    engine = new Engine(
-      store,
-      dirname(options.databasePath ?? appLocations().database),
-    );
+    const directory = dirname(options.databasePath ?? appLocations().database);
+    engine = new Engine(store, directory, options.adapters?.pi, {
+      ...(options.adapters?.codex ? { codex: options.adapters.codex } : {}),
+      gatewayUrl: `${origin}/mcp`,
+    });
     api = createApi(store, engine);
   } catch (error) {
     await engine?.close();
@@ -155,6 +170,7 @@ export async function startApp(options: {
   return {
     server,
     origin,
+    engine,
     async close() {
       api?.close();
       await engine?.close();

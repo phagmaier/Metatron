@@ -70,7 +70,7 @@ test("native execution persists real worktree ownership, report, exit code and e
     assert.equal(f.store.listSessions()[0]?.exitCode, 0);
     assert.equal(
       (await f.engine.reports(task.id))[0]?.content,
-      "Protocol fixture report",
+      "UNVERIFIED: no structured report was submitted through the gateway.\n\nProtocol fixture report",
     );
     assert.ok(
       f.store

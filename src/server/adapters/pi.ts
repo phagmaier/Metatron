@@ -52,6 +52,7 @@ export class PiAdapter implements HarnessAdapter {
     sessionDirectory: string | null,
     permission = "read_only",
     instructions = "",
+    gateway: { url: string; token: string } | null = null,
   ) {
     const config = join(this.directory, "pi");
     await mkdir(config, { recursive: true, mode: 0o700 });
@@ -70,19 +71,21 @@ export class PiAdapter implements HarnessAdapter {
       )
         throw error;
     }
+    // --no-extensions also drops built-ins; only the MCP connector is re-added,
+    // and the app extension registers the sole (session-scoped) server.
     const args = [
       "--mode",
       "rpc",
       "--offline",
       "--no-extensions",
-      "--no-mcp",
+      ...(gateway ? ["--extension", "builtin:mcp"] : ["--no-mcp"]),
       "--no-skills",
       "--no-prompt-templates",
       "--no-themes",
       "--no-context-files",
       "--no-approve",
       "--tools",
-      tools,
+      gateway ? `${tools},mcp__lao__*` : tools,
       "--system-prompt",
       instructions ||
         "Report concise evidence. Use only the assigned repository. Never read credentials.",
@@ -105,6 +108,12 @@ export class PiAdapter implements HarnessAdapter {
       PI_TELEMETRY: "0",
       LAO_PI_PERMISSION: permission,
     };
+    delete env.LAO_GATEWAY_URL;
+    delete env.LAO_GATEWAY_TOKEN;
+    if (gateway) {
+      env.LAO_GATEWAY_URL = gateway.url;
+      env.LAO_GATEWAY_TOKEN = gateway.token;
+    }
     // Repository selectors and caller overlays must not redirect native tools.
     for (const key of Object.keys(env))
       if (key.startsWith("GIT_")) delete env[key];
@@ -120,10 +129,10 @@ export class PiAdapter implements HarnessAdapter {
       supportsLiveSteer: false,
       supportsCancel: true,
       supportsPermissionPrompts: false,
-      supportsToolGateway: false,
+      supportsToolGateway: true,
       diagnostics: [
         "App-owned Pi configuration; provider environment credentials or app-owned Pi login required. Catalog presence does not prove entitlement.",
-        "M3 exposes file tools only; shell, MCP and discovered extensions are disabled. No OS sandbox. Resume and steering are not exposed yet.",
+        "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Resume and steering are not exposed yet.",
       ],
     };
     let rpc: PiRpc | undefined;
@@ -161,16 +170,23 @@ export class PiAdapter implements HarnessAdapter {
   }
   async startSession(input: StartSessionInput): Promise<ManagedSession> {
     const data = startSessionSchema.parse(input);
+    const token = data.environment.LAO_GATEWAY_TOKEN;
+    const keys = Object.keys(data.environment);
     if (
       data.permission === "coordinator" ||
-      data.toolEndpoint ||
-      Object.keys(data.environment).length ||
-      data.contextPolicy === "resume"
+      data.contextPolicy === "resume" ||
+      (data.toolEndpoint
+        ? !data.toolEndpoint.startsWith("http://127.0.0.1:") ||
+          !token ||
+          keys.length !== 1
+        : keys.length !== 0)
     )
       throw new DomainError(
         "UNSUPPORTED",
-        "M3 Pi supports fresh file-tool workers without caller environment overlays or gateways",
+        "Pi supports fresh file-tool workers with only the app's loopback gateway overlay",
       );
+    const gateway =
+      data.toolEndpoint && token ? { url: data.toolEndpoint, token } : null;
     const rpc = await this.launch(
       data.cwd,
       data.permission === "read_only"
@@ -179,6 +195,7 @@ export class PiAdapter implements HarnessAdapter {
       join(this.directory, "pi-sessions", data.attemptId),
       data.permission,
       data.roleInstructions,
+      gateway,
     );
     try {
       const models = modelsSchema.parse(
@@ -211,10 +228,14 @@ export class PiAdapter implements HarnessAdapter {
       const commands = z
         .object({ commands: z.array(z.object({ name: z.string() })) })
         .parse(await rpc.request("get_commands"));
-      if (!commands.commands.some((command) => command.name === "lao_guard"))
+      const names = commands.commands.map((command) => command.name);
+      if (
+        !names.includes("lao_guard") ||
+        (gateway !== null && !names.includes("lao_gateway"))
+      )
         throw new DomainError(
           "POLICY_DENIED",
-          "Pi path policy extension did not load; refusing all model prompts",
+          "Pi policy extension or gateway registration did not load; refusing all model prompts",
         );
       if (
         `${state.model?.provider}/${state.model?.id}` !== data.model ||

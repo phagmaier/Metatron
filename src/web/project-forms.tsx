@@ -9,6 +9,7 @@ import {
 } from "../shared/domain/entities.ts";
 import { fakeTeamSnapshot } from "../shared/presets.ts";
 import { writeApi } from "./api.ts";
+import { LeadRunForm } from "./lead-run-form.tsx";
 import { NativeRunForm } from "./native-run-form.tsx";
 
 export function ProjectForms({
@@ -235,7 +236,10 @@ export function ProjectForms({
         </form>
       )}
       {project && (
-        <NativeRunForm project={project} onRun={onRun} onError={onError} />
+        <>
+          <LeadRunForm project={project} onRun={onRun} onError={onError} />
+          <NativeRunForm project={project} onRun={onRun} onError={onError} />
+        </>
       )}
     </section>
   );

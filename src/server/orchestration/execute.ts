@@ -1,5 +1,6 @@
 import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
+import { taskSchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import type { Dispatch } from "../../shared/orchestration.ts";
 import type { SessionEvent } from "../adapters/contract.ts";
@@ -172,22 +173,19 @@ export async function executeFakeTurn(
         );
         if (store.getRun(run.id).mode !== "chat_plan") {
           const proposal = proposalSchema.parse(JSON.parse(output));
-          const proposed = engine.tool(
-            { role: "lead", sessionId: session.id },
-            run.id,
-            { name: "propose_task", ...proposal },
-            `lead:${attemptId}:proposal`,
+          const proposedTask = taskSchema.parse(
+            engine.tool(
+              { role: "lead", sessionId: session.id },
+              run.id,
+              { name: "propose_task", ...proposal },
+              `lead:${attemptId}:proposal`,
+            ),
           );
-          const proposedTask = "objective" in proposed ? proposed : null;
           const workerId = run.teamSnapshot?.preset.workerProfileIds.find(
             (id) =>
               engine.scheduling.profile(run.id, id).permission === "read_only",
           );
-          if (
-            proposedTask &&
-            workerId &&
-            store.getRun(run.id).mode === "autonomous_bounded"
-          )
+          if (workerId && store.getRun(run.id).mode === "autonomous_bounded")
             engine.tool(
               { role: "lead", sessionId: session.id },
               run.id,

@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   attemptsResponseSchema,
   eventsResponseSchema,
+  humanRequestsResponseSchema,
   projectsResponseSchema,
   runsResponseSchema,
   sessionsResponseSchema,
@@ -13,18 +14,26 @@ import {
   type Attempt,
   type Event,
   eventSchema,
+  type HumanRequest,
   type Project,
   type Run,
   type Session,
   type Task,
 } from "../shared/domain/entities.ts";
+import { hasNativeLead } from "../shared/native.ts";
 import { type Dispatch, dispatchSchema } from "../shared/orchestration.ts";
 import { readApi } from "./api.ts";
+import { LeadPanel } from "./lead-panel.tsx";
 import { ProjectForms } from "./project-forms.tsx";
 import { RunControls } from "./run-controls.tsx";
 import { TaskCard } from "./task-card.tsx";
 import "./style.css";
 
+// Conversation events are few but must never be evicted by token traffic.
+const conversation = (event: Event) =>
+  event.type === "owner.message" || event.type === "lead.message";
+const retain = (events: Event[]) =>
+  events.filter((e, i) => conversation(e) || i >= events.length - 200);
 function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
@@ -32,6 +41,7 @@ function App() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
+  const [requests, setRequests] = useState<HumanRequest[]>([]);
   const [error, setError] = useState("");
   const [events, setEvents] = useState<Event[]>([]);
   const [projectId, setProjectId] = useState("");
@@ -51,6 +61,7 @@ function App() {
             "sessions",
             "attempts",
             "dispatches",
+            "human-requests",
           ].map((path) => readApi(path, controller.signal)),
         );
         if (controller.signal.aborted || current !== generation) return;
@@ -60,6 +71,7 @@ function App() {
         setSessions(sessionsResponseSchema.parse(data[3]).sessions);
         setAttempts(attemptsResponseSchema.parse(data[4]).attempts);
         setDispatches(z.array(dispatchSchema).parse(data[5]));
+        setRequests(humanRequestsResponseSchema.parse(data[6]).humanRequests);
       } catch {
         if (!controller.signal.aborted)
           setStatus("Cannot load saved data. Reload to retry.");
@@ -78,9 +90,9 @@ function App() {
         setEvents((previous) =>
           previous.some((item) => item.sequence === event.sequence)
             ? previous
-            : [...previous, event]
-                .sort((a, b) => a.sequence - b.sequence)
-                .slice(-200),
+            : retain(
+                [...previous, event].sort((a, b) => a.sequence - b.sequence),
+              ),
         );
         clearTimeout(refresh);
         refresh = setTimeout(() => void load(), 50);
@@ -103,6 +115,7 @@ function App() {
   const selectedRun =
     projectRuns.find((run) => run.id === runId) ?? projectRuns[0];
   const runTasks = tasks.filter((task) => task.runId === selectedRun?.id);
+  const nativeLead = selectedRun ? hasNativeLead(selectedRun) : false;
   const runAttempts = attempts.filter((attempt) =>
     runTasks.some((task) => task.id === attempt.taskId),
   );
@@ -126,7 +139,7 @@ function App() {
               controller.signal,
             ),
           ).events;
-          saved = [...saved, ...page].slice(-200);
+          saved = retain([...saved, ...page]);
           if (page.length < 500) break;
           after = page.at(-1)?.sequence ?? after;
         }
@@ -137,22 +150,21 @@ function App() {
       });
     return () => controller.abort();
   }, [selectedRunId]);
-  const runEvents = [
+  const merged = [
     ...new Map(
       [...savedRunEvents, ...events]
         .filter((event) => event.runId === selectedRunId)
         .map((event) => [event.sequence, event]),
     ).values(),
-  ]
-    .sort((a, b) => a.sequence - b.sequence)
-    .slice(-200);
+  ].sort((a, b) => a.sequence - b.sequence);
+  const runEvents = merged.slice(-200);
   return (
     <main>
-      <p className="eyebrow">LOCAL WORKSPACE · M3</p>
+      <p className="eyebrow">LOCAL WORKSPACE · M4</p>
       <h1>Local Agent Orchestrator</h1>
       <p className="intro">
-        Coordinate saved tasks, simulated teams and native Pi workers in
-        isolated worktrees.
+        Coordinate saved tasks, simulated teams, a native Codex Lead and native
+        Pi workers in isolated worktrees.
       </p>
       <p className="status" role="status">
         {status}
@@ -225,7 +237,9 @@ function App() {
                   <span className="badge">
                     {selectedRun.execution === "fake"
                       ? "FAKE · NO MODEL TOKENS"
-                      : "LIVE PI · OWNER-DIRECTED"}
+                      : nativeLead
+                        ? "LIVE CODEX LEAD · PI WORKERS"
+                        : "LIVE PI · OWNER-DIRECTED"}
                   </span>
                 </div>
                 <p>{selectedRun.initialPrompt}</p>
@@ -256,31 +270,13 @@ function App() {
                   / {selectedRun.limits.maxTotalWorkerLaunchesPerRun} worker
                   launches
                 </p>
-                <h3>
-                  {selectedRun.execution === "fake"
-                    ? "Lead conversation"
-                    : "Owner-directed native work"}
-                </h3>
-                <ol className="chat">
-                  {runEvents
-                    .filter((event) =>
-                      ["owner.message", "lead.message"].includes(event.type),
-                    )
-                    .map((event) => (
-                      <li key={event.id}>
-                        <strong>
-                          {event.type === "owner.message"
-                            ? "Owner"
-                            : "Fake Lead"}
-                        </strong>
-                        <p>
-                          {typeof event.payload.text === "string"
-                            ? event.payload.text
-                            : ""}
-                        </p>
-                      </li>
-                    ))}
-                </ol>
+                <LeadPanel
+                  run={selectedRun}
+                  tasks={runTasks}
+                  events={merged.filter(conversation)}
+                  requests={requests.filter((r) => r.runId === selectedRun.id)}
+                  onError={setError}
+                />
                 <h3>Task board</h3>
                 <div className="board">
                   {[

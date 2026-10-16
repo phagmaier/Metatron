@@ -1,16 +1,40 @@
+import type { Run } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
-import type { Actor } from "../../shared/orchestration.ts";
+import {
+  type Actor,
+  leadReadTools,
+  type ToolName,
+  workerTools,
+} from "../../shared/orchestration.ts";
 import type { Store } from "../storage/store.ts";
+
+const planningTools: readonly ToolName[] = [
+  ...leadReadTools,
+  "propose_task",
+  "escalate_issue",
+  "request_human_input",
+];
+// Backend allowlist per spec §4.2. Supervised assignment/revision calls become
+// owner-approval proposals; only Autonomous mode lets the Lead dispatch.
+const leadTools: Record<Run["mode"], readonly ToolName[]> = {
+  chat_plan: planningTools,
+  supervised: [...planningTools, "assign_task", "request_revision"],
+  autonomous_bounded: [...planningTools, "assign_task", "request_revision"],
+};
+export function toolsFor(role: "lead" | "worker", mode: Run["mode"]) {
+  return role === "lead" ? leadTools[mode] : workerTools;
+}
+const runningOnly: readonly ToolName[] = [
+  "submit_result",
+  "report_progress",
+  "report_issue",
+];
 
 export function authorize(
   store: Store,
   actor: Actor,
   runId: string,
-  operation:
-    | "propose_task"
-    | "assign_task"
-    | "submit_result"
-    | "read_assignment",
+  operation: ToolName,
   taskId?: string,
 ) {
   const run = store.getRun(runId);
@@ -35,40 +59,33 @@ export function authorize(
         "POLICY_DENIED",
         "Session role does not match its assignment",
       );
-    if (
-      actor.role === "worker" &&
-      ((operation !== "submit_result" && operation !== "read_assignment") ||
-        taskId !== task.id)
-    )
+    if (!toolsFor(actor.role, run.mode).includes(operation))
+      throw new DomainError(
+        "POLICY_DENIED",
+        actor.role === "lead"
+          ? `${operation} is not permitted for the Lead in ${run.mode} mode`
+          : "Worker cannot schedule or act on another assignment",
+      );
+    if (actor.role === "worker" && taskId !== task.id)
       throw new DomainError(
         "POLICY_DENIED",
         "Worker cannot schedule or act on another assignment",
       );
-    if (actor.role === "lead" && operation === "submit_result")
-      throw new DomainError(
-        "POLICY_DENIED",
-        "Lead cannot submit a worker result",
-      );
     if (
       actor.role === "worker" &&
-      operation === "submit_result" &&
+      runningOnly.includes(operation) &&
       (attempt.status !== "running" || task.status !== "RUNNING")
     )
       throw new DomainError(
         "POLICY_DENIED",
-        "Result submission requires the current running attempt",
+        "Worker reports require the current running attempt",
       );
   }
-  if (operation === "assign_task") {
+  if (operation === "assign_task" || operation === "request_revision") {
     if (run.mode === "chat_plan")
       throw new DomainError(
         "POLICY_DENIED",
         "Chat/Plan cannot dispatch workers or mutate source",
-      );
-    if (actor.role === "lead" && run.mode === "supervised")
-      throw new DomainError(
-        "POLICY_DENIED",
-        "Supervised assignments require the owner",
       );
   }
   return run;

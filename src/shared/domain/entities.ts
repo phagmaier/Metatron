@@ -201,6 +201,8 @@ export const taskSchema = z.strictObject({
   dependencyIds: idsSchema,
   status: taskStatusSchema,
   assignedProfileId: idSchema.nullable(),
+  // A Supervised Lead's suggested worker; never dispatched without the owner.
+  proposedProfileId: idSchema.nullable().default(null),
   ownerPinned: z.boolean(),
   kind: z.enum(["lead", "work"]).default("work"),
 });

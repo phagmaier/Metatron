@@ -3,6 +3,8 @@ import {
   defaultLimits,
   idSchema,
   limitsSchema,
+  modeSchema,
+  type Run,
   textSchema,
 } from "./domain/entities.ts";
 import { fakeTeamSnapshot } from "./presets.ts";
@@ -28,10 +30,47 @@ export function nativeTeam(model: string, thinking: string | null) {
       ...p,
       name:
         p.permission === "coordinator"
-          ? "Owner-directed (live Lead arrives in M4)"
+          ? "Owner-directed (no live Lead)"
           : p.name.replace("Fake ", "Pi "),
       model,
       thinking,
     })),
   };
+}
+const selectionSchema = z.strictObject({
+  model: textSchema,
+  thinking: textSchema.nullable(),
+});
+export const leadRunSchema = z.strictObject({
+  projectId: idSchema,
+  title: textSchema,
+  initialPrompt: textSchema,
+  mode: modeSchema.default("autonomous_bounded"),
+  limits: limitsSchema.default(defaultLimits),
+  lead: selectionSchema,
+  worker: selectionSchema,
+});
+export type LeadRunInput = z.infer<typeof leadRunSchema>;
+export function leadTeam(
+  input: Pick<LeadRunInput, "lead" | "worker" | "mode">,
+) {
+  return {
+    ...fakeTeamSnapshot,
+    preset: {
+      ...fakeTeamSnapshot.preset,
+      name: "Codex Lead with Pi workers",
+      mode: input.mode,
+    },
+    profiles: fakeTeamSnapshot.profiles.map((p) =>
+      p.permission === "coordinator"
+        ? { ...p, name: "Codex Lead", harness: "codex" as const, ...input.lead }
+        : { ...p, name: p.name.replace("Fake ", "Pi "), ...input.worker },
+    ),
+  };
+}
+export function hasNativeLead(run: Run) {
+  const lead = run.teamSnapshot?.profiles.find(
+    (p) => p.id === run.teamSnapshot?.preset.leadProfileId,
+  );
+  return run.execution === "native" && lead?.harness === "codex";
 }

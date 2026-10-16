@@ -139,6 +139,10 @@ export function createApi(store: Store, engine: Engine) {
               z.strictObject({}).parse(query);
               result = capabilitiesSchema.parse(await engine.pi.discover());
               break;
+            case "/api/adapters/codex":
+              z.strictObject({}).parse(query);
+              result = capabilitiesSchema.parse(await engine.codex.discover());
+              break;
             case "/api/worktrees":
               z.strictObject({}).parse(query);
               result = engine.worktrees.list();
@@ -234,6 +238,8 @@ export function createApi(store: Store, engine: Engine) {
             "POST /api/runs": (input, key) => engine.startRun(input, key),
             "POST /api/runs/native": (input, key) =>
               engine.startNativeRun(input, key),
+            "POST /api/runs/lead": (input, key) =>
+              engine.startLeadRun(input, key),
             "POST /api/tasks": (input, key) => engine.createTask(input, key),
             "PATCH /api/tasks": (input, key) => engine.updateTask(input, key),
             "PATCH /api/runs": (input, key) => engine.updateRun(input, key),

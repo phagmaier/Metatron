@@ -4,6 +4,24 @@ import { z } from "zod";
 
 // Deterministic subprocess protocol fixture. It never starts a native harness
 // or contacts a provider, and only writes inside its disposable test cwd.
+// Stands in for Pi's built-in MCP client when the app gateway is configured.
+async function gateway(name: string, args: object) {
+  const url = process.env.LAO_GATEWAY_URL;
+  if (!url) return;
+  await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.LAO_GATEWAY_TOKEN}`,
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "tools/call",
+      params: { name, arguments: args },
+    }),
+  });
+}
 let buffer = "";
 let model = "fixture/model";
 let thinking = "off";
@@ -52,7 +70,12 @@ process.stdin.on("data", (chunk) => {
         data = {
           commands: process.env.LAO_FIXTURE_NO_GUARD
             ? []
-            : [{ name: "lao_guard" }],
+            : [
+                { name: "lao_guard" },
+                ...(process.env.LAO_GATEWAY_URL
+                  ? [{ name: "lao_gateway" }]
+                  : []),
+              ],
         };
         break;
       case "prompt":
@@ -89,6 +112,18 @@ process.stdin.on("data", (chunk) => {
       continue;
     }
     void (async () => {
+      await gateway("read_assignment", {});
+      if (scenario === "urgent")
+        await gateway("report_issue", {
+          summary: "Fixture urgent issue",
+          details: "Deterministic urgent issue",
+          urgency: "urgent",
+        });
+      await gateway("submit_result", {
+        outcome: "completed",
+        summary: "Protocol fixture structured summary",
+        tests: [{ command: "not run", result: "not_run" }],
+      });
       if (process.env.LAO_PI_PERMISSION === "workspace_write")
         await writeFile(
           join(process.cwd(), "fixture-result.txt"),

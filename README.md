@@ -2,7 +2,7 @@
 
 This is the working repo for a **single-user, local-first multi-agent coding-harness orchestrator** targeting Arch Linux / Omarchy. Design docs and implementation live here side by side.
 
-The planned application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 adds owner-directed **native Pi workers** in isolated Git worktrees, alongside M2's explicitly simulated Lead/team demonstration. Both persist tasks, reports and events. The native Lead and orchestration gateway remain M4 scope; the beta is incomplete.
+The planned application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 adds owner-directed **native Pi workers** in isolated Git worktrees, alongside M2's explicitly simulated Lead/team demonstration. M4 adds a **native Codex Lead** that coordinates Pi workers only through a session-scoped tool gateway. All runs persist tasks, reports and events. The beta is incomplete.
 
 ## Run the app
 
@@ -95,17 +95,43 @@ For normal GUI use, open a clean project, expand **Run a real Pi worker**, disco
 
 Readers have read/grep/find/ls; writers additionally have edit/write. Shell, MCP, discovered extensions and personal context files are disabled. The app's explicit Pi extension rejects paths outside the worktree, sensitive paths and unsafe symlink/recursive searches. Tests in the managed project are explicitly **not run**; engine `git diff --check` is recorded separately. Sessions and bounded redacted wire headers live under app data's `pi-sessions/<attempt-id>/`. Settings/auth live under app data's `pi/`. Resume, steering and native interactive per-call permission prompts are not exposed by this adapter; unknown exits require an owner retry decision. Retained worktrees are never cleaned automatically.
 
+## M4 Codex Lead demonstration
+
+A Codex Lead coordinates Pi workers only through a session-scoped MCP gateway (`POST /mcp` on the loopback app server). Each Lead turn and worker session gets its own bearer token, held only in memory and revoked when the session ends. Tools are filtered per role and mode, and every call is re-authorized server-side. Lead tools: `get_run_status`, `list_tasks`, `get_task`, `get_worker_status`, `read_report`, `propose_task`, `assign_task`, `request_revision`, `escalate_issue`, `request_human_input`. Worker tools: `read_assignment`, `report_progress`, `submit_result`, `report_issue`. Policy is in the [ADR](docs/adr/2026-10-15-lead-gateway.md).
+
+Codex runs `codex app-server` over stdio with an app-owned `CODEX_HOME` (`<app data>/codex`). It never uses `~/.codex`. Log in once with Codex's own flow, using the path the GUI or `pnpm test:live:lead` prints:
+
+```sh
+CODEX_HOME='<app data>/local-agent-orchestrator/codex' codex login
+```
+
+The Lead's sandbox is read-only and has no network. Approvals are never granted, and native sub-agents, apps, plugins, hooks and web search are disabled. The Lead can read (not write) the owner's checkout. A HEAD/status change during a Lead turn pauses the run. Chat/Plan lists no dispatch tools. In Supervised mode, Lead assignments become proposals that need your approval; an owner choice is pinned and visible to the Lead. In Autonomous mode, the Lead dispatches roster workers within the launch, revision and automatic wake-up budgets. Workers finish by submitting a structured report; text-only results are labeled unverified. Worker completion, failure and urgent issues wake the Lead in one serialized turn, which resumes the same Codex thread.
+
+GUI: open a clean project, expand **Run a real Codex Lead with Pi workers**, then discover models and start a run. **Stop Lead turn** interrupts an active turn. Message the Lead to continue.
+
+Deliberately cost-bearing smoke, on a marked disposable fixture (stop any server using the same database first):
+
+```sh
+mise x -- pnpm test:live --create-fixture
+mise x -- env XDG_DATA_HOME=/tmp/lao-m4-live-data pnpm test:live:lead --allow-live \
+  --fixture '/tmp/lao-git-fixture-REPLACE/repo with spaces' \
+  --lead-model gpt-6.1-sol --lead-thinking low \
+  --worker-model deepseek/deepseek-flash --worker-thinking off --verify-stop
+```
+
+Without an app-owned Codex login, the script exits with `BLOCKED` and the login command. The verified live run (Codex `gpt-6.1-sol`/low Lead, Pi `deepseek/deepseek-flash`/off Reader) is in the [evidence summary](docs/evidence/m4-live-summary.json) and [GUI screenshot](docs/evidence/m4-codex-lead.png). To inspect it without model calls: `mise x -- env XDG_DATA_HOME=/tmp/lao-m4-live-data pnpm dev`, then select the second **M4 live Codex Lead autonomous_bounded** run (temporary data; the OS may remove it).
+
 ## State, API and safety boundaries
 
 The database is `$XDG_DATA_HOME/local-agent-orchestrator/state.sqlite`, falling back to `~/.local/share/local-agent-orchestrator/state.sqlite`; report files are in its sibling `artifacts/` directory. SQLite migration v3 adds durable worktree ownership manifests; v2 adds durable dispatches/reservations and converts M1's legacy mode names to the spec's `chat_plan` / `supervised` / `autonomous_bounded`. Run/team snapshots and historical events remain durable. WAL, foreign keys and full synchronous transactions are enabled. Run only one app or demo process against a database.
 
 Opening a project validates its absolute canonical root, common Git directory, committed HEAD, branch and clean state. Starting a run captures a fresh base SHA; dispatch checks for dirtiness, identity changes and HEAD drift. Repository probes use argv arrays and read-only Git settings. App metadata must remain outside the managed repository. The scheduler uses priority plus FIFO ties, durable launch counts, global active-slot checks, and atomic simulated writer ownership. Active Lead turns consume total capacity; idle sessions do not. Pausing holds queued work while current fake turns finish. Owner assignments are pinned against Lead changes.
 
-Fake runs execute **only FakeAdapter** and keep simulated reservation paths. Native runs execute installed Pi in unique app-owned worktrees outside the original checkout. No automatic merge, commit, worktree deletion or retry is performed. Worktree creation updates Git's registration metadata and app-owned branch refs; it does not reset, stage, stash or edit the owner's working files. Native file-tool allowlists and a path-policy extension restrict operations; these are not an OS sandbox. Native Lead/tool transport is M4; review/integration is M5; interactive recovery is M6; reusable configuration/workflow CRUD is M7.
+Fake runs execute **only FakeAdapter** and keep simulated reservation paths. Native runs execute installed Pi in unique app-owned worktrees outside the original checkout. No automatic merge, commit, worktree deletion or retry is performed. Worktree creation updates Git's registration metadata and app-owned branch refs; it does not reset, stage, stash or edit the owner's working files. Native file-tool allowlists and a path-policy extension restrict operations; these are not an OS sandbox. Review/integration is M5; interactive recovery is M6; reusable configuration/workflow CRUD is M7.
 
 Read APIs: `/api/projects`, `/api/runs?projectId=...`, `/api/tasks?runId=...`, `/api/attempts`, `/api/sessions`, `/api/presets`, `/api/dispatches`, `/api/reports?taskId=...`, `/api/human-requests`, `/api/events?after=0&limit=100&runId=...`, and `/api/events/stream`. SSE supports `Last-Event-ID` or an initial `after` cursor. The GUI retains the latest 200 received events; older history remains queryable.
 
-Additional M3 routes: `GET /api/adapters/pi` discovers installed native capabilities without a model turn; `GET /api/worktrees` reads manifests; `POST /api/runs/native` validates and starts an owner-directed Pi run.
+Additional M3 routes: `GET /api/adapters/pi` discovers installed native capabilities without a model turn; `GET /api/worktrees` reads manifests; `POST /api/runs/native` validates and starts an owner-directed Pi run. M4 adds `GET /api/adapters/codex`, `POST /api/runs/lead`, Lead messages through `POST /api/runs/messages`, and the agent-only `POST /mcp` gateway (bearer token per session; browsers are refused by the same Host/Origin checks).
 
 `GET /api/local-session` provides the per-process CSRF token. Writes require `X-Local-Token`, `Idempotency-Key` and JSON. The GUI reuses an unconfirmed request's key when retried. Writes are `POST /api/projects/inspect`, `/api/projects`, `/api/runs`, `/api/runs/messages`, `/api/tasks`, `/api/tasks/assign`, `/api/tasks/cancel`, and `PATCH /api/runs` or `/api/tasks`. Run creation accepts project/title/initialPrompt/leadProfileId/mode/limits/scenario; worker outcomes are explicit `success`, `failure` or `disconnect` simulations. All UI commands use the same engine services as fake Lead/worker tools. Arbitrary task-status mutation is no longer exposed over HTTP.
 
@@ -115,8 +141,9 @@ Additional M3 routes: `GET /api/adapters/pi` discovers installed native capabili
 - `src/web`: React page and styles; Vite bundles the production assets into `dist/web`.
 - `src/shared/domain`: strict Zod schemas/types for all M1 entities, input contracts, and task/session transition tables.
 - `src/server/storage`: SQLite migration, transactional services, append-only journal, idempotency, conservative restart recovery.
-- `src/server/adapters`: capability/event contracts, FakeAdapter, Pi RPC transport/normalization and file-tool policy.
-- `src/server/orchestration`: owner commands, session-scoped policy checks, fake Lead/worker execution and durable reports.
+- `src/server/adapters`: capability/event contracts, FakeAdapter, Pi RPC and Codex app-server transports/normalization, Pi file-tool policy.
+- `src/server/orchestration`: owner commands, role/mode tool policy, tool implementations, Lead runs/wake-ups/turns, fake and native execution, durable reports.
+- `src/server/gateway`: session-scoped MCP endpoint for Lead and worker tools.
 - `src/server/git`: safe argv Git commands, repository inspection, path checks, durable worktree creation and evidence capture.
 - `src/server/storage/scheduling.ts`: transactional queue, resource reservations and per-worktree writer ownership.
 - `tests`: Node's built-in test runner and disposable Git helper.
@@ -125,7 +152,7 @@ Additional M3 routes: `GET /api/adapters/pi` discovers installed native capabili
 
 The server rejects foreign Host/Origin headers and cross-site browser requests, sends no permissive CORS headers, and requires its random per-process token on writes. Worktrees will isolate working copies; they will not provide OS filesystem isolation. Fake playback never implies that a native harness or policy sandbox was exercised.
 
-Next is M4: the live Lead and session-scoped orchestration tools. See [progress](docs/progress.md) for verified commands and [todo.md](todo.md) for milestone gates.
+Next is M5: review, candidate commits and local integration. See [progress](docs/progress.md) for verified commands and [todo.md](todo.md) for milestone gates.
 
 ## Files
 

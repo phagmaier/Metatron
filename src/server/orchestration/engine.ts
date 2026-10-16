@@ -14,32 +14,40 @@ import {
   updateTaskSchema,
 } from "../../shared/domain/inputs.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import { hasNativeLead } from "../../shared/native.ts";
 import {
   type Actor,
   openProjectSchema,
   ownerMessageSchema,
   ownerTaskSchema,
   startRunSchema,
-  toolSchema,
 } from "../../shared/orchestration.ts";
 import { fakeTeamSnapshot } from "../../shared/presets.ts";
+import { CodexAdapter } from "../adapters/codex.ts";
 import type { HarnessAdapter } from "../adapters/contract.ts";
 import { PiAdapter } from "../adapters/pi.ts";
+import { Gateway } from "../gateway/mcp.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
 import { Worktrees } from "../git/worktrees.ts";
 import { mutate } from "../storage/mutations.ts";
 import { Scheduling } from "../storage/scheduling.ts";
 import type { Store } from "../storage/store.ts";
 import { executeFakeTurn } from "./execute.ts";
+import { executeLeadTurn } from "./lead-execute.ts";
+import { createLeadRun, notifyLead, ownerLeadMessage } from "./lead-run.ts";
 import { executeNativeTurn } from "./native-execute.ts";
 import { createNativeRun } from "./native-run.ts";
-import { authorize } from "./policy.ts";
+import { runTool } from "./tools.ts";
 
 export class Engine {
   readonly store: Store;
   readonly scheduling: Scheduling;
   readonly directory: string;
   readonly pi: HarnessAdapter;
+  readonly codex: HarnessAdapter;
+  readonly gateway: Gateway;
+  // Loopback MCP endpoint; null when no app server hosts the gateway.
+  readonly gatewayUrl: string | null;
   readonly worktrees: Worktrees;
   readonly nativeStops = new Map<string, () => Promise<void>>();
   private readonly running = new Map<string, Promise<void>>();
@@ -50,10 +58,14 @@ export class Engine {
     store: Store,
     directory: string,
     pi: HarnessAdapter = new PiAdapter(directory),
+    options: { codex?: HarnessAdapter; gatewayUrl?: string | null } = {},
   ) {
     this.store = store;
     this.directory = directory;
     this.pi = pi;
+    this.codex = options.codex ?? new CodexAdapter(directory);
+    this.gatewayUrl = options.gatewayUrl ?? null;
+    this.gateway = new Gateway(this);
     this.worktrees = new Worktrees(store, directory);
     this.scheduling = new Scheduling(store, directory);
     for (const role of fakeTeamSnapshot.roles)
@@ -88,6 +100,9 @@ export class Engine {
   }
   startNativeRun(input: unknown, key: string) {
     return createNativeRun(this, input, key);
+  }
+  startLeadRun(input: unknown, key: string) {
+    return createLeadRun(this, input, key);
   }
   async openProject(input: unknown, key: string) {
     const data = openProjectSchema.parse(input);
@@ -185,6 +200,9 @@ export class Engine {
   }
   message(input: unknown, key: string) {
     const data = ownerMessageSchema.parse(input);
+    const target = this.store.getRun(data.runId);
+    if (hasNativeLead(target))
+      return ownerLeadMessage(this, target, data.text, key);
     return mutate(this.store.db, key, "ownerMessage", data, taskSchema, () => {
       const run = this.store.getRun(data.runId);
       if (
@@ -229,47 +247,7 @@ export class Engine {
     return this.store.updateRun(updateRunSchema.parse(input), key);
   }
   tool(actor: Actor, runId: string, input: unknown, key: string) {
-    const data = toolSchema.parse(input);
-    const taskId = "taskId" in data ? data.taskId : undefined;
-    authorize(this.store, actor, runId, data.name, taskId);
-    if (taskId && this.store.getTask(taskId).runId !== runId)
-      throw new DomainError(
-        "POLICY_DENIED",
-        "Task is outside the authorized run",
-      );
-    switch (data.name) {
-      case "propose_task":
-        return this.store.createTask(
-          {
-            runId,
-            title: data.title,
-            objective: data.objective,
-            origin: "lead",
-          },
-          key,
-        );
-      case "assign_task":
-        return this.scheduling.enqueue(
-          actor,
-          {
-            taskId: data.taskId,
-            profileId: data.profileId,
-            scenario: data.scenario,
-          },
-          key,
-        );
-      case "submit_result":
-        return this.store.recordEvent(
-          {
-            runId,
-            taskId: data.taskId,
-            type: "worker.result",
-            correlationId: key,
-            payload: { report: data.report },
-          },
-          key,
-        );
-    }
+    return runTool(this, actor, runId, input, key);
   }
   cancel(taskId: string, key: string) {
     const cancelled = mutate(
@@ -375,9 +353,11 @@ export class Engine {
           if (!reserved)
             throw new DomainError("CONFLICT", "Reserved dispatch is missing");
           const execution = (
-            run.execution === "native"
-              ? executeNativeTurn(this, reserved, attemptId)
-              : executeFakeTurn(this, reserved, attemptId)
+            run.execution === "fake"
+              ? executeFakeTurn(this, reserved, attemptId)
+              : this.store.getTask(reserved.taskId).kind === "lead"
+                ? executeLeadTurn(this, reserved, attemptId)
+                : executeNativeTurn(this, reserved, attemptId)
           )
             .catch((error: unknown) => {
               this.fail(
@@ -482,6 +462,15 @@ export class Engine {
           },
           `${key}:event`,
         );
+        notifyLead(
+          this,
+          taskId,
+          this.store.getTask(taskId).status === "CANCELLED"
+            ? "cancelled"
+            : "failed",
+          diagnostic,
+          `${key}:notify`,
+        );
         return true;
       },
     );
@@ -531,6 +520,7 @@ export class Engine {
   async close() {
     this.stopping = true;
     clearInterval(this.timer);
+    this.gateway.revokeAll();
     while (this.pumping) await delay(10);
     await Promise.allSettled(
       [...this.nativeStops.values()].map((stop) => stop()),

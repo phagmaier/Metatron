@@ -47,14 +47,14 @@ export function NativeRunForm({
     <details className="new-run">
       <summary>Run a real Pi worker</summary>
       <p>
-        Owner-directed native worker in a retained isolated worktree. Live calls
-        use your configured provider and may incur costs. Live Lead
-        orchestration arrives in M4.
+        Owner-directed native worker in a retained isolated worktree, without a
+        Lead. Live calls use your configured provider and may incur costs.
       </p>
       <p className="note">
-        File tools only. Readers cannot write; writers can read/edit/write
-        within the worktree. Shell, MCP and personal extensions are disabled.
-        This is not an OS sandbox. Tests are reported as not run.
+        File tools plus the app's session report tools. Readers cannot write;
+        writers can read/edit/write within the worktree. Shell, personal MCP
+        servers and extensions are disabled. This is not an OS sandbox. Tests
+        are reported as not run.
       </p>
       <button
         type="button"

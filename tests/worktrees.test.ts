@@ -237,8 +237,25 @@ test("Pi file guard denies mutations to readers, path escapes, sensitive files, 
     { toolName: "read", input: { path: ".env" } },
     { toolName: "bash", input: { command: "pwd" } },
     { toolName: "assign_task", input: {} },
+    { toolName: "mcp__lao__submit_result", input: {} },
   ])
     assert.equal((await checkPiTool(dir, "read_only", event))?.block, true);
+  // With the gateway, only the worker's own report tools pass the guard.
+  assert.equal(
+    await checkPiTool(
+      dir,
+      "read_only",
+      { toolName: "mcp__lao__submit_result", input: {} },
+      true,
+    ),
+    undefined,
+  );
+  for (const toolName of ["mcp__lao__assign_task", "mcp__other__read_file"])
+    assert.equal(
+      (await checkPiTool(dir, "read_only", { toolName, input: {} }, true))
+        ?.block,
+      true,
+    );
   assert.equal(
     await checkPiTool(dir, "workspace_write", {
       toolName: "write",

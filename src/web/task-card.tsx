@@ -33,12 +33,14 @@ export function TaskCard({
       run.teamSnapshot?.preset.workerProfileIds.includes(profile.id),
     ) ?? [];
   const [profileId, setProfileId] = useState(
-    task.assignedProfileId ?? profiles[0]?.id ?? "",
+    task.assignedProfileId ?? task.proposedProfileId ?? profiles[0]?.id ?? "",
   );
   const defaultProfileId = profiles[0]?.id ?? "";
   useEffect(() => {
-    setProfileId(task.assignedProfileId ?? defaultProfileId);
-  }, [task.assignedProfileId, defaultProfileId]);
+    setProfileId(
+      task.assignedProfileId ?? task.proposedProfileId ?? defaultProfileId,
+    );
+  }, [task.assignedProfileId, task.proposedProfileId, defaultProfileId]);
   const [scenario, setScenario] = useState("success");
   const [priority, setPriority] = useState(task.priority);
   const [report, setReport] = useState("");
@@ -69,9 +71,21 @@ export function TaskCard({
           : ""}
       </p>
       {dispatch?.diagnostic && <p className="warning">{dispatch.diagnostic}</p>}
+      {task.proposedProfileId && (
+        <p className="warning">
+          Lead proposes{" "}
+          {profiles.find((p) => p.id === task.proposedProfileId)?.name ??
+            "a worker"}
+          . Nothing runs until you approve; choosing another worker is a pinned
+          override the Lead sees.
+        </p>
+      )}
       {session && (
         <p className="worker-status">
-          {session.adapter === "fake" ? "FAKE worker" : "Native Pi worker"} ·{" "}
+          {session.adapter === "fake"
+            ? "FAKE worker"
+            : `Native ${session.adapter} worker`}{" "}
+          ·{" "}
           {
             run.teamSnapshot?.profiles.find(
               (profile) => profile.id === task.assignedProfileId,

@@ -28,7 +28,7 @@ test("health is served by a loopback-only socket with a validated response", asy
   assert.equal(address.address, "127.0.0.1");
   const response = await fetch(`${app.origin}/api/health`);
   assert.equal(response.status, 200);
-  assert.equal(healthSchema.parse(await response.json()).milestone, "M3");
+  assert.equal(healthSchema.parse(await response.json()).milestone, "M4");
   assert.equal(response.headers.get("access-control-allow-origin"), null);
 });
 
