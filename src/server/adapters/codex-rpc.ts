@@ -75,7 +75,7 @@ export class CodexRpc {
           clearTimeout(pending.timer);
           pending.reject(
             new DomainError(
-              "UNSUPPORTED",
+              "NATIVE_TRANSPORT",
               "Codex exited before command response",
             ),
           );
@@ -120,7 +120,7 @@ export class CodexRpc {
     if (message.error)
       waiting.reject(
         new DomainError(
-          "UNSUPPORTED",
+          "NATIVE_REJECTED",
           `Codex rejected the request (code ${message.error.code})`,
         ),
       );
@@ -147,7 +147,7 @@ export class CodexRpc {
   request(method: string, params: object = {}, timeout = 30_000) {
     if (this.ended)
       return Promise.reject(
-        new DomainError("CONFLICT", "Codex process has exited"),
+        new DomainError("NATIVE_TRANSPORT", "Codex process has exited"),
       );
     const id = ++this.nextId;
     return new Promise<unknown>((resolve, reject) => {

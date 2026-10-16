@@ -26,7 +26,7 @@ mise x -- pnpm start
 `GET /api/health` returns:
 
 ```json
-{"status":"ok","app":"Local Agent Orchestrator","milestone":"M3"}
+{"status":"ok","app":"Local Agent Orchestrator","milestone":"M4"}
 ```
 
 ## Checks and current coverage
@@ -186,7 +186,7 @@ M5 (review, candidate commits and local integration) is in progress: candidate c
 
 ## Technology
 
-M3 uses Node HTTP + TypeScript, built-in `node:sqlite`, React + Vite, Zod, Biome, Node's built-in test runner, Git CLI worktrees and installed Pi RPC. No dependencies were added for M1–M3. The native Lead, other harness adapters and the session-scoped orchestration gateway follow in later milestones.
+The app uses Node HTTP + TypeScript, built-in `node:sqlite`, React + Vite, Zod, Biome, Node's built-in test runner, Git CLI worktrees, installed Pi RPC for workers and the installed Codex app-server for the native Lead, which reaches orchestration tools only through the session-scoped loopback MCP gateway. No dependencies were added for M1–M5. Claude Code and OpenCode adapters follow in later milestones.
 
 Exact library versions are pinned in `package.json` and `pnpm-lock.yaml`. Harness interfaces were checked against this machine for M0; live capabilities still require explicit opt-in validation. The spec's candidate interfaces are subject to version-specific findings in `docs/adapter-recon.md`.
 

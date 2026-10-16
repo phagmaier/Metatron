@@ -98,6 +98,8 @@ export class DomainError extends Error {
     | "INVALID_TRANSITION"
     | "INVALID_REFERENCE"
     | "UNSUPPORTED"
+    | "NATIVE_REJECTED"
+    | "NATIVE_TRANSPORT"
     | "STORAGE"
     | "POLICY_DENIED"
     | "BUDGET_EXCEEDED"

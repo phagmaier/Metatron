@@ -121,3 +121,22 @@ test("RPC subprocess correlates responses, preserves Unicode separators, records
   const exit = await bad.close();
   assert.equal(exit.signal, "SIGTERM");
 });
+test("RPC separates a native request rejection from a process exit without leaking native error text", async () => {
+  const script = `let b='',n=0;process.stdin.on('data',c=>{b+=c;let i;while((i=b.indexOf('\\n'))>=0){const v=JSON.parse(b.slice(0,i));b=b.slice(i+1);if(++n>1)process.exit(3);process.stdout.write(JSON.stringify({id:v.id,type:'response',command:v.type,success:false,error:'fixture-secret'})+'\\n')}});`;
+  const rpc = new PiRpc(process.execPath, ["-e", script], "/tmp", process.env);
+  try {
+    await assert.rejects(rpc.request("set_model"), (error: Error) => {
+      assert.equal("code" in error && error.code, "NATIVE_REJECTED");
+      assert.ok(!error.message.includes("fixture-secret"));
+      return true;
+    });
+    await assert.rejects(rpc.request("get_state"), {
+      code: "NATIVE_TRANSPORT",
+    });
+    await assert.rejects(rpc.request("get_state"), {
+      code: "NATIVE_TRANSPORT",
+    });
+  } finally {
+    assert.equal((await rpc.close()).code, 3);
+  }
+});

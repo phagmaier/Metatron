@@ -142,10 +142,17 @@ export class Scheduling {
             "POLICY_DENIED",
             "Supervised assignments require the owner",
           );
-        // Queued work counts too, so a Lead cannot overcommit the launch budget
-        // before reservation would otherwise reject it.
+        const previous = this.list().find((d) => d.taskId === task.id);
         if (
-          actor.role === "lead" &&
+          previous?.state === "active" ||
+          (previous?.state === "released" && task.status !== "READY")
+        )
+          throw new DomainError("CONFLICT", "Task was already dispatched");
+        // The launch budget never grows during a run, so queued work counts too:
+        // no actor may queue a launch that reservation must later refuse. A
+        // reassignment keeps its already-counted queued slot.
+        if (
+          previous?.state !== "queued" &&
           this.committedLaunches(run.id) >=
             run.limits.maxTotalWorkerLaunchesPerRun
         )
@@ -153,12 +160,6 @@ export class Scheduling {
             "BUDGET_EXCEEDED",
             "Worker launch budget exhausted for this run",
           );
-        const previous = this.list().find((d) => d.taskId === task.id);
-        if (
-          previous?.state === "active" ||
-          (previous?.state === "released" && task.status !== "READY")
-        )
-          throw new DomainError("CONFLICT", "Task was already dispatched");
         if (task.status === "BACKLOG")
           task = this.store.transitionTask(
             {

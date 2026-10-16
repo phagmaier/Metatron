@@ -32,12 +32,15 @@ test("scheduler reserves caps atomically, retries queued work later, and counts 
       (profile) => profile.permission === "workspace_write",
     );
     assert.ok(writer);
-    const queue = [1, 2, 3].map((n) => {
+    const [one, two, three] = [1, 2, 3].map((n) => {
       const task = f.store.createTask(
         { runId: run.id, title: `Writer ${n}`, objective: "Simulate" },
         `task-${n}`,
       );
-      const input = { taskId: task.id, profileId: writer.id };
+      return { taskId: task.id, profileId: writer.id };
+    });
+    assert.ok(one && two && three);
+    const queue = [one, two].map((input, n) => {
       const dispatch = scheduler.enqueue(
         { role: "owner" },
         input,
@@ -49,6 +52,11 @@ test("scheduler reserves caps atomically, retries queued work later, and counts 
       );
       return dispatch;
     });
+    assert.throws(
+      () => scheduler.enqueue({ role: "owner" }, three, "assign-over"),
+      { code: "BUDGET_EXCEEDED" },
+    );
+    assert.equal(f.store.getTask(three.taskId).status, "BACKLOG");
     const first = scheduler.reserve(at(queue, 0));
     assert.ok(first);
     assert.equal(scheduler.reserve(at(queue, 0)), first);
@@ -57,10 +65,8 @@ test("scheduler reserves caps atomically, retries queued work later, and counts 
     scheduler.release(at(queue, 0));
     assert.ok(scheduler.reserve(at(queue, 1)));
     scheduler.release(at(queue, 1));
-    assert.throws(() => scheduler.reserve(at(queue, 2)), {
-      code: "BUDGET_EXCEEDED",
-    });
     assert.equal(f.store.listAttempts().length, 2);
+    assert.equal(scheduler.committedLaunches(run.id), 2);
   } finally {
     await f.close();
   }
@@ -340,14 +346,15 @@ test("restart releases reserved slots and retains ambiguous dispatch history wit
       { runId: run.id, title: "Over budget", objective: "Cannot launch" },
       "extra-task",
     );
-    const overBudget = resumed.enqueue(
-      { role: "owner" },
-      { ...input, taskId: extra.id },
-      "extra-queue",
+    assert.throws(
+      () =>
+        resumed.enqueue(
+          { role: "owner" },
+          { ...input, taskId: extra.id },
+          "extra-queue",
+        ),
+      { code: "BUDGET_EXCEEDED" },
     );
-    assert.throws(() => resumed.reserve(overBudget), {
-      code: "BUDGET_EXCEEDED",
-    });
     assert.equal(f.store.listAttempts().length, 2);
     assert.equal(resumed.release(retry), true);
     assert.equal(resumed.release(retry), true);

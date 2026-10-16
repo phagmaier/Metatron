@@ -176,12 +176,20 @@ export function runTool(
             .prepare("SELECT data FROM artifacts WHERE id=?")
             .get(String(saved.payload.artifactId))
         : undefined;
-      const text = artifact
-        ? readFileSync(
-            artifactSchema.parse(JSON.parse(String(artifact.data))).path,
-            "utf8",
-          ).slice(0, 4000)
+      const path = artifact
+        ? artifactSchema.parse(JSON.parse(String(artifact.data))).path
         : null;
+      // The report file lives outside SQLite; losing it must not hide the
+      // persisted structured report, candidate or reviews.
+      let text: string | null = null;
+      let textUnavailable = false;
+      if (path)
+        try {
+          text = readFileSync(path, "utf8").slice(0, 4000);
+        } catch (error) {
+          if (!(error instanceof Error && "code" in error)) throw error;
+          textUnavailable = true;
+        }
       return {
         taskId: requested.id,
         implementationTaskId: task.id,
@@ -193,6 +201,7 @@ export function runTool(
             : null,
         toolSubmitted: Boolean(result),
         textExcerpt: text,
+        textUnavailable,
         gitEvidence: evidence
           ? {
               files: evidence.payload.files,

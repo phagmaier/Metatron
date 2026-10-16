@@ -350,20 +350,25 @@ export class PiAdapter implements HarnessAdapter {
   }
   async dispose(session: ManagedSession) {
     const active = this.active(session);
-    await active.rpc.close();
-    // Keep bounded wire headers, never arbitrary provider error bodies or tool
-    // payloads. The native session transcript remains separately app-owned.
-    await writeFile(
-      join(
-        this.directory,
-        "pi-sessions",
-        session.input.attemptId,
-        "rpc-diagnostics.json",
-      ),
-      JSON.stringify(active.rpc.diagnostics),
-      { mode: 0o600 },
-    );
-    this.sessions.delete(session.nativeSessionId);
+    try {
+      await active.rpc.close();
+      // Keep bounded wire headers, never arbitrary provider error bodies or
+      // tool payloads. The native session transcript remains app-owned.
+      await writeFile(
+        join(
+          this.directory,
+          "pi-sessions",
+          session.input.attemptId,
+          "rpc-diagnostics.json",
+        ),
+        JSON.stringify(active.rpc.diagnostics),
+        { mode: 0o600 },
+      );
+    } finally {
+      // A failed diagnostic write is still reported, but the closed process
+      // must not stay registered as a live session.
+      this.sessions.delete(session.nativeSessionId);
+    }
   }
   async exit(session: ManagedSession) {
     return this.active(session).rpc.close();

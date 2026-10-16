@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
@@ -110,7 +111,7 @@ test("native text-only completion persists worktree, report and exit code, and b
     await f.close();
   }
 });
-test("a writer with no structured report still yields a persisted candidate for tracked changes, flagged as unsubmitted", async () => {
+test("a writer with no structured report still yields a persisted candidate for tracked changes, flagged as unsubmitted, even without its report file", async () => {
   const f = await fixture("tracked");
   try {
     const run = await f.engine.startNativeRun(f.input, "run");
@@ -134,12 +135,16 @@ test("a writer with no structured report still yields a persisted candidate for 
       await f.repo.git("show", `${record.candidateSha}:README.md`),
       "Protocol fixture result",
     );
-    assert.match(
-      (await f.engine.reports(task.id))[0]?.content ?? "",
-      /^UNVERIFIED: no structured report/,
-    );
+    const [saved] = await f.engine.reports(task.id);
+    assert.match(saved?.content ?? "", /^UNVERIFIED: no structured report/);
+    assert.ok(saved);
+    await rm(saved.artifact.path);
     const report = z
-      .object({ candidate: z.object({ candidateId: z.string() }) })
+      .object({
+        candidate: z.object({ candidateId: z.string() }),
+        textExcerpt: z.null(),
+        textUnavailable: z.literal(true),
+      })
       .parse(
         f.engine.tool(
           { role: "owner" },
@@ -410,5 +415,44 @@ test("a candidate branch that no longer matches its record is refused before any
     );
   } finally {
     await f.close();
+  }
+});
+test("Pi disposal releases its session even when diagnostics cannot be saved", async () => {
+  const data = await mkdtemp("/tmp/lao-pi-dispose-");
+  try {
+    const pi = new PiAdapter(
+      data,
+      (_args, cwd, env) =>
+        new PiRpc(
+          process.execPath,
+          [
+            fileURLToPath(
+              new URL("./helpers/pi-rpc-fixture.ts", import.meta.url),
+            ),
+          ],
+          cwd,
+          env,
+        ),
+    );
+    const attemptId = randomUUID();
+    const session = await pi.startSession({
+      runId: randomUUID(),
+      taskId: randomUUID(),
+      attemptId,
+      cwd: data,
+      roleInstructions: "Fixture reader",
+      model: "fixture/model",
+      thinking: "off",
+      permission: "read_only",
+      contextPolicy: "fresh",
+      contextPacket: "Fixture",
+      toolEndpoint: null,
+      environment: {},
+    });
+    await rm(join(data, "pi-sessions", attemptId), { recursive: true });
+    await assert.rejects(pi.dispose(session), { code: "ENOENT" });
+    await assert.rejects(pi.exit(session), { code: "CONFLICT" });
+  } finally {
+    await rm(data, { recursive: true, force: true });
   }
 });

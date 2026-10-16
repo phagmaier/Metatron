@@ -468,19 +468,24 @@ export class CodexAdapter implements HarnessAdapter {
   }
   async dispose(session: ManagedSession) {
     const active = this.active(session);
-    await active.rpc.close();
-    const directory = join(
-      this.directory,
-      "codex-sessions",
-      session.input.attemptId,
-    );
-    await mkdir(directory, { recursive: true, mode: 0o700 });
-    // Method names and ids only; never payloads, prompts or account detail.
-    await writeFile(
-      join(directory, "rpc-diagnostics.json"),
-      JSON.stringify(active.rpc.diagnostics),
-      { mode: 0o600 },
-    );
-    this.sessions.delete(session.nativeSessionId);
+    try {
+      await active.rpc.close();
+      const directory = join(
+        this.directory,
+        "codex-sessions",
+        session.input.attemptId,
+      );
+      await mkdir(directory, { recursive: true, mode: 0o700 });
+      // Method names and ids only; never payloads, prompts or account detail.
+      await writeFile(
+        join(directory, "rpc-diagnostics.json"),
+        JSON.stringify(active.rpc.diagnostics),
+        { mode: 0o600 },
+      );
+    } finally {
+      // A failed diagnostic write is still reported, but the closed process
+      // must not stay registered as a live session.
+      this.sessions.delete(session.nativeSessionId);
+    }
   }
 }

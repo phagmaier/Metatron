@@ -78,7 +78,7 @@ export class PiRpc {
             else
               waiting.reject(
                 new DomainError(
-                  "UNSUPPORTED",
+                  "NATIVE_REJECTED",
                   `Pi rejected ${String(event.command)}; check native configuration`,
                 ),
               );
@@ -104,7 +104,10 @@ export class PiRpc {
         for (const pending of this.pending.values()) {
           clearTimeout(pending.timer);
           pending.reject(
-            new DomainError("UNSUPPORTED", "Pi exited before command response"),
+            new DomainError(
+              "NATIVE_TRANSPORT",
+              "Pi exited before command response",
+            ),
           );
         }
         this.pending.clear();
@@ -130,7 +133,7 @@ export class PiRpc {
   ): Promise<unknown> {
     if (this.ended)
       return Promise.reject(
-        new DomainError("CONFLICT", "Pi process has exited"),
+        new DomainError("NATIVE_TRANSPORT", "Pi process has exited"),
       );
     const id = String(++this.nextId);
     return new Promise((resolve, reject) => {

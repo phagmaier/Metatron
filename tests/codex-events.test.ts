@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { CodexEvents } from "../src/server/adapters/codex-events.ts";
+import { CodexRpc } from "../src/server/adapters/codex-rpc.ts";
 
 const threadId = "thread-1";
 const item = (method: string, value: object) => ({
@@ -127,4 +128,28 @@ test("Codex delegation items, final errors and exits never look like success", (
     mapper.consume({ method: "future/notification", params: {} }),
     [],
   );
+});
+test("RPC separates a Codex request rejection from a process exit without leaking native error text", async () => {
+  const script = `let b='',n=0;process.stdin.on('data',c=>{b+=c;let i;while((i=b.indexOf('\\n'))>=0){const v=JSON.parse(b.slice(0,i));b=b.slice(i+1);if(++n>1)process.exit(3);process.stdout.write(JSON.stringify({id:v.id,error:{code:-32600,message:'fixture-secret'}})+'\\n')}});`;
+  const rpc = new CodexRpc(
+    process.execPath,
+    ["-e", script],
+    "/tmp",
+    process.env,
+  );
+  try {
+    await assert.rejects(rpc.request("thread/start"), (error: Error) => {
+      assert.equal("code" in error && error.code, "NATIVE_REJECTED");
+      assert.ok(!error.message.includes("fixture-secret"));
+      return true;
+    });
+    await assert.rejects(rpc.request("turn/start"), {
+      code: "NATIVE_TRANSPORT",
+    });
+    await assert.rejects(rpc.request("turn/start"), {
+      code: "NATIVE_TRANSPORT",
+    });
+  } finally {
+    assert.equal((await rpc.close()).code, 3);
+  }
 });
