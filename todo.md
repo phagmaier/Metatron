@@ -109,13 +109,13 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 - [x] Render review details + candidate diff + test summaries in GUI; owner can approve or decline.
 - [x] Require explicit human confirmation immediately before applying to selected local branch and revalidate destination SHA/clean status.
 - [x] Preserve task, diff, logs and worktree if approval denied or integration blocked.
-- [ ] Use Git fixture integration test for clean merge, conflict, dirty main, and successful approved integration.
+- [x] Use Git fixture integration test for clean merge, conflict, dirty main, and successful approved integration.
 
 **M5 gate:** demo implementation -> independent review -> human approval -> safe local integration, with no destructive action on an owner's dirty checkout.
 
 ## M6 - Human requests, steering, stop, and recovery [spec §9, 10]
 
-- [ ] Implement HumanRequest storage, blocker linkage, urgency and backend transition logic.
+- [x] Implement HumanRequest storage, blocker linkage, urgency and backend transition logic.
 - [ ] Add "Needs You" GUI with respond, decline, complete, defer controls and evidence/history.
 - [ ] Implement worker `request_human_action` and `report_issue` tool handling; unrelated workers continue while one is blocked.
 - [ ] Add dependency-based WAITING handling: downstream waits; unrelated tasks do not stop.

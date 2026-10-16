@@ -304,7 +304,12 @@ test("human replies and run edits persist with immutable event history", async (
       "request",
     );
     f.store.updateHumanRequest(
-      { id: request.id, status: "answered", ownerResponse: "Use toy" },
+      {
+        id: request.id,
+        expectedStatus: "open",
+        status: "answered",
+        ownerResponse: "Use toy",
+      },
       "answer",
     );
     f.store.updateRun({ id: f.run.id, mode: "supervised" }, "mode");
@@ -314,10 +319,15 @@ test("human replies and run edits persist with immutable event history", async (
     assert.throws(
       () =>
         f.store.updateHumanRequest(
-          { id: request.id, status: "declined", ownerResponse: "Late" },
+          {
+            id: request.id,
+            expectedStatus: "answered",
+            status: "declined",
+            ownerResponse: "Late",
+          },
           "late",
         ),
-      { code: "CONFLICT" },
+      { code: "INVALID_TRANSITION" },
     );
   } finally {
     await f.close();

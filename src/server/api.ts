@@ -328,6 +328,10 @@ export function createApi(store: Store, engine: Engine) {
                 z.strictObject({ taskId: idSchema }).parse(input).taskId,
                 key,
               ),
+            "POST /api/human-requests": (input, key) =>
+              store.createHumanRequest(input, key),
+            "PATCH /api/human-requests": (input, key) =>
+              store.updateHumanRequest(input, key),
           };
         const write = writes[`${method} ${url.pathname}`];
         if (!write) {

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { processStateSchema, taskStatusSchema } from "./states.ts";
+import {
+  humanRequestStatusSchema,
+  processStateSchema,
+  taskStatusSchema,
+} from "./states.ts";
 
 export const idSchema = z.uuid();
 export const textSchema = z.string().trim().min(1).max(32_768);
@@ -279,7 +283,7 @@ export const humanRequestSchema = z.strictObject({
   reason: textSchema,
   suggestedAction: textSchema,
   blocking: z.boolean(),
-  status: z.enum(["open", "deferred", "answered", "completed", "declined"]),
+  status: humanRequestStatusSchema,
   ownerResponse: textSchema.nullable(),
   resolvedAt: timestampSchema.nullable(),
 });

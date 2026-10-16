@@ -21,10 +21,11 @@ export const taskStatusSchema = z.enum([
 export type TaskStatus = z.infer<typeof taskStatusSchema>;
 
 export const taskTransitions = {
-  BACKLOG: ["READY", "CANCELLED"],
-  READY: ["QUEUED", "WAITING_DEPENDENCY", "CANCELLED"],
+  BACKLOG: ["READY", "WAITING_HUMAN", "CANCELLED"],
+  READY: ["QUEUED", "WAITING_HUMAN", "WAITING_DEPENDENCY", "CANCELLED"],
   QUEUED: [
     "RUNNING",
+    "WAITING_HUMAN",
     "WAITING_DEPENDENCY",
     "INTERRUPTED",
     "FAILED",
@@ -41,7 +42,7 @@ export const taskTransitions = {
   AWAITING_REVIEW: ["READY_TO_INTEGRATE", "CHANGES_REQUESTED", "CANCELLED"],
   CHANGES_REQUESTED: ["READY", "AWAITING_REVIEW", "CANCELLED"],
   WAITING_HUMAN: ["READY", "RUNNING", "INTERRUPTED", "CANCELLED"],
-  WAITING_DEPENDENCY: ["READY", "CANCELLED"],
+  WAITING_DEPENDENCY: ["READY", "WAITING_HUMAN", "CANCELLED"],
   INTERRUPTED: ["RETRY_DECISION"],
   FAILED: ["RETRY_DECISION"],
   // Only an explicit recovery decision can make failed work eligible again.
@@ -126,5 +127,34 @@ export function assertSessionTransition(from: ProcessState, to: ProcessState) {
     throw new DomainError(
       "INVALID_TRANSITION",
       `Session cannot transition from ${from} to ${to}`,
+    );
+}
+
+export const humanRequestStatusSchema = z.enum([
+  "open",
+  "deferred",
+  "answered",
+  "completed",
+  "declined",
+]);
+type HumanRequestStatus = z.infer<typeof humanRequestStatusSchema>;
+const humanRequestTransitions: Record<
+  HumanRequestStatus,
+  readonly HumanRequestStatus[]
+> = {
+  open: ["deferred", "answered", "completed", "declined"],
+  deferred: ["open", "answered", "completed", "declined"],
+  answered: [],
+  completed: [],
+  declined: [],
+};
+export function assertHumanRequestTransition(
+  from: HumanRequestStatus,
+  to: HumanRequestStatus,
+) {
+  if (!humanRequestTransitions[from].includes(to))
+    throw new DomainError(
+      "INVALID_TRANSITION",
+      `Human request cannot transition from ${from} to ${to}`,
     );
 }

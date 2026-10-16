@@ -1,0 +1,12 @@
+✔ M5 Git fixture: successful approved integration fast-forwards main through review, preview and explicit confirmation (1810.981223ms)
+✔ M5 Git fixture: clean three-way merge preserves the owner's commit through review, preview and explicit confirmation (1698.958318ms)
+✔ M5 Git fixture: overlapping edits retain a conflict and refuse owner approval/application without changing main (1209.736517ms)
+✔ M5 Git fixture: dirty main after a clean apply plan preserves staged, unstaged and untracked owner work (1438.987203ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6404.17233

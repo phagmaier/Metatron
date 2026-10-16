@@ -110,6 +110,11 @@ export class Scheduling {
         const profile = this.profile(run.id, data.profileId);
         if (run.status !== "active")
           throw new DomainError("CONFLICT", "Run is paused or terminal");
+        if (this.store.listTaskBlockers(task.id).length)
+          throw new DomainError(
+            "CONFLICT",
+            "A human blocker prevents assignment",
+          );
         if (
           task.kind === "lead" ||
           profile.permission === "coordinator" ||
@@ -335,6 +340,7 @@ export class Scheduling {
         if (
           run.status !== "active" ||
           task.status !== "QUEUED" ||
+          this.store.listTaskBlockers(task.id).length > 0 ||
           (task.kind !== "lead" && run.mode === "chat_plan")
         )
           return null;

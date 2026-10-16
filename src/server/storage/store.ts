@@ -13,14 +13,12 @@ import {
 import {
   appendEventSchema,
   createAttemptSchema,
-  createHumanRequestSchema,
   createProjectSchema,
   createRunSchema,
   createSessionSchema,
   createTaskSchema,
   transitionTaskSchema,
   updateAttemptSchema,
-  updateHumanRequestSchema,
   updateRunSchema,
   updateSessionSchema,
   updateTaskSchema,
@@ -31,6 +29,12 @@ import {
   DomainError,
 } from "../../shared/domain/states.ts";
 import { openDatabase } from "./database.ts";
+import {
+  assertHumanWaitTransition,
+  createHumanRequest,
+  listTaskBlockers,
+  updateHumanRequest,
+} from "./human-requests.ts";
 import { interruptIntegrations } from "./integrations.ts";
 import { appendEvent, queryEvents } from "./journal.ts";
 import { mutate } from "./mutations.ts";
@@ -101,6 +105,12 @@ export class Store {
   }
   listHumanRequests() {
     return this.list("human_requests", humanRequestSchema);
+  }
+  getHumanRequest(id: string) {
+    return this.get("human_requests", humanRequestSchema, id);
+  }
+  listTaskBlockers(taskId: string) {
+    return listTaskBlockers(this, taskId);
   }
   events(query: unknown = {}) {
     return queryEvents(this.db, query);
@@ -229,6 +239,7 @@ export class Store {
       if (task.status !== data.expectedStatus)
         throw new DomainError("CONFLICT", "Task status changed");
       assertTaskTransition(task.status, data.status);
+      assertHumanWaitTransition(this, task, data.status);
       const updated = taskSchema.parse({
         ...task,
         status: data.status,
@@ -270,6 +281,14 @@ export class Store {
     return mutate(this.db, key, "createAttempt", data, attemptSchema, () => {
       const task = this.getTask(data.taskId);
       const run = this.getRun(task.runId);
+      if (
+        task.status === "WAITING_HUMAN" ||
+        this.listTaskBlockers(task.id).length
+      )
+        throw new DomainError(
+          "CONFLICT",
+          "A human blocker prevents a new attempt",
+        );
       if ((run.execution === "fake") !== (data.adapter === "fake"))
         throw new DomainError(
           "INVALID_REFERENCE",
@@ -423,90 +442,10 @@ export class Store {
     });
   }
   createHumanRequest(input: unknown, key: string) {
-    const data = createHumanRequestSchema.parse(input);
-    return mutate(
-      this.db,
-      key,
-      "createHumanRequest",
-      data,
-      humanRequestSchema,
-      () => {
-        this.getRun(data.runId);
-        for (const id of data.affectedTaskIds) {
-          if (this.getTask(id).runId !== data.runId)
-            throw new DomainError(
-              "INVALID_REFERENCE",
-              "Human request crosses runs",
-            );
-        }
-        if (data.sessionId)
-          this.validateLinks({ runId: data.runId, sessionId: data.sessionId });
-        const request = humanRequestSchema.parse({
-          ...data,
-          ...metadata(),
-          status: "open",
-          ownerResponse: null,
-          resolvedAt: null,
-        });
-        this.db
-          .prepare(
-            "INSERT INTO human_requests(id, run_id, session_id, data) VALUES (?, ?, ?, ?)",
-          )
-          .run(
-            request.id,
-            request.runId,
-            request.sessionId,
-            JSON.stringify(request),
-          );
-        for (const id of request.affectedTaskIds)
-          this.db
-            .prepare("INSERT INTO human_request_tasks VALUES (?, ?)")
-            .run(request.id, id);
-        appendEvent(this.db, {
-          type: "human_request.created",
-          runId: request.runId,
-          sessionId: request.sessionId,
-          correlationId: key,
-          payload: { requestId: request.id, blocking: request.blocking },
-        });
-        return request;
-      },
-    );
+    return createHumanRequest(this, input, key);
   }
   updateHumanRequest(input: unknown, key: string) {
-    const data = updateHumanRequestSchema.parse(input);
-    return mutate(
-      this.db,
-      key,
-      "updateHumanRequest",
-      data,
-      humanRequestSchema,
-      () => {
-        const previous = this.get(
-          "human_requests",
-          humanRequestSchema,
-          data.id,
-        );
-        if (!["open", "deferred"].includes(previous.status))
-          throw new DomainError("CONFLICT", "Human request already resolved");
-        const now = new Date().toISOString();
-        const request = humanRequestSchema.parse({
-          ...previous,
-          ...data,
-          updatedAt: now,
-          resolvedAt: data.status === "deferred" ? null : now,
-        });
-        this.save("human_requests", request);
-        appendEvent(this.db, {
-          type: "human_request.updated",
-          runId: request.runId,
-          sessionId: request.sessionId,
-          correlationId: key,
-          payload: { requestId: request.id, status: request.status },
-        });
-        return request;
-      },
-    );
+    return updateHumanRequest(this, input, key);
   }
   private validateLinks(links: {
     runId?: string | null;

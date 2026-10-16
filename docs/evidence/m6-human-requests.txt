@@ -1,0 +1,26 @@
+M6 item 1 — backend/API demonstration
+Domain/FakeAdapter fixtures with real SQLite and loopback HTTP; no live harness/provider calls.
+
+✔ owner HTTP requests validate authority and transitions, persist deferred blockers across restart, and never auto-resume on reply (215.678005ms)
+✔ human request transitions allow deferral/reopening and one final owner decision (3.402835ms)
+✔ blocking creation atomically links affected tasks and leaves unrelated tasks alone; nonblocking urgency is recorded without a wait (95.196457ms)
+✔ every open or deferred blocker must resolve, and owner replies never resume or complete a task (23.109481ms)
+✔ stale status, empty answers, duplicate/empty blockers and cross-run task/session links make no partial changes (28.285478ms)
+✔ human request create rolls back request, links, task waits, events and idempotency on journal failure (16.309832ms)
+✔ human request update rolls back request, links, task waits, events and idempotency on journal failure (15.326875ms)
+✔ responding to an outstanding request after cancellation preserves the cancellation and its history (16.098796ms)
+✔ queued human waits cannot dispatch, including legacy links, while unrelated work reserves normally (130.357167ms)
+✔ a supported permission wait retains its session, worktree and execution reservation; replies cannot restart or fake a native resume (55.496247ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 795.52435
+
+Mutation checks (all sources restored):
+deferred-blocker: detected by a behavioral assertion; source restored
+stale-response: detected by a behavioral assertion; source restored
+native-pause: detected by a behavioral assertion; source restored

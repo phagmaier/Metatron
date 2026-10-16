@@ -12,7 +12,11 @@ import {
   teamSnapshotSchema,
   textSchema,
 } from "./entities.ts";
-import { processStateSchema, taskStatusSchema } from "./states.ts";
+import {
+  humanRequestStatusSchema,
+  processStateSchema,
+  taskStatusSchema,
+} from "./states.ts";
 
 export const mutationKeySchema = z
   .string()
@@ -106,28 +110,45 @@ export const updateSessionSchema = z.strictObject({
   processId: z.int().positive().nullable().optional(),
   exitCode: z.int().nullable().optional(),
 });
-export const createHumanRequestSchema = z.strictObject({
-  runId: idSchema,
-  sessionId: idSchema.nullable().default(null),
-  affectedTaskIds: z.array(idSchema).max(256),
-  type: z.enum([
-    "permission",
-    "environment",
-    "clarification",
-    "credential_setup",
-    "risky_operation",
-    "manual_check",
-  ]),
-  urgency: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
-  reason: textSchema,
-  suggestedAction: textSchema,
-  blocking: z.boolean(),
-});
-export const updateHumanRequestSchema = z.strictObject({
-  id: idSchema,
-  status: z.enum(["deferred", "answered", "completed", "declined"]),
-  ownerResponse: textSchema,
-});
+export const createHumanRequestSchema = z
+  .strictObject({
+    runId: idSchema,
+    sessionId: idSchema.nullable().default(null),
+    affectedTaskIds: z
+      .array(idSchema)
+      .max(256)
+      .refine(
+        (ids) => new Set(ids).size === ids.length,
+        "Task links must be unique",
+      ),
+    type: z.enum([
+      "permission",
+      "environment",
+      "clarification",
+      "credential_setup",
+      "risky_operation",
+      "manual_check",
+    ]),
+    urgency: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+    reason: textSchema,
+    suggestedAction: textSchema,
+    blocking: z.boolean(),
+  })
+  .refine(
+    (request) => !request.blocking || request.affectedTaskIds.length > 0,
+    "A blocking request needs an affected task",
+  );
+export const updateHumanRequestSchema = z
+  .strictObject({
+    id: idSchema,
+    expectedStatus: humanRequestStatusSchema,
+    status: humanRequestStatusSchema,
+    ownerResponse: textSchema.nullable().optional(),
+  })
+  .refine(
+    (reply) => reply.status !== "answered" || !!reply.ownerResponse,
+    "An answer needs response text",
+  );
 export const createIntegrationCandidateSchema = z.strictObject({
   attemptId: idSchema,
   baseSha: shaSchema,
