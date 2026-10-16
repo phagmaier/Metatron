@@ -14,41 +14,20 @@ import {
   listIntegrations,
 } from "../src/server/storage/integrations.ts";
 import { Store } from "../src/server/storage/store.ts";
-import { artifactSchema } from "../src/shared/domain/entities.ts";
 import { DomainError } from "../src/shared/domain/states.ts";
 import { integrationPreviewSchema } from "../src/shared/integration.ts";
+import {
+  artifactText,
+  checks,
+  integrationBranches,
+  node,
+  owner,
+  reviewed,
+} from "./helpers/integration-fixture.ts";
 import { reviewFixture } from "./helpers/review-fixture.ts";
 
-const node = process.execPath;
-const owner = { role: "owner" } as const;
 const denied = (code: DomainError["code"]) => (error: unknown) =>
   error instanceof DomainError && error.code === code;
-async function reviewed() {
-  const f = await reviewFixture("review-pass");
-  f.request();
-  await f.engine.idle();
-  return f;
-}
-function artifactText(store: Store, id: string | null | undefined) {
-  const row = store.db
-    .prepare("SELECT data FROM artifacts WHERE id=?")
-    .get(id ?? "");
-  assert.ok(row);
-  return readFile(
-    artifactSchema.parse(JSON.parse(String(row.data))).path,
-    "utf8",
-  );
-}
-const integrationBranches = (repo: {
-  git: (...args: string[]) => Promise<string>;
-}) =>
-  repo.git(
-    "for-each-ref",
-    "--format=%(refname:short)",
-    "refs/heads/lao/integration-*",
-  );
-const checks = (preview: { checks: { name: string; status: string }[] }) =>
-  preview.checks.map((c) => `${c.name}:${c.status}`);
 
 test("a passing review yields an isolated fast-forward preview with declared tests and a dirty owner checkout left untouched", async () => {
   const f = await reviewed();
@@ -91,6 +70,7 @@ test("a passing review yields an isolated fast-forward preview with declared tes
       "destination:passed",
       "candidate:passed",
       "apply:passed",
+      "overlap:passed",
       "diff:passed",
       "diff_check:passed",
       "tests:passed",
@@ -219,34 +199,10 @@ test("failing, timed-out and unlaunchable test commands fail the preview without
   }
 });
 
-test("destination drift or a moved candidate branch fails before any integration worktree or branch exists", async () => {
+test("a moved candidate branch fails before any integration worktree or branch exists", async () => {
   const f = await reviewed();
   try {
-    await f.repo.git("branch", "release", f.candidate.baseSha);
-    await writeFile(join(f.repo.directory, "CHANGELOG.md"), "owner change\n");
-    await f.repo.git("add", "--", "CHANGELOG.md");
-    await f.repo.git(
-      "-c",
-      "user.name=Owner",
-      "-c",
-      "user.email=owner@example.invalid",
-      "commit",
-      "-m",
-      "Owner change after the run started",
-    );
-    const moved = await f.repo.git("rev-parse", "HEAD");
-    const drift = f.engine.integrations.request(
-      owner,
-      { taskId: f.original.id },
-      "drift",
-    );
-    await f.engine.integrations.idle();
-    const drifted = getIntegration(f.store, drift.id);
-    assert.equal(drifted.status, "failed");
-    assert.deepEqual(checks(drifted), ["destination:failed"]);
-    assert.equal(drifted.destinationSha, moved);
-    assert.equal(drifted.resultSha, null);
-    assert.ok(!existsSync(dirname(drifted.worktreePath)));
+    const moved = await f.repo.git("rev-parse", "main");
     await f.repo.git(
       "update-ref",
       `refs/heads/lao/candidate-${f.candidate.attemptId}`,
@@ -255,7 +211,7 @@ test("destination drift or a moved candidate branch fails before any integration
     );
     const tampered = f.engine.integrations.request(
       owner,
-      { taskId: f.original.id, destinationBranch: "release" },
+      { taskId: f.original.id },
       "moved-candidate",
     );
     await f.engine.integrations.idle();
@@ -267,7 +223,6 @@ test("destination drift or a moved candidate branch fails before any integration
     ]);
     assert.ok(!existsSync(dirname(refused.worktreePath)));
     assert.equal(await integrationBranches(f.repo), "");
-    assert.equal(await f.repo.git("rev-parse", "refs/heads/main"), moved);
     assert.equal(await f.repo.git("status", "--porcelain"), "");
   } finally {
     await f.app.close();

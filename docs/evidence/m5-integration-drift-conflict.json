@@ -1,0 +1,267 @@
+{
+  "execution": "protocol fixtures only; no native harness/provider calls; GUI driven via Playwright",
+  "database": "/tmp/lao-review-result-NenFqu/state.sqlite",
+  "repository": "/tmp/lao-git-fixture-VVPElP/repo with spaces",
+  "runId": "1546bfe5-f5e2-4a0c-bb3c-6962c86a152f",
+  "taskId": "3104c13d-455b-4796-b746-bea1ea0d1b7f",
+  "candidate": {
+    "id": "9daba50e-51b2-436e-8c36-46b82454bbd7",
+    "baseSha": "4ee32b9c1b44e4fbe6b0b8754a40975c0d9e4eaa",
+    "candidateSha": "145aed7efa69dfdefbd00f85d36c0205de61bae0"
+  },
+  "review": [
+    {
+      "id": "e2ca7d7f-6efa-4092-a394-b7617da2f5dc",
+      "recommendation": "pass"
+    }
+  ],
+  "previews": [
+    {
+      "id": "1e3de8aa-e9f5-4e91-bbc9-fdb4d3c12b52",
+      "createdAt": "2026-10-16T11:58:42.914Z",
+      "updatedAt": "2026-10-16T11:58:43.020Z",
+      "runId": "1546bfe5-f5e2-4a0c-bb3c-6962c86a152f",
+      "taskId": "3104c13d-455b-4796-b746-bea1ea0d1b7f",
+      "implementationTaskId": "3104c13d-455b-4796-b746-bea1ea0d1b7f",
+      "candidateId": "9daba50e-51b2-436e-8c36-46b82454bbd7",
+      "reviewId": "e2ca7d7f-6efa-4092-a394-b7617da2f5dc",
+      "baseSha": "4ee32b9c1b44e4fbe6b0b8754a40975c0d9e4eaa",
+      "candidateSha": "145aed7efa69dfdefbd00f85d36c0205de61bae0",
+      "destinationBranch": "main",
+      "destinationSha": "0f2855ec3958e8475dab7af09925624a8eca1060",
+      "worktreePath": "/tmp/lao-review-result-NenFqu/worktrees/integration-1e3de8aa-e9f5-4e91-bbc9-fdb4d3c12b52/checkout",
+      "branch": "lao/integration-1e3de8aa-e9f5-4e91-bbc9-fdb4d3c12b52",
+      "tests": [
+        [
+          "grep",
+          "-q",
+          "Protocol",
+          "README.md"
+        ]
+      ],
+      "timeoutSeconds": 600,
+      "status": "conflict",
+      "resultSha": null,
+      "files": [],
+      "drift": {
+        "mergeBase": "4ee32b9c1b44e4fbe6b0b8754a40975c0d9e4eaa",
+        "baseIsAncestor": true,
+        "commits": 1,
+        "files": [
+          {
+            "status": "M",
+            "path": "README.md"
+          }
+        ],
+        "filesTruncated": false,
+        "overlapping": [
+          "README.md"
+        ]
+      },
+      "conflicts": [
+        "README.md"
+      ],
+      "checks": [
+        {
+          "name": "destination",
+          "status": "warning",
+          "detail": "main moved from the candidate base 4ee32b9c1b44e4fbe6b0b8754a40975c0d9e4eaa to 0f2855ec3958e8475dab7af09925624a8eca1060: 1 commit, 1 file changed. The candidate is merged onto it; nothing on it is overwritten."
+        },
+        {
+          "name": "candidate",
+          "status": "passed",
+          "detail": "Candidate branch still records 145aed7efa69dfdefbd00f85d36c0205de61bae0"
+        },
+        {
+          "name": "apply",
+          "status": "failed",
+          "detail": "Merge conflicts in README.md; left unresolved in the integration worktree"
+        },
+        {
+          "name": "tests",
+          "status": "skipped",
+          "detail": "Not run because the merge conflicts"
+        }
+      ],
+      "testResults": [],
+      "diffArtifactId": null,
+      "diagnostic": null
+    },
+    {
+      "id": "3dac2765-5ba3-4435-9aea-f860984f711d",
+      "createdAt": "2026-10-16T11:58:43.195Z",
+      "updatedAt": "2026-10-16T11:58:43.369Z",
+      "runId": "1546bfe5-f5e2-4a0c-bb3c-6962c86a152f",
+      "taskId": "3104c13d-455b-4796-b746-bea1ea0d1b7f",
+      "implementationTaskId": "3104c13d-455b-4796-b746-bea1ea0d1b7f",
+      "candidateId": "9daba50e-51b2-436e-8c36-46b82454bbd7",
+      "reviewId": "e2ca7d7f-6efa-4092-a394-b7617da2f5dc",
+      "baseSha": "4ee32b9c1b44e4fbe6b0b8754a40975c0d9e4eaa",
+      "candidateSha": "145aed7efa69dfdefbd00f85d36c0205de61bae0",
+      "destinationBranch": "docs",
+      "destinationSha": "f5004044c972b2c97f536e6bd9aca703e9e3da8e",
+      "worktreePath": "/tmp/lao-review-result-NenFqu/worktrees/integration-3dac2765-5ba3-4435-9aea-f860984f711d/checkout",
+      "branch": "lao/integration-3dac2765-5ba3-4435-9aea-f860984f711d",
+      "tests": [
+        [
+          "grep",
+          "-q",
+          "Protocol",
+          "README.md"
+        ]
+      ],
+      "timeoutSeconds": 600,
+      "status": "passed",
+      "resultSha": "1a93777f19ea0b55eecb673080c4d5b73945d14d",
+      "files": [
+        {
+          "status": "M",
+          "path": "README.md"
+        }
+      ],
+      "drift": {
+        "mergeBase": "4ee32b9c1b44e4fbe6b0b8754a40975c0d9e4eaa",
+        "baseIsAncestor": true,
+        "commits": 1,
+        "files": [
+          {
+            "status": "A",
+            "path": "CHANGELOG.md"
+          }
+        ],
+        "filesTruncated": false,
+        "overlapping": []
+      },
+      "conflicts": [],
+      "checks": [
+        {
+          "name": "destination",
+          "status": "warning",
+          "detail": "docs moved from the candidate base 4ee32b9c1b44e4fbe6b0b8754a40975c0d9e4eaa to f5004044c972b2c97f536e6bd9aca703e9e3da8e: 1 commit, 1 file changed. The candidate is merged onto it; nothing on it is overwritten."
+        },
+        {
+          "name": "candidate",
+          "status": "passed",
+          "detail": "Candidate branch still records 145aed7efa69dfdefbd00f85d36c0205de61bae0"
+        },
+        {
+          "name": "apply",
+          "status": "passed",
+          "detail": "Merged the candidate into lao/integration-3dac2765-5ba3-4435-9aea-f860984f711d as 1a93777f19ea0b55eecb673080c4d5b73945d14d (parents f5004044c972b2c97f536e6bd9aca703e9e3da8e, 145aed7efa69dfdefbd00f85d36c0205de61bae0)"
+        },
+        {
+          "name": "overlap",
+          "status": "passed",
+          "detail": "No file was changed on both sides"
+        },
+        {
+          "name": "diff",
+          "status": "passed",
+          "detail": "1 changed file, all from the reviewed candidate"
+        },
+        {
+          "name": "diff_check",
+          "status": "passed",
+          "detail": "git diff --check passed"
+        },
+        {
+          "name": "tests",
+          "status": "passed",
+          "detail": "1/1 declared commands passed"
+        },
+        {
+          "name": "final_destination",
+          "status": "passed",
+          "detail": "docs unchanged during preparation"
+        }
+      ],
+      "testResults": [
+        {
+          "argv": [
+            "grep",
+            "-q",
+            "Protocol",
+            "README.md"
+          ],
+          "result": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 4,
+          "artifactId": "d0d6730b-43ca-44ec-9074-96b00a8616b4",
+          "outputTruncated": false
+        }
+      ],
+      "diffArtifactId": "2c308dc5-c046-4001-91bc-5674a4a5cdec",
+      "diagnostic": null
+    }
+  ],
+  "worktrees": [
+    {
+      "id": "1e3de8aa-e9f5-4e91-bbc9-fdb4d3c12b52",
+      "head": "0f2855ec3958e8475dab7af09925624a8eca1060",
+      "unmerged": "README.md"
+    },
+    {
+      "id": "3dac2765-5ba3-4435-9aea-f860984f711d",
+      "head": "1a93777f19ea0b55eecb673080c4d5b73945d14d",
+      "unmerged": ""
+    }
+  ],
+  "ownerSetup": {
+    "mainSha": "0f2855ec3958e8475dab7af09925624a8eca1060",
+    "docsSha": "f5004044c972b2c97f536e6bd9aca703e9e3da8e"
+  },
+  "ownerCheckout": {
+    "before": {
+      "status": "",
+      "head": "0f2855ec3958e8475dab7af09925624a8eca1060",
+      "branch": "main"
+    },
+    "after": {
+      "status": "",
+      "head": "0f2855ec3958e8475dab7af09925624a8eca1060",
+      "branch": "main",
+      "candidateRef": "145aed7efa69dfdefbd00f85d36c0205de61bae0",
+      "main": "0f2855ec3958e8475dab7af09925624a8eca1060",
+      "docs": "f5004044c972b2c97f536e6bd9aca703e9e3da8e",
+      "integrationBranches": [
+        "lao/integration-1e3de8aa-e9f5-4e91-bbc9-fdb4d3c12b52",
+        "lao/integration-3dac2765-5ba3-4435-9aea-f860984f711d"
+      ]
+    },
+    "untouched": true
+  },
+  "humanRequests": [
+    {
+      "type": "manual_check",
+      "urgency": "high",
+      "blocking": false,
+      "status": "open",
+      "reason": "Integration preview conflicts with main at 0f2855ec3958e8475dab7af09925624a8eca1060 in README.md",
+      "suggestedAction": "Nothing was applied and no side was chosen. Inspect the conflicted integration worktree /tmp/lao-review-result-NenFqu/worktrees/integration-1e3de8aa-e9f5-4e91-bbc9-fdb4d3c12b52/checkout, reconcile the destination branch or request a revision, then prepare a new preview."
+    }
+  ],
+  "taskStatusAfter": "AWAITING_REVIEW",
+  "restart": {
+    "previewsIdentical": true,
+    "humanRequestsIdentical": true,
+    "attemptsBefore": 2,
+    "attemptsAfter": 2
+  },
+  "gui": {
+    "steps": [
+      {
+        "branch": "main",
+        "status": "conflict"
+      },
+      {
+        "branch": "docs",
+        "status": "passed"
+      }
+    ],
+    "needsYouShowsConflict": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:44545/favicon.ico"
+    ]
+  }
+}

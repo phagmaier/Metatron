@@ -71,9 +71,10 @@ export function IntegrationPanel({
         Integration preview{latest ? ` · ${latest.status}` : ""}
       </summary>
       <p className="note">
-        Fast-forwards the reviewed candidate onto the destination's recorded
-        commit in a separate worktree and runs your test commands there. Your
-        checkout and branches are not changed; nothing is applied.
+        Applies the reviewed candidate to the destination's recorded commit in a
+        separate worktree (a fast-forward, or a merge if the branch moved) and
+        runs your test commands there. Your checkout and branches are not
+        changed; nothing is applied and conflicts are never resolved for you.
       </p>
       {task.status === "AWAITING_REVIEW" && (
         <div>
@@ -111,13 +112,38 @@ export function IntegrationPanel({
         </div>
       )}
       {latest && (
-        <div className={latest.status === "passed" ? "note" : "warning"}>
+        <div
+          className={
+            latest.status === "passed" &&
+            latest.checks.every((check) => check.status !== "warning")
+              ? "note"
+              : "warning"
+          }
+        >
           <p>
             {latest.status} · {latest.destinationBranch} @{" "}
             {latest.destinationSha ?? "pending"} →{" "}
             {latest.resultSha ?? "not applied"}
           </p>
           <p className="path">{latest.worktreePath}</p>
+          {latest.drift && (
+            <p>
+              Destination moved {latest.drift.commits}{" "}
+              {latest.drift.commits === 1 ? "commit" : "commits"} since the
+              candidate base; changed there:{" "}
+              {latest.drift.files.map((file) => file.path).join(", ") || "none"}
+              {latest.drift.filesTruncated ? " …" : ""}
+              {latest.drift.overlapping.length > 0 &&
+                `. Also changed by the candidate: ${latest.drift.overlapping.join(", ")}`}
+            </p>
+          )}
+          {latest.conflicts.length > 0 && (
+            <p>
+              Conflicts left unresolved in the worktree above:{" "}
+              {latest.conflicts.join(", ")}. Reconcile the destination or
+              request a revision, then prepare a new preview.
+            </p>
+          )}
           <ul>
             {latest.checks.map((check) => (
               <li key={check.name}>

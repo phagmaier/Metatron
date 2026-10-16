@@ -37,12 +37,14 @@ export const integrationCheckSchema = z.strictObject({
     "destination",
     "candidate",
     "apply",
+    "overlap",
     "diff",
     "diff_check",
     "tests",
     "final_destination",
   ]),
-  status: z.enum(["passed", "failed", "skipped"]),
+  // A warning needs the owner's attention but does not fail the preview.
+  status: z.enum(["passed", "warning", "failed", "skipped"]),
   detail: z.string().max(2000),
 });
 export type IntegrationCheck = z.infer<typeof integrationCheckSchema>;
@@ -55,6 +57,18 @@ export const integrationTestResultSchema = z.strictObject({
   artifactId: idSchema,
   outputTruncated: z.boolean(),
 });
+const fileSchema = z.strictObject({ status: z.string(), path: z.string() });
+// How the destination moved away from the candidate base, and which files both
+// sides changed. Null when the destination still points at the base.
+export const integrationDriftSchema = z.strictObject({
+  mergeBase: shaSchema,
+  baseIsAncestor: z.boolean(),
+  commits: z.int().min(0),
+  files: z.array(fileSchema).max(200),
+  filesTruncated: z.boolean(),
+  overlapping: z.array(z.string()).max(500),
+});
+export type IntegrationDrift = z.infer<typeof integrationDriftSchema>;
 export const integrationPreviewSchema = z.strictObject({
   id: idSchema,
   createdAt: timestampSchema,
@@ -73,9 +87,12 @@ export const integrationPreviewSchema = z.strictObject({
   branch: z.string().startsWith("lao/integration-"),
   tests: z.array(integrationCommandSchema).max(8),
   timeoutSeconds: z.int().min(1).max(3600),
-  status: z.enum(["preparing", "passed", "failed", "interrupted"]),
+  status: z.enum(["preparing", "passed", "failed", "conflict", "interrupted"]),
   resultSha: shaSchema.nullable(),
-  files: z.array(z.strictObject({ status: z.string(), path: z.string() })),
+  files: z.array(fileSchema),
+  drift: integrationDriftSchema.nullable().default(null),
+  // Unmerged paths left in the retained integration worktree; never resolved by the engine.
+  conflicts: z.array(z.string()).max(500).default([]),
   checks: z.array(integrationCheckSchema),
   testResults: z.array(integrationTestResultSchema),
   diffArtifactId: idSchema.nullable(),

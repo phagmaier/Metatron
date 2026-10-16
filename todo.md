@@ -105,7 +105,7 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 - [x] Run reviewer independently of implementing worker; collect actionable file/line findings, confidence/evidence and pass/change-request recommendation.
 - [x] Support `CHANGES_REQUESTED` and safe revision assignment to implementer; preserve old review history.
 - [x] Create separate isolated integration worktree; verify diff and `git diff --check`, targeted tests, destination base SHA.
-- [ ] Detect and correctly present overlapping-file merge conflict and destination branch drift; never silently overwrite.
+- [x] Detect and correctly present overlapping-file merge conflict and destination branch drift; never silently overwrite.
 - [ ] Render review details + candidate diff + test summaries in GUI; owner can approve or decline.
 - [ ] Require explicit human confirmation immediately before applying to selected local branch and revalidate destination SHA/clean status.
 - [ ] Preserve task, diff, logs and worktree if approval denied or integration blocked.

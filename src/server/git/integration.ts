@@ -2,6 +2,10 @@ import { mkdir, realpath, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { repositorySchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import {
+  type IntegrationDrift,
+  integrationDriftSchema,
+} from "../../shared/integration.ts";
 import { diffCheckPasses, GitError, git } from "./command.ts";
 import { inspectRepository } from "./inspect.ts";
 import { inside, sensitivePath } from "./paths.ts";
@@ -100,6 +104,59 @@ export async function applyCandidate(path: string, candidateSha: string) {
   ).trim();
 }
 
+// A moved destination gets a real three-way merge commit in the integration
+// worktree. rerere could replay a recorded resolution, so it is disabled; a
+// conflict leaves the unmerged state for inspection and is never resolved here.
+export async function mergeCandidate(
+  path: string,
+  candidateSha: string,
+  commit: { message: string; date: string },
+) {
+  const date = `${Math.floor(Date.parse(commit.date) / 1000)} +0000`;
+  try {
+    await git(
+      path,
+      [
+        "-c",
+        "rerere.enabled=false",
+        "merge",
+        "--no-ff",
+        "--no-edit",
+        "--no-stat",
+        "--no-autostash",
+        "--no-verify-signatures",
+        "--no-rerere-autoupdate",
+        "-m",
+        commit.message,
+        candidateSha,
+      ],
+      {
+        GIT_AUTHOR_NAME: "Local Agent Orchestrator",
+        GIT_AUTHOR_EMAIL: "lao@localhost",
+        GIT_AUTHOR_DATE: date,
+        GIT_COMMITTER_NAME: "Local Agent Orchestrator",
+        GIT_COMMITTER_EMAIL: "lao@localhost",
+        GIT_COMMITTER_DATE: date,
+      },
+    );
+  } catch (error) {
+    if (!(error instanceof GitError) || error.exitCode !== 1) throw error;
+    const conflicts = (
+      await git(path, ["diff", "--name-only", "--diff-filter=U", "-z"])
+    )
+      .split("\0")
+      .filter(Boolean);
+    if (!conflicts.length) throw error;
+    return { resultSha: null, conflicts };
+  }
+  return {
+    resultSha: (
+      await git(path, ["rev-parse", "--verify", "--end-of-options", "HEAD"])
+    ).trim(),
+    conflicts: [],
+  };
+}
+
 async function changedFiles(path: string, from: string, to: string) {
   const fields = (
     await git(path, [
@@ -122,8 +179,78 @@ async function changedFiles(path: string, from: string, to: string) {
   return files;
 }
 
-// The integrated change must be exactly the reviewed candidate change, with no
-// secret-sensitive path, and pass whitespace/conflict-marker checks.
+// How the destination moved since the candidate base. Null when the histories
+// share no commit, so there is no merge base to apply the candidate against.
+export async function destinationDrift(
+  root: string,
+  refs: { baseSha: string; candidateSha: string; destinationSha: string },
+): Promise<IntegrationDrift | null> {
+  let mergeBase: string;
+  try {
+    mergeBase = (
+      await git(root, ["merge-base", refs.baseSha, refs.destinationSha])
+    ).trim();
+  } catch (error) {
+    if (!(error instanceof GitError) || error.exitCode !== 1) throw error;
+    return null;
+  }
+  const files = await changedFiles(root, mergeBase, refs.destinationSha);
+  const destination = new Set(files.map((file) => file.path));
+  const overlapping = (
+    await changedFiles(root, refs.baseSha, refs.candidateSha)
+  )
+    .map((file) => file.path)
+    .filter((file) => destination.has(file));
+  return integrationDriftSchema.parse({
+    mergeBase,
+    baseIsAncestor: mergeBase === refs.baseSha,
+    commits: Number(
+      await git(root, [
+        "rev-list",
+        "--count",
+        `${mergeBase}..${refs.destinationSha}`,
+      ]),
+    ),
+    files: files.slice(0, 200),
+    filesTruncated: files.length > 200,
+    overlapping: overlapping.slice(0, 500),
+  });
+}
+
+// Built-in `union` or a configured custom driver can merge both sides of an
+// overlapping file without reporting a conflict, i.e. silently choose content.
+export async function silentMergeDrivers(
+  path: string,
+  revisions: readonly string[],
+  files: readonly string[],
+) {
+  if (!files.length) return [];
+  const flagged = new Set<string>();
+  for (const revision of revisions) {
+    const fields = (
+      await git(path, [
+        "check-attr",
+        "-z",
+        `--source=${revision}`,
+        "merge",
+        "--",
+        ...files,
+      ])
+    ).split("\0");
+    for (let i = 0; i + 2 < fields.length; i += 3)
+      if (
+        !["unspecified", "set", "unset", "text", "binary"].includes(
+          fields[i + 2] ?? "",
+        )
+      )
+        flagged.add(fields[i] ?? "");
+  }
+  return [...flagged];
+}
+
+// The integration may introduce only reviewed candidate paths, and keeps the
+// candidate's exact content except in files the destination also changed.
+// It must also avoid secret-sensitive paths and pass `git diff --check`.
 export async function verifyIntegrationDiff(
   path: string,
   refs: {
@@ -131,15 +258,32 @@ export async function verifyIntegrationDiff(
     candidateSha: string;
     destinationSha: string;
     resultSha: string;
+    mergeBase: string;
   },
 ) {
   const files = await changedFiles(path, refs.destinationSha, refs.resultSha);
-  const reviewed = await changedFiles(path, refs.baseSha, refs.candidateSha);
-  const sensitive = files.filter((file) => sensitivePath(file.path));
+  const reviewed = new Set(
+    (await changedFiles(path, refs.baseSha, refs.candidateSha)).map(
+      (file) => file.path,
+    ),
+  );
+  const destination = new Set(
+    (await changedFiles(path, refs.mergeBase, refs.destinationSha)).map(
+      (file) => file.path,
+    ),
+  );
+  const altered = (
+    await changedFiles(path, refs.candidateSha, refs.resultSha)
+  ).filter((file) => !destination.has(file.path));
   return {
     files,
-    matchesCandidate: JSON.stringify(files) === JSON.stringify(reviewed),
-    sensitive: sensitive.map((file) => file.path),
+    unreviewed: files
+      .filter((file) => !reviewed.has(file.path))
+      .map((f) => f.path),
+    altered: altered.map((file) => file.path),
+    sensitive: files
+      .filter((file) => sensitivePath(file.path))
+      .map((f) => f.path),
     diffCheck: await diffCheckPasses(path, [
       refs.destinationSha,
       refs.resultSha,
