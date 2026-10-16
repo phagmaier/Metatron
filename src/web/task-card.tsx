@@ -11,6 +11,7 @@ import {
 import type { Dispatch } from "../shared/orchestration.ts";
 import { candidateSchema } from "../shared/worktrees.ts";
 import { readApi, writeApi } from "./api.ts";
+import { IntegrationPanel } from "./integration-panel.tsx";
 
 export function TaskCard({
   task,
@@ -21,6 +22,7 @@ export function TaskCard({
   evidence,
   candidate,
   revision,
+  integrationEvent,
   onError,
 }: {
   task: Task;
@@ -31,6 +33,7 @@ export function TaskCard({
   evidence: Event | undefined;
   candidate: Event | undefined;
   revision: Task | undefined;
+  integrationEvent: number | undefined;
   onError: (error: string) => void;
 }) {
   const captured = candidate
@@ -305,6 +308,14 @@ export function TaskCard({
           Work was not rerun. Recovery/resume controls arrive in M6; this task
           can be cancelled.
         </p>
+      )}
+      {reviewable && !task.revisionSourceTaskId && (
+        <IntegrationPanel
+          task={task}
+          run={run}
+          refresh={integrationEvent}
+          onError={onError}
+        />
       )}
       {attempt?.adapter === "pi" && (
         <details>

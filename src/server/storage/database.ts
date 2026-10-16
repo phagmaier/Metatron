@@ -88,6 +88,11 @@ CREATE UNIQUE INDEX one_review_per_attempt ON reviews(reviewer_attempt_id);
 CREATE TRIGGER reviews_no_update BEFORE UPDATE ON reviews BEGIN SELECT RAISE(ABORT, 'Reviews are append-only'); END;
 CREATE TRIGGER reviews_no_delete BEFORE DELETE ON reviews BEGIN SELECT RAISE(ABORT, 'Reviews are append-only'); END;
 `;
+// Each preview owns one app-owned worktree; a task prepares at most one at a time.
+const migration6 = `
+CREATE TABLE integrations (id TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES tasks(id), candidate_id TEXT NOT NULL REFERENCES integration_candidates(id), path TEXT NOT NULL UNIQUE, data TEXT NOT NULL CHECK(json_valid(data))) STRICT;
+CREATE UNIQUE INDEX one_preparing_integration ON integrations(task_id) WHERE json_extract(data,'$.status')='preparing';
+`;
 function migrateModes(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(migrateModes);
   if (value && typeof value === "object")
@@ -119,7 +124,7 @@ export function openDatabase(path: string) {
       if (version === 0) {
         database.exec(migration1);
         database.exec("PRAGMA user_version=1");
-      } else if (![1, 2, 3, 4, 5].includes(Number(version))) {
+      } else if (![1, 2, 3, 4, 5, 6].includes(Number(version))) {
         throw new DomainError("STORAGE", "Unsupported database schema version");
       }
       if (version === 0 || version === 1) {
@@ -156,6 +161,10 @@ export function openDatabase(path: string) {
       if (Number(version) < 5) {
         database.exec(migration5);
         database.exec("PRAGMA user_version=5");
+      }
+      if (Number(version) < 6) {
+        database.exec(migration6);
+        database.exec("PRAGMA user_version=6");
       }
       database.exec("COMMIT");
     } catch (error) {

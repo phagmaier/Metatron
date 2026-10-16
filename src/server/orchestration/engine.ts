@@ -34,6 +34,7 @@ import { implementationTask, revisionTaskIds } from "../storage/revisions.ts";
 import { Scheduling } from "../storage/scheduling.ts";
 import type { Store } from "../storage/store.ts";
 import { executeFakeTurn } from "./execute.ts";
+import { Integrations } from "./integration.ts";
 import { executeLeadTurn } from "./lead-execute.ts";
 import { createLeadRun, notifyLead, ownerLeadMessage } from "./lead-run.ts";
 import { executeNativeTurn } from "./native-execute.ts";
@@ -50,6 +51,7 @@ export class Engine {
   // Loopback MCP endpoint; null when no app server hosts the gateway.
   readonly gatewayUrl: string | null;
   readonly worktrees: Worktrees;
+  readonly integrations: Integrations;
   readonly nativeStops = new Map<string, () => Promise<void>>();
   private readonly running = new Map<string, Promise<void>>();
   private pumping = false;
@@ -68,6 +70,7 @@ export class Engine {
     this.gatewayUrl = options.gatewayUrl ?? null;
     this.gateway = new Gateway(this);
     this.worktrees = new Worktrees(store, directory);
+    this.integrations = new Integrations(this);
     this.scheduling = new Scheduling(store, directory);
     for (const role of fakeTeamSnapshot.roles)
       store.db
@@ -551,11 +554,13 @@ export class Engine {
   async close() {
     this.stopping = true;
     clearInterval(this.timer);
+    const integrations = this.integrations.close();
     this.gateway.revokeAll();
     while (this.pumping) await delay(10);
     await Promise.allSettled(
       [...this.nativeStops.values()].map((stop) => stop()),
     );
     await Promise.all(this.running.values());
+    await integrations;
   }
 }

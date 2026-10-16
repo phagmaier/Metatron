@@ -165,6 +165,11 @@ export function createApi(store: Store, engine: Engine) {
                 .parse(await engine.reports(parsed.taskId));
               break;
             }
+            case "/api/integrations": {
+              const parsed = z.strictObject({ taskId: idSchema }).parse(query);
+              result = engine.integrations.list(parsed.taskId);
+              break;
+            }
             case "/api/projects":
               z.strictObject({}).parse(query);
               result = projectsResponseSchema.parse({
@@ -253,6 +258,8 @@ export function createApi(store: Store, engine: Engine) {
               requestReview(engine, { role: "owner" }, input, key),
             "POST /api/tasks/revision": (input, key) =>
               requestRevision(engine, { role: "owner" }, input, key),
+            "POST /api/tasks/integration": (input, key) =>
+              engine.integrations.request({ role: "owner" }, input, key),
             "POST /api/tasks/cancel": (input, key) =>
               engine.cancel(
                 z.strictObject({ taskId: idSchema }).parse(input).taskId,

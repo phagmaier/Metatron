@@ -324,19 +324,19 @@ test("a failed review journal write rolls back the review, candidate link and at
   }
 });
 
-test("migration v5 preserves candidates and events from a v4 database while adding review constraints", async () => {
+test("migrations v5-v6 preserve candidates and events from a v4 database while adding review constraints and integrations", async () => {
   const f = await reviewFixture();
   try {
     const events = f.store.events({ limit: 500 });
     f.store.db.exec(
-      "DROP INDEX one_review_per_attempt; DROP TRIGGER reviews_no_update; DROP TRIGGER reviews_no_delete; PRAGMA user_version=4;",
+      "DROP TABLE integrations; DROP INDEX one_review_per_attempt; DROP TRIGGER reviews_no_update; DROP TRIGGER reviews_no_delete; PRAGMA user_version=4;",
     );
     await f.app.close();
     const reopened = new Store(join(f.data, "state.sqlite"));
     try {
       assert.equal(
         reopened.db.prepare("PRAGMA user_version").get()?.user_version,
-        5,
+        6,
       );
       assert.deepEqual(
         getIntegrationCandidate(reopened, f.candidate.id),
@@ -346,11 +346,17 @@ test("migration v5 preserves candidates and events from a v4 database while addi
       assert.deepEqual(
         reopened.db
           .prepare(
-            "SELECT name FROM sqlite_master WHERE name IN ('one_review_per_attempt','reviews_no_update','reviews_no_delete') ORDER BY name",
+            "SELECT name FROM sqlite_master WHERE name IN ('one_review_per_attempt','reviews_no_update','reviews_no_delete','integrations','one_preparing_integration') ORDER BY name",
           )
           .all()
           .map((row) => row.name),
-        ["one_review_per_attempt", "reviews_no_delete", "reviews_no_update"],
+        [
+          "integrations",
+          "one_preparing_integration",
+          "one_review_per_attempt",
+          "reviews_no_delete",
+          "reviews_no_update",
+        ],
       );
     } finally {
       reopened.close();

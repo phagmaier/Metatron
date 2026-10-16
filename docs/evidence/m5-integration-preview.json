@@ -1,0 +1,132 @@
+{
+  "execution": "protocol fixtures only; no native harness/provider calls; GUI driven via Playwright",
+  "database": "/tmp/lao-review-result-bYZxB2/state.sqlite",
+  "repository": "/tmp/lao-git-fixture-XNqI09/repo with spaces",
+  "runId": "2d2c6736-d13e-4b3a-a1a9-b8ef5f8ddcd6",
+  "taskId": "ce114192-1099-47fa-9d4a-259f3dc3ddcf",
+  "candidate": {
+    "id": "279ee530-683f-48cd-90df-321e4643ae24",
+    "baseSha": "2cf67f1f855b4b3db23797cbb08e17c9e13e6aac",
+    "candidateSha": "9e2478e9ab5a6bab25a64a27c6722fbf77702821"
+  },
+  "review": [
+    {
+      "id": "1bcbb315-6969-4ac4-a03d-f3b52afe935f",
+      "recommendation": "pass"
+    }
+  ],
+  "previews": [
+    {
+      "id": "ba9df9e4-c39d-41cf-9d01-b103aeeb4569",
+      "createdAt": "2026-10-16T11:42:58.989Z",
+      "updatedAt": "2026-10-16T11:42:59.147Z",
+      "runId": "2d2c6736-d13e-4b3a-a1a9-b8ef5f8ddcd6",
+      "taskId": "ce114192-1099-47fa-9d4a-259f3dc3ddcf",
+      "implementationTaskId": "ce114192-1099-47fa-9d4a-259f3dc3ddcf",
+      "candidateId": "279ee530-683f-48cd-90df-321e4643ae24",
+      "reviewId": "1bcbb315-6969-4ac4-a03d-f3b52afe935f",
+      "baseSha": "2cf67f1f855b4b3db23797cbb08e17c9e13e6aac",
+      "candidateSha": "9e2478e9ab5a6bab25a64a27c6722fbf77702821",
+      "destinationBranch": "main",
+      "destinationSha": "2cf67f1f855b4b3db23797cbb08e17c9e13e6aac",
+      "worktreePath": "/tmp/lao-review-result-bYZxB2/worktrees/integration-ba9df9e4-c39d-41cf-9d01-b103aeeb4569/checkout",
+      "branch": "lao/integration-ba9df9e4-c39d-41cf-9d01-b103aeeb4569",
+      "tests": [
+        [
+          "grep",
+          "-q",
+          "Protocol",
+          "README.md"
+        ]
+      ],
+      "timeoutSeconds": 600,
+      "status": "passed",
+      "resultSha": "9e2478e9ab5a6bab25a64a27c6722fbf77702821",
+      "files": [
+        {
+          "status": "M",
+          "path": "README.md"
+        }
+      ],
+      "checks": [
+        {
+          "name": "destination",
+          "status": "passed",
+          "detail": "main is at the candidate base 2cf67f1f855b4b3db23797cbb08e17c9e13e6aac"
+        },
+        {
+          "name": "candidate",
+          "status": "passed",
+          "detail": "Candidate branch still records 9e2478e9ab5a6bab25a64a27c6722fbf77702821"
+        },
+        {
+          "name": "apply",
+          "status": "passed",
+          "detail": "Fast-forwarded lao/integration-ba9df9e4-c39d-41cf-9d01-b103aeeb4569 to 9e2478e9ab5a6bab25a64a27c6722fbf77702821"
+        },
+        {
+          "name": "diff",
+          "status": "passed",
+          "detail": "1 changed files, identical to the reviewed candidate"
+        },
+        {
+          "name": "diff_check",
+          "status": "passed",
+          "detail": "git diff --check passed"
+        },
+        {
+          "name": "tests",
+          "status": "passed",
+          "detail": "1/1 declared commands passed"
+        },
+        {
+          "name": "final_destination",
+          "status": "passed",
+          "detail": "main unchanged during preparation"
+        }
+      ],
+      "testResults": [
+        {
+          "argv": [
+            "grep",
+            "-q",
+            "Protocol",
+            "README.md"
+          ],
+          "result": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 8,
+          "artifactId": "0c3e0733-d220-4f50-aa32-b8f9dadfc2c6",
+          "outputTruncated": false
+        }
+      ],
+      "diffArtifactId": "b8d13d0e-8b00-48f6-b3b8-4e9614e442d3",
+      "diagnostic": null
+    }
+  ],
+  "worktreeHead": "9e2478e9ab5a6bab25a64a27c6722fbf77702821",
+  "ownerCheckout": {
+    "before": {
+      "status": "M README.md\n?? notes.txt",
+      "head": "2cf67f1f855b4b3db23797cbb08e17c9e13e6aac",
+      "branch": "main"
+    },
+    "after": {
+      "status": "M README.md\n?? notes.txt",
+      "head": "2cf67f1f855b4b3db23797cbb08e17c9e13e6aac",
+      "branch": "main",
+      "candidateRef": "9e2478e9ab5a6bab25a64a27c6722fbf77702821",
+      "integrationBranches": [
+        "lao/integration-ba9df9e4-c39d-41cf-9d01-b103aeeb4569"
+      ]
+    },
+    "untouched": true
+  },
+  "taskStatusAfter": "AWAITING_REVIEW",
+  "restart": {
+    "previewIdentical": true,
+    "attemptsBefore": 2,
+    "attemptsAfter": 2
+  }
+}

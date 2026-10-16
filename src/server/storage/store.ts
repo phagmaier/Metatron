@@ -31,6 +31,7 @@ import {
   DomainError,
 } from "../../shared/domain/states.ts";
 import { openDatabase } from "./database.ts";
+import { interruptIntegrations } from "./integrations.ts";
 import { appendEvent, queryEvents } from "./journal.ts";
 import { mutate } from "./mutations.ts";
 import { recoverInterrupted } from "./recovery.ts";
@@ -542,6 +543,7 @@ export class Store {
 
   recoverInterrupted() {
     recoverInterrupted(this.db, this);
+    interruptIntegrations(this);
     reconcileCompletedRevisions(this);
   }
 }

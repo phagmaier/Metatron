@@ -351,6 +351,13 @@ function App() {
                                   e.taskId === task.id &&
                                   e.type === "worktree.captured",
                               )}
+                              integrationEvent={
+                                merged.findLast(
+                                  (e) =>
+                                    e.taskId === task.id &&
+                                    e.type.startsWith("integration."),
+                                )?.sequence
+                              }
                               candidate={merged.findLast(
                                 (e) =>
                                   e.taskId ===
