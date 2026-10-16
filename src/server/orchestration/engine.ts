@@ -30,6 +30,7 @@ import { Gateway } from "../gateway/mcp.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
 import { Worktrees } from "../git/worktrees.ts";
 import { mutate } from "../storage/mutations.ts";
+import { implementationTask, revisionTaskIds } from "../storage/revisions.ts";
 import { Scheduling } from "../storage/scheduling.ts";
 import type { Store } from "../storage/store.ts";
 import { executeFakeTurn } from "./execute.ts";
@@ -281,7 +282,24 @@ export class Engine {
         const dispatch = this.scheduling
           .list()
           .find((d) => d.taskId === task.id);
-        if (dispatch?.state !== "active") this.scheduling.release(task.id);
+        if (dispatch && dispatch.state !== "active")
+          this.scheduling.release(dispatch);
+        const revision = implementationTask(this.store, task);
+        if (
+          revision.id !== task.id &&
+          [
+            "BACKLOG",
+            "READY",
+            "QUEUED",
+            "RUNNING",
+            "AWAITING_REVIEW",
+            "CHANGES_REQUESTED",
+            "RETRY_DECISION",
+            "FAILED",
+            "INTERRUPTED",
+          ].includes(revision.status)
+        )
+          this.cancel(revision.id, `${key}:revision`);
         return task;
       },
     );
@@ -381,7 +399,7 @@ export class Engine {
                 );
             })
             .finally(() => {
-              this.scheduling.release(dispatch.taskId);
+              this.scheduling.release(reserved);
               this.running.delete(dispatch.taskId);
             })
             .catch((error: unknown) => {
@@ -395,7 +413,7 @@ export class Engine {
           this.running.set(dispatch.taskId, execution);
         } catch (error) {
           if (!(error instanceof DomainError)) throw error;
-          this.scheduling.block(dispatch.taskId, error.message);
+          this.scheduling.block(dispatch, error.message);
         }
       }
     } finally {
@@ -508,11 +526,13 @@ export class Engine {
     return artifact;
   }
   async reports(taskId: string) {
-    this.store.getTask(taskId);
-    const artifacts = this.store.db
-      .prepare("SELECT data FROM artifacts WHERE task_id=?")
-      .all(taskId)
-      .map((row) => artifactSchema.parse(JSON.parse(String(row.data))));
+    const task = this.store.getTask(taskId);
+    const artifacts = revisionTaskIds(this.store, task).flatMap((id) =>
+      this.store.db
+        .prepare("SELECT data FROM artifacts WHERE task_id=?")
+        .all(id)
+        .map((row) => artifactSchema.parse(JSON.parse(String(row.data)))),
+    );
     return Promise.all(
       artifacts.map(async (artifact) => ({
         artifact,

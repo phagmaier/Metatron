@@ -624,6 +624,105 @@ test("an urgent worker issue wakes the Lead in a separately queued turn", async 
   }
 });
 
+test("Supervised revisions preserve the implementer pin and wait for an owner without widening permissions", async () => {
+  const f = await gatewayFixture("supervised");
+  try {
+    const original = f.worker("revision-source");
+    f.store.transitionTask(
+      {
+        id: original.task.id,
+        expectedStatus: "RUNNING",
+        status: "AWAITING_REVIEW",
+        reason: "Fixture result",
+      },
+      "source-ready",
+    );
+    const count = f.store.listAttempts().length;
+    const response = await f.tool(f.lead, "request_revision", {
+      taskId: original.task.id,
+      feedback: "Cite the relevant lines",
+    });
+    assert.equal(response.isError, false);
+    const id = z
+      .string()
+      .parse(response.structuredContent.result.revisionTaskId);
+    const revision = f.store.getTask(id);
+    assert.equal(
+      response.structuredContent.result.outcome,
+      "awaiting_owner_approval",
+    );
+    assert.equal(revision.status, "BACKLOG");
+    assert.equal(revision.proposedProfileId, reader);
+    assert.equal(revision.ownerPinned, true);
+    assert.equal(f.store.listAttempts().length, count);
+    assert.equal(
+      f.engine.scheduling.list().some((d) => d.taskId === id),
+      false,
+    );
+    assert.throws(
+      () =>
+        f.engine.scheduling.enqueue(
+          { role: "owner" },
+          { taskId: id, profileId: writer },
+          "unsafe-override",
+        ),
+      { code: "POLICY_DENIED" },
+    );
+    f.engine.scheduling.enqueue(
+      { role: "owner" },
+      { taskId: id, profileId: reader },
+      "owner-approved",
+    );
+    assert.equal(f.store.getTask(id).status, "QUEUED");
+    const denied = await f.tool(original.token, "request_revision", {
+      taskId: original.task.id,
+      feedback: "Spawn for me",
+    });
+    assert.equal(denied.structuredContent.error.code, "POLICY_DENIED");
+    f.store.updateRun({ id: f.run.id, mode: "chat_plan" }, "chat");
+    const planning = await f.tool(f.lead, "request_revision", {
+      taskId: original.task.id,
+      feedback: "Bypass chat",
+    });
+    assert.equal(planning.structuredContent.error.code, "POLICY_DENIED");
+  } finally {
+    await f.close();
+  }
+});
+
+test("an exhausted worker launch budget rolls back the whole revision request", async () => {
+  const f = await gatewayFixture("autonomous_bounded", {
+    maxTotalWorkerLaunchesPerRun: 1,
+  });
+  try {
+    const original = f.worker("last-launch");
+    f.store.transitionTask(
+      {
+        id: original.task.id,
+        expectedStatus: "RUNNING",
+        status: "AWAITING_REVIEW",
+        reason: "Fixture result",
+      },
+      "source-ready",
+    );
+    const tasks = f.store.listTasks(f.run.id);
+    const response = await f.tool(f.lead, "request_revision", {
+      taskId: original.task.id,
+      feedback: "Do not bypass the cap",
+    });
+    assert.equal(response.structuredContent.error.code, "BUDGET_EXCEEDED");
+    assert.deepEqual(f.store.listTasks(f.run.id), tasks);
+    assert.equal(
+      f.store
+        .events({ runId: f.run.id, limit: 500 })
+        .some((event) => event.type === "task.revision_requested"),
+      false,
+    );
+  } finally {
+    await f.close();
+  }
+});
+
 test("Lead escalations and questions become non-blocking owner requests scoped to the run and session", async () => {
   const f = await gatewayFixture("chat_plan");
   try {

@@ -12,6 +12,7 @@ import {
   listIntegrationCandidates,
 } from "../storage/candidates.ts";
 import { mutate } from "../storage/mutations.ts";
+import { implementationTask, revisionAncestors } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
 import { authorize } from "./policy.ts";
 
@@ -52,9 +53,13 @@ export function requestReview(
     { actor, ...data },
     z.unknown(),
     () => {
-      const current = store.getTask(task.id);
-      const candidate = listIntegrationCandidates(store, task.id).at(-1);
-      if (current.status !== "AWAITING_REVIEW" || !candidate)
+      const current = implementationTask(store, store.getTask(task.id));
+      const candidate = listIntegrationCandidates(store, current.id).at(-1);
+      if (
+        store.getTask(task.id).status !== "AWAITING_REVIEW" ||
+        current.status !== "AWAITING_REVIEW" ||
+        !candidate
+      )
         throw new DomainError(
           "CONFLICT",
           "Only a task awaiting review with a captured candidate can be reviewed",
@@ -66,7 +71,7 @@ export function requestReview(
           objective: `Independently review the candidate for "${task.title}" without modifying any file. Your worktree is checked out at candidate commit ${candidate.candidateSha} (base ${candidate.baseSha}); the whole repository at that commit is available, not only the diff. Report findings with file:line locations, severity and evidence, then recommend pass or changes requested.`,
           acceptanceCriteria: task.acceptanceCriteria,
           priority: task.priority,
-          parentTaskId: task.id,
+          parentTaskId: current.id,
           origin: actor.role === "owner" ? "owner" : "lead",
         },
         `${key}:task`,
@@ -123,7 +128,19 @@ export async function reviewPacket(
   if (!task.reviewCandidateId) return null;
   const { store } = engine;
   const candidate = getIntegrationCandidate(store, task.reviewCandidateId);
-  const original = store.getTask(candidate.taskId);
+  const implementation = store.getTask(candidate.taskId);
+  const original =
+    revisionAncestors(store, implementation).at(-1) ?? implementation;
+  const revision = store.db
+    .prepare(
+      "SELECT payload FROM events WHERE type='task.revision_requested' AND json_extract(payload,'$.revisionTaskId')=? ORDER BY sequence DESC LIMIT 1",
+    )
+    .get(implementation.id);
+  const feedback = revision
+    ? z
+        .object({ feedback: z.string() })
+        .parse(JSON.parse(String(revision.payload))).feedback
+    : null;
   const cwd = store.getAttempt(attemptId).cwd;
   const range = [
     "diff",
@@ -140,6 +157,7 @@ export async function reviewPacket(
     task.objective,
     `Original task: ${original.title}\n${original.objective}`,
     `Acceptance criteria:\n${original.acceptanceCriteria.map((c) => `- ${c}`).join("\n") || "- none recorded"}`,
+    ...(feedback ? [`Requested revision:\n${feedback}`] : []),
     reviewInstructions,
     `Changed files (base ${candidate.baseSha} -> candidate ${candidate.candidateSha}):\n${files}`,
     `Candidate diff${truncated ? ` (first ${maxDiff} characters; read the changed files for the rest)` : ""}:\n${diff.slice(0, maxDiff)}`,

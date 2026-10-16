@@ -25,6 +25,7 @@ import { capabilitiesSchema } from "./adapters/contract.ts";
 import { inspectRepository } from "./git/inspect.ts";
 import type { Engine } from "./orchestration/engine.ts";
 import { requestReview } from "./orchestration/review.ts";
+import { requestRevision } from "./orchestration/revision.ts";
 import type { Store } from "./storage/store.ts";
 
 function json(
@@ -250,6 +251,8 @@ export function createApi(store: Store, engine: Engine) {
               engine.scheduling.enqueue({ role: "owner" }, input, key),
             "POST /api/tasks/review": (input, key) =>
               requestReview(engine, { role: "owner" }, input, key),
+            "POST /api/tasks/revision": (input, key) =>
+              requestRevision(engine, { role: "owner" }, input, key),
             "POST /api/tasks/cancel": (input, key) =>
               engine.cancel(
                 z.strictObject({ taskId: idSchema }).parse(input).taskId,

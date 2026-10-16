@@ -329,6 +329,9 @@ function App() {
                             <TaskCard
                               key={task.id}
                               task={task}
+                              revision={tasks.find(
+                                (item) => item.id === task.latestRevisionTaskId,
+                              )}
                               run={selectedRun}
                               session={runSessions.find(
                                 (session) =>
@@ -350,7 +353,8 @@ function App() {
                               )}
                               candidate={merged.findLast(
                                 (e) =>
-                                  e.taskId === task.id &&
+                                  e.taskId ===
+                                    (task.latestRevisionTaskId ?? task.id) &&
                                   e.type === "candidate.captured",
                               )}
                               onError={setError}

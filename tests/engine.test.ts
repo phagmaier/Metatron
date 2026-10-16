@@ -364,6 +364,95 @@ test("fake failure and ambiguous disconnect require a retry decision and free al
     }
   }
 });
+for (const scenario of ["failure", "disconnect"] as const) {
+  test(`explicit retries after fake ${scenario} launch fresh attempts and release every reservation`, async () => {
+    const f = await setup();
+    try {
+      const run = await f.engine.startRun(
+        { ...f.input, mode: "supervised" },
+        "start",
+      );
+      await f.engine.idle();
+      const task = f.store.listTasks(run.id).find((t) => t.kind === "work");
+      assert.ok(task);
+      const input = {
+        taskId: task.id,
+        profileId: fakeTeamSnapshot.preset.workerProfileIds[0],
+        scenario,
+      };
+      let previous = f.engine.scheduling.enqueue(
+        { role: "owner" },
+        input,
+        "initial-assignment",
+      );
+      await f.engine.idle();
+      const history = f.store
+        .listAttempts()
+        .filter((a) => a.taskId === task.id);
+      for (const [index, outcome] of [scenario, "success"].entries()) {
+        assert.equal(f.store.getTask(task.id).status, "RETRY_DECISION");
+        f.store.transitionTask(
+          {
+            id: task.id,
+            expectedStatus: "RETRY_DECISION",
+            status: "READY",
+            reason: "Owner explicitly chose a fresh attempt",
+          },
+          `retry-${index}`,
+        );
+        const assignment = { ...input, scenario: outcome };
+        const queued = f.engine.scheduling.enqueue(
+          { role: "owner" },
+          assignment,
+          `retry-assignment-${index}`,
+        );
+        assert.notEqual(queued.sequence, previous.sequence);
+        assert.equal(queued.attemptId, null);
+        assert.deepEqual(
+          f.engine.scheduling.enqueue(
+            { role: "owner" },
+            assignment,
+            `retry-assignment-${index}`,
+          ),
+          queued,
+        );
+        await f.engine.idle();
+        for (const attempt of history)
+          assert.deepEqual(f.store.getAttempt(attempt.id), attempt);
+        history.push(
+          ...f.store
+            .listAttempts()
+            .filter(
+              (a) =>
+                a.taskId === task.id && !history.some((h) => h.id === a.id),
+            ),
+        );
+        assert.equal(history.length, index + 2);
+        assert.equal(
+          f.store.db.prepare("SELECT COUNT(*) count FROM reservations").get()
+            ?.count,
+          0,
+        );
+        previous = queued;
+      }
+      assert.equal(f.store.getTask(task.id).status, "AWAITING_REVIEW");
+      assert.equal(new Set(history.map((a) => a.dispatchId)).size, 3);
+      const sessions = f.store
+        .listSessions()
+        .filter((s) => history.some((a) => a.id === s.attemptId));
+      assert.equal(sessions.length, 3);
+      assert.equal(new Set(sessions.map((s) => s.nativeSessionId)).size, 3);
+      assert.equal((await f.engine.reports(task.id)).length, 1);
+      await f.engine.pump();
+      assert.equal(
+        f.store.listAttempts().filter((a) => a.taskId === task.id).length,
+        3,
+      );
+    } finally {
+      await f.close();
+    }
+  });
+}
 test("pause holds queued work, cancellation releases it, and changed HEAD blocks dispatch", async () => {
   const f = await setup();
   try {

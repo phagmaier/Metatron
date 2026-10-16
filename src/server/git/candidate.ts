@@ -68,6 +68,7 @@ export async function captureCandidate(
   worktree: Worktree,
   declaredFiles: readonly string[],
   commit: { message: string; date: string },
+  startSha = worktree.repository.baseSha,
 ): Promise<Candidate> {
   const root = worktree.path;
   const baseSha = worktree.repository.baseSha;
@@ -92,11 +93,13 @@ export async function captureCandidate(
       declaredUnchanged,
       blockers,
     });
-  if (headSha !== baseSha)
+  if (headSha !== startSha)
     return result(
       "blocked",
       [],
-      ["Worktree HEAD moved from the recorded base; owner review required"],
+      [
+        "Worktree HEAD moved from its recorded starting commit; owner review required",
+      ],
     );
   const index = join(dirname(root), `candidate-${randomUUID()}.index`);
   const env = { GIT_INDEX_FILE: index };
@@ -119,14 +122,40 @@ export async function captureCandidate(
     )
       .split("\0")
       .filter(Boolean);
+    // Previously captured additions are tracked in the revision's starting
+    // tree. Keep them in the cumulative candidate without asking the worker
+    // to redeclare old files; new additions still require explicit declaration.
+    const inherited =
+      startSha === baseSha
+        ? []
+        : (
+            await git(root, [
+              "diff",
+              "--name-only",
+              "--diff-filter=A",
+              "--no-renames",
+              "-z",
+              baseSha,
+              startSha,
+              "--",
+            ])
+          )
+            .split("\0")
+            .filter(Boolean);
     const declared = new Set(
       declaredFiles.map((path) => normalizeDeclared(root, path)),
     );
+    const allowedAdditions = new Set([...declared, ...inherited]);
     const files: CandidateFile[] = [];
-    for (const record of records)
-      files.push(
-        await classify(root, record.slice(0, 2), record.slice(3), declared),
-      );
+    for (const record of records) {
+      const status = record.slice(0, 2);
+      // The private index is seeded from the run base. For revisions its
+      // difference from HEAD is expected; only files versus that index matter.
+      const code =
+        status === "??" || status === "!!" ? status : ` ${status[1]}`;
+      if (code === "  ") continue;
+      files.push(await classify(root, code, record.slice(3), allowedAdditions));
+    }
     const declaredUnchanged = [...declared].filter(
       (path) => !files.some((file) => file.path === path),
     );
@@ -138,7 +167,8 @@ export async function captureCandidate(
       .map((file) => file.path);
     if (blockers.length)
       return result("blocked", files, blockers, declaredUnchanged);
-    if (!included.length) return result("empty", files, [], declaredUnchanged);
+    if (!included.length && startSha === baseSha)
+      return result("empty", files, [], declaredUnchanged);
     for (let i = 0; i < included.length; i += 200)
       await git(
         root,

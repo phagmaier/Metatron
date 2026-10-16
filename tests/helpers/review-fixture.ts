@@ -10,9 +10,13 @@ import { listIntegrationCandidates } from "../../src/server/storage/candidates.t
 import { createGitFixture } from "./git-fixture.ts";
 
 // Real loopback gateway and Pi protocol subprocess; no provider/native harness.
-export async function reviewFixture(scenario = "review-pass") {
+export async function reviewFixture(
+  scenario = "review-pass",
+  initialWriterScenario = "tracked",
+) {
   const repo = await createGitFixture();
   const data = await mkdtemp("/tmp/lao-review-result-");
+  let writerScenario = initialWriterScenario;
   const pi = new PiAdapter(
     data,
     (_args, cwd, env) =>
@@ -23,7 +27,9 @@ export async function reviewFixture(scenario = "review-pass") {
         {
           ...env,
           LAO_FIXTURE_SCENARIO:
-            env.LAO_PI_PERMISSION === "workspace_write" ? "tracked" : scenario,
+            env.LAO_PI_PERMISSION === "workspace_write"
+              ? writerScenario
+              : scenario,
         },
       ),
   );
@@ -72,5 +78,18 @@ export async function reviewFixture(scenario = "review-pass") {
     assert.ok(task);
     return task;
   };
-  return { repo, data, app, engine, store, run, original, candidate, request };
+  return {
+    repo,
+    data,
+    app,
+    engine,
+    store,
+    run,
+    original,
+    candidate,
+    request,
+    setWriterScenario(value: string) {
+      writerScenario = value;
+    },
+  };
 }

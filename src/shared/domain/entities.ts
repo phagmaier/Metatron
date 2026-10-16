@@ -208,6 +208,10 @@ export const taskSchema = z.strictObject({
   kind: z.enum(["lead", "work"]).default("work"),
   // Set only by the engine: a read-only review of this immutable candidate.
   reviewCandidateId: idSchema.nullable().default(null),
+  // Engine-owned revision lineage and immutable handoff; generic CRUD cannot set these.
+  revisionSourceTaskId: idSchema.nullable().default(null),
+  revisionCandidateId: idSchema.nullable().default(null),
+  latestRevisionTaskId: idSchema.nullable().default(null),
 });
 export type Task = z.infer<typeof taskSchema>;
 export const attemptSchema = z.strictObject({

@@ -11,9 +11,11 @@ import { GitError } from "../git/command.ts";
 import { createIntegrationCandidate } from "../storage/candidates.ts";
 import { mutate } from "../storage/mutations.ts";
 import { createReview } from "../storage/reviews.ts";
+import { reconcileRevision } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 import { reviewPacket } from "./review.ts";
+import { revisionPacket } from "./revision.ts";
 
 export async function executeNativeTurn(
   engine: Engine,
@@ -65,7 +67,9 @@ export async function executeNativeTurn(
   try {
     await engine.worktrees.prepare(attemptId);
     const prompt =
-      (await reviewPacket(engine, task, attemptId)) ?? task.objective;
+      (await reviewPacket(engine, task, attemptId)) ??
+      (await revisionPacket(engine, task, attemptId)) ??
+      task.objective;
     if (store.getTask(task.id).status === "CANCELLED") {
       interrupted = true;
       throw new Error("Owner cancelled before native process launch");
@@ -96,7 +100,7 @@ export async function executeNativeTurn(
       thinking: profile.thinking,
       permission: profile.permission,
       contextPolicy: "fresh",
-      contextPacket: task.objective,
+      contextPacket: prompt,
       toolEndpoint: token ? engine.gatewayUrl : null,
       environment: token ? { LAO_GATEWAY_TOKEN: token } : {},
     });
@@ -231,7 +235,7 @@ export async function executeNativeTurn(
         // Writers are gated by candidate capture below; readers and reviewers
         // by any change or a HEAD that left their starting commit.
         const start =
-          engine.worktrees.reviewedCandidate(attemptId)?.candidateSha ??
+          engine.worktrees.startingCandidate(attemptId)?.candidateSha ??
           evidence.baseSha;
         if (
           profile.permission === "read_only" &&
@@ -412,6 +416,7 @@ export async function executeNativeTurn(
         },
         `task:${attemptId}:review`,
       );
+      reconcileRevision(store, task.id, attemptId);
       notifyLead(
         engine,
         task.id,

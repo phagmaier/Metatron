@@ -13,12 +13,13 @@ import {
   toolSchema,
 } from "../../shared/orchestration.ts";
 import { listIntegrationCandidates } from "../storage/candidates.ts";
-import { mutate } from "../storage/mutations.ts";
 import { listReviews } from "../storage/reviews.ts";
+import { implementationTask, revisionTaskIds } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 import { authorize } from "./policy.ts";
 import { requestReview, reviewInstructions } from "./review.ts";
+import { requestRevision } from "./revision.ts";
 
 const summary = (task: Task) => ({
   taskId: task.id,
@@ -31,6 +32,8 @@ const summary = (task: Task) => ({
   ownerPinned: task.ownerPinned,
   parentTaskId: task.parentTaskId,
   reviewCandidateId: task.reviewCandidateId,
+  revisionSourceTaskId: task.revisionSourceTaskId,
+  latestRevisionTaskId: task.latestRevisionTaskId,
 });
 function eventCount(engine: Engine, runId: string, type: string) {
   return Number(
@@ -71,12 +74,6 @@ function workTask(engine: Engine, taskId: string) {
   if (task.kind !== "work")
     throw new DomainError("POLICY_DENIED", "Lead turns are not worker tasks");
   return task;
-}
-function revisionRoot(engine: Engine, task: Task) {
-  let current = task;
-  for (let depth = 0; current.parentTaskId && depth < 100; depth++)
-    current = engine.store.getTask(current.parentTaskId);
-  return current;
 }
 export function runTool(
   engine: Engine,
@@ -165,7 +162,8 @@ export function runTool(
       };
     }
     case "read_report": {
-      const task = workTask(engine, data.taskId);
+      const requested = workTask(engine, data.taskId);
+      const task = implementationTask(store, requested);
       const result = latestPayload(engine, task.id, "worker.result");
       const saved = latestPayload(engine, task.id, "report.saved");
       const evidence = latestPayload(engine, task.id, "worktree.captured");
@@ -185,8 +183,9 @@ export function runTool(
           ).slice(0, 4000)
         : null;
       return {
-        taskId: task.id,
-        status: task.status,
+        taskId: requested.id,
+        implementationTaskId: task.id,
+        status: requested.status,
         attemptId: result?.attemptId ?? saved?.attemptId ?? null,
         structuredReport:
           typeof result?.payload.report === "object"
@@ -211,7 +210,9 @@ export function runTool(
               declaredUnchanged: candidate.payload.declaredUnchanged,
             }
           : null,
-        reviews: listReviews(store, task.id),
+        reviews: revisionTaskIds(store, requested).flatMap((id) =>
+          listReviews(store, id),
+        ),
         note: "Git evidence and candidates are engine-captured; model claims are not verified by them. Review submissions stay provisional until completion and clean Git checks; only reviews contains recorded reviews. A recommendation grants no integration approval.",
       };
     }
@@ -251,87 +252,13 @@ export function runTool(
         { taskId: data.taskId, profileId: data.profileId },
         key,
       );
-    case "request_revision": {
-      const task = workTask(engine, data.taskId);
-      if (task.reviewCandidateId)
-        throw new DomainError(
-          "POLICY_DENIED",
-          "Revise the implementation task, not its review",
-        );
-      if (task.status !== "AWAITING_REVIEW" || !task.assignedProfileId)
-        throw new DomainError(
-          "CONFLICT",
-          "Only an assigned task awaiting review can be revised",
-        );
-      const profileId = task.assignedProfileId;
-      const root = revisionRoot(engine, task);
-      const cycles = Number(
-        store.db
-          .prepare(
-            "SELECT count(*) AS n FROM events WHERE run_id=? AND type='task.revision_requested' AND json_extract(payload,'$.rootTaskId')=?",
-          )
-          .get(run.id, root.id)?.n ?? 0,
+    case "request_revision":
+      return requestRevision(
+        engine,
+        actor,
+        { taskId: data.taskId, feedback: data.feedback },
+        key,
       );
-      if (cycles >= run.limits.maxRevisionCyclesPerTask)
-        throw new DomainError(
-          "BUDGET_EXCEEDED",
-          "Revision cycle budget exhausted for this task",
-        );
-      const previous = latestPayload(engine, task.id, "worker.result")?.payload
-        .report;
-      return mutate(store.db, key, "requestRevision", data, z.unknown(), () => {
-        store.transitionTask(
-          {
-            id: task.id,
-            expectedStatus: "AWAITING_REVIEW",
-            status: "CHANGES_REQUESTED",
-            reason: "Lead requested revision",
-          },
-          `${key}:changes`,
-        );
-        const revision = store.createTask(
-          {
-            runId,
-            title: `Revision ${cycles + 1}: ${root.title}`.slice(0, 200),
-            objective:
-              `${root.objective}\n\nRevision feedback from the Lead:\n${data.feedback}\n\nPrevious attempt summary:\n${typeof previous === "object" && previous && "summary" in previous ? String(previous.summary) : "No structured report was submitted."}`.slice(
-                0,
-                32_000,
-              ),
-            acceptanceCriteria: root.acceptanceCriteria,
-            parentTaskId: task.id,
-            origin: "lead",
-          },
-          `${key}:task`,
-        );
-        store.recordEvent(
-          {
-            runId,
-            taskId: task.id,
-            type: "task.revision_requested",
-            correlationId: key,
-            payload: {
-              rootTaskId: root.id,
-              revisionTaskId: revision.id,
-              cycle: cycles + 1,
-              feedback: data.feedback,
-            },
-          },
-          `${key}:event`,
-        );
-        return run.mode === "supervised"
-          ? engine.scheduling.propose(revision.id, profileId, `${key}:proposal`)
-          : {
-              outcome: "queued",
-              revisionTaskId: revision.id,
-              dispatch: engine.scheduling.enqueue(
-                actor,
-                { taskId: revision.id, profileId },
-                `${key}:assign`,
-              ),
-            };
-      });
-    }
     case "escalate_issue":
     case "request_human_input":
       return store.createHumanRequest(
@@ -366,6 +293,13 @@ export function runTool(
           ? {
               ...latestPayload(engine, task.id, "review.packet")?.payload,
               rule: "Independently inspect the candidate and surrounding code. Do not modify files. Findings use repository-relative file paths and positive line numbers (candidate lines, or base lines for deleted files). Shell is disabled: tests must be not_run. Submit a structured recommendation through submit_result; text alone cannot complete a review.",
+            }
+          : null,
+        revision: task.revisionSourceTaskId
+          ? {
+              ...latestPayload(engine, task.id, "revision.packet")?.payload,
+              sourceTaskId: task.revisionSourceTaskId,
+              candidateId: task.revisionCandidateId,
             }
           : null,
         reportShape: task.reviewCandidateId

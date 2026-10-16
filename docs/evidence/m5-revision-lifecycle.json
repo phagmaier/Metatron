@@ -1,0 +1,113 @@
+{
+  "kind": "Pi RPC protocol fixtures only; no provider calls",
+  "render": "Read-only Chromium preview; SSE closed to allow finite CLI capture, not an interactive browser test",
+  "database": "/tmp/lao-review-result-y1P3kx/state.sqlite",
+  "repository": "/tmp/lao-git-fixture-qGztNW/repo with spaces",
+  "runId": "fa88f75b-8762-4b0f-a249-464d9f76abea",
+  "originalTaskId": "bafbaa3d-809c-4834-8943-be3325d230e4",
+  "revisionTaskId": "163ee133-ff18-4de7-b76b-ba859be12f7c",
+  "sourceCandidate": {
+    "id": "d8834ff2-2f83-40a7-a6a1-60072a3af17a",
+    "createdAt": "2026-10-16T10:52:25.972Z",
+    "updatedAt": "2026-10-16T10:52:25.972Z",
+    "taskId": "bafbaa3d-809c-4834-8943-be3325d230e4",
+    "attemptId": "ad9661e1-c9ed-4f11-b869-f01a67a0d716",
+    "baseSha": "dc543a61c272c5f213ff1f7ff5898174946c07a0",
+    "candidateSha": "b021c4b8f8bc05cb831b9b6096d89d2cc345232d",
+    "reportSubmitted": true,
+    "reviewIds": [],
+    "status": "proposed",
+    "humanDecision": null,
+    "decidedAt": null
+  },
+  "revisedCandidate": {
+    "id": "aa04b561-a2f5-4bcd-92a8-5995f549de3f",
+    "createdAt": "2026-10-16T10:52:28.029Z",
+    "updatedAt": "2026-10-16T10:52:28.029Z",
+    "taskId": "163ee133-ff18-4de7-b76b-ba859be12f7c",
+    "attemptId": "1fee0e9c-dbae-4791-88e2-e5d3bcd56529",
+    "baseSha": "dc543a61c272c5f213ff1f7ff5898174946c07a0",
+    "candidateSha": "a7a311738be2852de03b227c02f3c006dc99289d",
+    "reportSubmitted": true,
+    "reviewIds": [],
+    "status": "proposed",
+    "humanDecision": null,
+    "decidedAt": null
+  },
+  "reviewTaskId": "fa3b2547-9acc-4ba3-aae9-205c8cbe8041",
+  "reviewHistory": [
+    {
+      "summary": "Fixture review: README loses the project heading",
+      "recommendation": "changes_requested",
+      "findings": [
+        {
+          "severity": "important",
+          "file": "README.md",
+          "line": 1,
+          "justification": "Restore the project heading so readers can identify the project.",
+          "evidence": "The candidate replaces the heading with 'Protocol fixture result'.",
+          "confidence": 0.95
+        }
+      ],
+      "tests": [
+        {
+          "command": "Tests unavailable: shell is disabled",
+          "result": "not_run"
+        }
+      ],
+      "id": "ad646695-9434-4138-8803-994483dca424",
+      "createdAt": "2026-10-16T10:52:27.229Z",
+      "updatedAt": "2026-10-16T10:52:27.229Z",
+      "taskId": "bafbaa3d-809c-4834-8943-be3325d230e4",
+      "reviewerAttemptId": "807e25e5-eeb0-4e3d-b68b-727b72afe9f0",
+      "candidateId": "d8834ff2-2f83-40a7-a6a1-60072a3af17a"
+    },
+    {
+      "summary": "Fixture review: README loses the project heading",
+      "recommendation": "changes_requested",
+      "findings": [
+        {
+          "severity": "important",
+          "file": "README.md",
+          "line": 1,
+          "justification": "Restore the project heading so readers can identify the project.",
+          "evidence": "The candidate replaces the heading with 'Protocol fixture result'.",
+          "confidence": 0.95
+        }
+      ],
+      "tests": [
+        {
+          "command": "Tests unavailable: shell is disabled",
+          "result": "not_run"
+        }
+      ],
+      "id": "0971f251-9d92-49eb-9d6a-b8e4751b19b9",
+      "createdAt": "2026-10-16T10:52:28.743Z",
+      "updatedAt": "2026-10-16T10:52:28.743Z",
+      "taskId": "163ee133-ff18-4de7-b76b-ba859be12f7c",
+      "reviewerAttemptId": "0c6abc40-289f-4b5d-98d7-3b671e2cc003",
+      "candidateId": "aa04b561-a2f5-4bcd-92a8-5995f549de3f"
+    }
+  ],
+  "reports": [
+    {
+      "taskId": "bafbaa3d-809c-4834-8943-be3325d230e4",
+      "kind": "report"
+    },
+    {
+      "taskId": "163ee133-ff18-4de7-b76b-ba859be12f7c",
+      "kind": "reference"
+    },
+    {
+      "taskId": "163ee133-ff18-4de7-b76b-ba859be12f7c",
+      "kind": "report"
+    }
+  ],
+  "attempts": 4,
+  "afterRestartAttempts": 4,
+  "originalStatus": "AWAITING_REVIEW",
+  "revisionStatus": "AWAITING_REVIEW",
+  "ownerCheckout": "clean",
+  "originalCandidateBranch": "unchanged",
+  "screenshot": "m5-revision-lifecycle.png"
+}

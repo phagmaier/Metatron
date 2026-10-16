@@ -54,9 +54,9 @@ test("scheduler reserves caps atomically, retries queued work later, and counts 
     assert.equal(scheduler.reserve(at(queue, 0)), first);
     assert.equal(scheduler.reserve(at(queue, 1)), null);
     assert.equal(f.store.listAttempts().length, 1);
-    scheduler.release(at(queue, 0).taskId);
+    scheduler.release(at(queue, 0));
     assert.ok(scheduler.reserve(at(queue, 1)));
-    scheduler.release(at(queue, 1).taskId);
+    scheduler.release(at(queue, 1));
     assert.throws(() => scheduler.reserve(at(queue, 2)), {
       code: "BUDGET_EXCEEDED",
     });
@@ -102,7 +102,7 @@ test("one writable path has one owner even when writer slots are available", asy
       .run(at(queue, 0).cwd, at(queue, 1).taskId);
     assert.ok(scheduler.reserve(at(queue, 0)));
     assert.equal(scheduler.reserve(at(queue, 1)), null);
-    scheduler.release(at(queue, 0).taskId);
+    scheduler.release(at(queue, 0));
     assert.ok(scheduler.reserve(at(queue, 1)));
   } finally {
     await f.close();
@@ -232,7 +232,7 @@ test("active Lead turns consume total slots, idle sessions do not, and reader ca
       "reader-queue",
     );
     assert.equal(scheduler.reserve(queued), null);
-    scheduler.release(lead.id);
+    scheduler.release(leadDispatch);
     assert.ok(scheduler.reserve(queued));
     assert.equal(f.store.getSession(session.id).state, "idle");
     const second = f.store.createTask(
@@ -259,6 +259,10 @@ test("restart releases reserved slots and retains ambiguous dispatch history wit
         title: "Crash",
         initialPrompt: "Fake",
         teamSnapshot: fakeTeamSnapshot,
+        limits: {
+          ...fakeTeamSnapshot.preset.limits,
+          maxTotalWorkerLaunchesPerRun: 2,
+        },
       },
       "crash-run",
     );
@@ -279,7 +283,8 @@ test("restart releases reserved slots and retains ambiguous dispatch history wit
       },
       "reserved-queue",
     );
-    assert.ok(scheduler.reserve(queued));
+    const first = scheduler.reserve(queued);
+    assert.ok(first);
     f.reopen().recoverInterrupted();
     assert.equal(f.store.getTask(task.id).status, "RETRY_DECISION");
     assert.equal(
@@ -290,6 +295,116 @@ test("restart releases reserved slots and retains ambiguous dispatch history wit
     const history = new Scheduling(f.store, f.directory).list();
     assert.equal(history.find((d) => d.taskId === task.id)?.state, "released");
     assert.equal(f.store.listAttempts().length, 1);
+    const resumed = new Scheduling(f.store, f.directory);
+    const input = { taskId: task.id, profileId: queued.profileId };
+    assert.throws(
+      () => resumed.enqueue({ role: "owner" }, input, "undecided-retry"),
+      { code: "CONFLICT" },
+    );
+    f.store.transitionTask(
+      {
+        id: task.id,
+        expectedStatus: "RETRY_DECISION",
+        status: "READY",
+        reason: "Owner chose a fresh attempt after recovery",
+      },
+      "retry-decision",
+    );
+    const retry = resumed.enqueue({ role: "owner" }, input, "retry-queue");
+    assert.ok(retry.sequence > queued.sequence);
+    assert.equal(retry.attemptId, null);
+    assert.equal(retry.diagnostic, null);
+    assert.deepEqual(
+      resumed.enqueue({ role: "owner" }, input, "reserved-queue"),
+      queued,
+    );
+    assert.equal(resumed.reserve(queued), null);
+    assert.equal(resumed.release(queued, "Late recovery callback"), false);
+    assert.equal(resumed.block(queued, "Late inspection callback"), false);
+    assert.deepEqual(resumed.list(), [retry]);
+    const reassigned = resumed.enqueue({ role: "owner" }, input, "reassign");
+    assert.equal(reassigned.sequence, retry.sequence);
+    const second = resumed.reserve(retry);
+    assert.ok(second);
+    assert.notEqual(second, first);
+    assert.equal(resumed.reserve(retry), second);
+    assert.equal(f.store.getTask(task.id).status, "RUNNING");
+    assert.equal(f.store.getAttempt(first).status, "RECOVERY_REQUIRED");
+    assert.equal(f.store.getAttempt(second).status, "running");
+    assert.notEqual(
+      f.store.getAttempt(first).dispatchId,
+      f.store.getAttempt(second).dispatchId,
+    );
+    assert.equal(resumed.committedLaunches(run.id), 2);
+    const extra = f.store.createTask(
+      { runId: run.id, title: "Over budget", objective: "Cannot launch" },
+      "extra-task",
+    );
+    const overBudget = resumed.enqueue(
+      { role: "owner" },
+      { ...input, taskId: extra.id },
+      "extra-queue",
+    );
+    assert.throws(() => resumed.reserve(overBudget), {
+      code: "BUDGET_EXCEEDED",
+    });
+    assert.equal(f.store.listAttempts().length, 2);
+    assert.equal(resumed.release(retry), true);
+    assert.equal(resumed.release(retry), true);
+    assert.equal(
+      f.store.db.prepare("SELECT COUNT(*) count FROM reservations").get()
+        ?.count,
+      0,
+    );
+  } finally {
+    await f.close();
+  }
+});
+
+test("a requeued blocked assignment has fresh mutation keys and ignores stale callbacks", async () => {
+  const f = await domainFixture();
+  try {
+    const run = f.store.createRun(
+      {
+        projectId: f.project.id,
+        title: "Blocked assignments",
+        initialPrompt: "Fake",
+        teamSnapshot: fakeTeamSnapshot,
+      },
+      "blocked-run",
+    );
+    const task = f.store.createTask(
+      { runId: run.id, title: "Blocked", objective: "Wait for inspection" },
+      "blocked-task",
+    );
+    const scheduler = new Scheduling(f.store, f.directory);
+    const input = {
+      taskId: task.id,
+      profileId: fakeTeamSnapshot.preset.workerProfileIds[0],
+    };
+    const first = scheduler.enqueue({ role: "owner" }, input, "first");
+    assert.equal(scheduler.block(first, "First diagnostic"), true);
+    assert.equal(scheduler.block(first, "First diagnostic"), true);
+    const second = scheduler.enqueue({ role: "owner" }, input, "second");
+    assert.ok(second.sequence > first.sequence);
+    assert.equal(scheduler.release(first), false);
+    assert.equal(scheduler.reserve(first), null);
+    assert.equal(scheduler.block(second, "Different diagnostic"), true);
+    assert.equal(scheduler.list()[0]?.state, "blocked");
+    assert.equal(scheduler.list()[0]?.diagnostic, "Different diagnostic");
+    assert.equal(
+      f.store
+        .events({ runId: run.id })
+        .filter((e) => e.type === "dispatch.blocked").length,
+      2,
+    );
+    assert.equal(f.store.listAttempts().length, 0);
+    const third = scheduler.enqueue({ role: "owner" }, input, "third");
+    assert.ok(third.sequence > second.sequence);
+    const attempt = scheduler.reserve(third);
+    assert.ok(attempt);
+    assert.equal(scheduler.reserve(third), attempt);
+    assert.equal(scheduler.release(third), true);
   } finally {
     await f.close();
   }

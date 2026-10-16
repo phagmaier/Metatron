@@ -131,6 +131,11 @@ process.stdin.on("data", (chunk) => {
     const writer = process.env.LAO_PI_PERMISSION === "workspace_write";
     void (async () => {
       const assignment = await gateway("read_assignment", {});
+      const revising =
+        assignment &&
+        z
+          .object({ revision: z.unknown().optional() })
+          .parse(assignment.structuredContent.result).revision;
       const review =
         assignment &&
         z
@@ -169,7 +174,11 @@ process.stdin.on("data", (chunk) => {
       if (writer || scenario === "tamper" || scenario === "review-tamper")
         await writeFile(
           join(process.cwd(), written),
-          writer ? "Protocol fixture result\n" : "Tampered by a reader\n",
+          writer
+            ? revising
+              ? `# Revised heading\n\n${await readFile(join(process.cwd(), written), "utf8")}`
+              : "Protocol fixture result\n"
+            : "Tampered by a reader\n",
         );
       emit({
         type: "message_update",

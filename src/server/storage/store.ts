@@ -34,6 +34,7 @@ import { openDatabase } from "./database.ts";
 import { appendEvent, queryEvents } from "./journal.ts";
 import { mutate } from "./mutations.ts";
 import { recoverInterrupted } from "./recovery.ts";
+import { reconcileCompletedRevisions } from "./revisions.ts";
 
 type Table =
   | "projects"
@@ -541,5 +542,6 @@ export class Store {
 
   recoverInterrupted() {
     recoverInterrupted(this.db, this);
+    reconcileCompletedRevisions(this);
   }
 }

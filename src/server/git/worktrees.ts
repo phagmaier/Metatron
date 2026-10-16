@@ -8,6 +8,7 @@ import {
   worktreeSchema,
 } from "../../shared/worktrees.ts";
 import { getIntegrationCandidate } from "../storage/candidates.ts";
+import { revisionCandidate } from "../storage/revisions.ts";
 import type { Store } from "../storage/store.ts";
 import { captureCandidate } from "./candidate.ts";
 import { diffCheckPasses, git } from "./command.ts";
@@ -27,13 +28,12 @@ export class Worktrees {
       .all()
       .map((row) => worktreeSchema.parse(JSON.parse(String(row.data))));
   }
-  // Reviewers inspect the immutable candidate commit; everyone else starts at
-  // the run base.
-  reviewedCandidate(attemptId: string) {
+  // Reviews and fresh revisions start at their immutable source candidate.
+  startingCandidate(attemptId: string) {
     const task = this.store.getTask(this.store.getAttempt(attemptId).taskId);
     return task.reviewCandidateId
       ? getIntegrationCandidate(this.store, task.reviewCandidateId)
-      : null;
+      : revisionCandidate(this.store, task);
   }
   async prepare(attemptId: string) {
     const attempt = this.store.getAttempt(attemptId);
@@ -71,7 +71,7 @@ export class Worktrees {
         "POLICY_DENIED",
         "Native attempt requires an isolated worktree",
       );
-    const reviewed = this.reviewedCandidate(attemptId);
+    const reviewed = this.startingCandidate(attemptId);
     if (reviewed) {
       const current = await git(repository.root, [
         "for-each-ref",
@@ -245,7 +245,7 @@ export class Worktrees {
       }
     }
     const diffCheck = (await diffCheckPasses(item.path, [
-      this.reviewedCandidate(attemptId)?.candidateSha ??
+      this.startingCandidate(attemptId)?.candidateSha ??
         item.repository.baseSha,
       "--",
     ]))
@@ -284,9 +284,15 @@ export class Worktrees {
     await this.verify(item);
     const attempt = this.store.getAttempt(attemptId);
     const title = this.store.getTask(attempt.taskId).title.split("\n")[0];
-    return captureCandidate(item, declaredFiles, {
-      date: attempt.createdAt,
-      message: `lao candidate: ${title?.slice(0, 60)}\n\nTask: ${attempt.taskId}\nAttempt: ${attemptId}\n`,
-    });
+    return captureCandidate(
+      item,
+      declaredFiles,
+      {
+        date: attempt.createdAt,
+        message: `lao candidate: ${title?.slice(0, 60)}\n\nTask: ${attempt.taskId}\nAttempt: ${attemptId}\n`,
+      },
+      this.startingCandidate(attemptId)?.candidateSha ??
+        item.repository.baseSha,
+    );
   }
 }

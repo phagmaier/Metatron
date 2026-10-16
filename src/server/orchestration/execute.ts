@@ -6,6 +6,7 @@ import type { Dispatch } from "../../shared/orchestration.ts";
 import type { SessionEvent } from "../adapters/contract.ts";
 import { FakeAdapter } from "../adapters/fake.ts";
 import { mutate } from "../storage/mutations.ts";
+import { reconcileRevision } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
 
 const proposalSchema = z.strictObject({
@@ -246,6 +247,7 @@ export async function executeFakeTurn(
             },
             `task:${attemptId}:review`,
           );
+          reconcileRevision(store, task.id, attemptId);
           store.updateSession(
             { id: session.id, expectedState: "busy", state: "idle" },
             `session:${attemptId}:idle`,

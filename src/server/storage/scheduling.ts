@@ -11,6 +11,7 @@ import {
 } from "../../shared/orchestration.ts";
 import { authorize } from "../orchestration/policy.ts";
 import { mutate } from "./mutations.ts";
+import { revisionSource } from "./revisions.ts";
 import type { Store } from "./store.ts";
 
 export class Scheduling {
@@ -124,6 +125,16 @@ export class Scheduling {
             "POLICY_DENIED",
             "A review task runs only on a read-only profile",
           );
+        const source = revisionSource(this.store, task);
+        if (
+          source?.assignedProfileId &&
+          this.profile(run.id, source.assignedProfileId).permission !==
+            profile.permission
+        )
+          throw new DomainError(
+            "POLICY_DENIED",
+            "A revision must retain its implementer's permission class",
+          );
         if (actor.role !== "owner" && task.ownerPinned)
           throw new DomainError("POLICY_DENIED", "Owner assignment is pinned");
         if (actor.role === "lead" && run.mode !== "autonomous_bounded")
@@ -142,6 +153,12 @@ export class Scheduling {
             "BUDGET_EXCEEDED",
             "Worker launch budget exhausted for this run",
           );
+        const previous = this.list().find((d) => d.taskId === task.id);
+        if (
+          previous?.state === "active" ||
+          (previous?.state === "released" && task.status !== "READY")
+        )
+          throw new DomainError("CONFLICT", "Task was already dispatched");
         if (task.status === "BACKLOG")
           task = this.store.transitionTask(
             {
@@ -167,9 +184,6 @@ export class Scheduling {
             "CONFLICT",
             "Only ready or queued tasks can be assigned",
           );
-        const previous = this.list().find((d) => d.taskId === task.id);
-        if (previous && ["active", "released"].includes(previous.state))
-          throw new DomainError("CONFLICT", "Task was already dispatched");
         if (
           actor.role === "owner" &&
           task.proposedProfileId &&
@@ -210,9 +224,15 @@ export class Scheduling {
             : profile.permission === "workspace_write"
               ? join(this.directory, "fake-workspaces", task.id)
               : this.store.getProject(run.projectId).repositoryPath;
+        // The persisted sequence identifies a dispatch generation. Reassignment
+        // keeps a queued generation; retries get a fresh FIFO slot and identity.
         this.store.db
           .prepare(
-            `INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,state) VALUES (?,?,?,?,?,'queued') ON CONFLICT(task_id) DO UPDATE SET profile_id=excluded.profile_id,cwd=excluded.cwd,scenario=excluded.scenario,state='queued',diagnostic=NULL`,
+            `INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,state) VALUES (?,?,?,?,?,'queued')
+             ON CONFLICT(task_id) DO UPDATE SET
+               sequence=CASE WHEN dispatches.state='queued' THEN dispatches.sequence ELSE excluded.sequence END,
+               profile_id=excluded.profile_id,cwd=excluded.cwd,scenario=excluded.scenario,
+               state='queued',attempt_id=NULL,diagnostic=NULL`,
           )
           .run(task.id, run.id, profile.id, cwd, data.scenario);
         this.store.recordEvent(
@@ -290,16 +310,25 @@ export class Scheduling {
   }
   reserve(dispatch: Dispatch) {
     const { db } = this.store;
+    const { taskId, sequence } = dispatch;
+    // Reject an obsolete queue copy before an idempotency replay can return its
+    // old attempt and attach it to a later retry of the same task.
+    if (this.list().find((d) => d.taskId === taskId)?.sequence !== sequence)
+      return null;
+    const key = `dispatch:${taskId}:${sequence}`;
     return mutate(
       db,
-      `reserve:${dispatch.taskId}`,
+      `reserve:${taskId}:${sequence}`,
       "reserve",
-      { taskId: dispatch.taskId },
+      { taskId, sequence },
       z.string().uuid().nullable(),
       () => {
-        const current = this.list().find((d) => d.taskId === dispatch.taskId);
-        if (current?.state !== "queued") return null;
-        const task = this.store.getTask(dispatch.taskId);
+        const current = this.list().find((d) => d.taskId === taskId);
+        if (current?.sequence !== sequence) return null;
+        // Existing databases may have reserved this attempt with a legacy key.
+        if (current.state === "active") return current.attemptId;
+        if (current.state !== "queued") return null;
+        const task = this.store.getTask(taskId);
         const run = this.store.getRun(task.runId);
         const profile = this.profile(run.id, current.profileId);
         if (
@@ -378,7 +407,7 @@ export class Scheduling {
             worktreePath: run.execution === "native" ? current.cwd : null,
             baseSha: run.repository?.baseSha ?? null,
           },
-          `dispatch:${task.id}:attempt`,
+          `${key}:attempt`,
         );
         db.prepare("INSERT INTO reservations VALUES (?,?,?,?)").run(
           attempt.id,
@@ -396,30 +425,31 @@ export class Scheduling {
             status: "RUNNING",
             reason: "Atomic slot reservation",
           },
-          `dispatch:${task.id}:running`,
+          `${key}:running`,
         );
         this.store.updateAttempt(
           { id: attempt.id, status: "running" },
-          `dispatch:${task.id}:started`,
+          `${key}:started`,
         );
         return attempt.id;
       },
     );
   }
-  release(taskId: string, diagnostic: string | null = null) {
-    const dispatch = this.list().find((d) => d.taskId === taskId);
-    if (!dispatch) return;
+  release(dispatch: Dispatch, diagnostic: string | null = null) {
+    const { taskId, sequence } = dispatch;
     return mutate(
       this.store.db,
-      `release:${taskId}`,
+      `release:${taskId}:${sequence}`,
       "release",
-      { taskId, diagnostic },
+      { taskId, sequence, diagnostic },
       z.boolean(),
       () => {
-        if (dispatch.attemptId)
+        const current = this.list().find((d) => d.taskId === taskId);
+        if (current?.sequence !== sequence) return false;
+        if (current.attemptId)
           this.store.db
             .prepare("DELETE FROM reservations WHERE attempt_id=?")
-            .run(dispatch.attemptId);
+            .run(current.attemptId);
         this.store.db
           .prepare(
             "UPDATE dispatches SET state='released',diagnostic=? WHERE task_id=?",
@@ -429,14 +459,19 @@ export class Scheduling {
       },
     );
   }
-  block(taskId: string, diagnostic: string) {
+  block(dispatch: Dispatch, diagnostic: string) {
+    const { taskId, sequence } = dispatch;
+    const key = `blocked:${taskId}:${sequence}`;
     return mutate(
       this.store.db,
-      `blocked:${taskId}`,
+      key,
       "block",
-      { taskId, diagnostic },
+      { taskId, sequence, diagnostic },
       z.boolean(),
       () => {
+        const current = this.list().find((d) => d.taskId === taskId);
+        if (current?.sequence !== sequence || current.state !== "queued")
+          return false;
         this.store.db
           .prepare(
             "UPDATE dispatches SET state='blocked',diagnostic=? WHERE task_id=? AND state='queued'",
@@ -448,10 +483,10 @@ export class Scheduling {
             runId: task.runId,
             taskId,
             type: "dispatch.blocked",
-            correlationId: `blocked:${taskId}`,
+            correlationId: key,
             payload: { diagnostic },
           },
-          `blocked:${taskId}:event`,
+          `${key}:event`,
         );
         return true;
       },

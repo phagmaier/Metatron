@@ -20,6 +20,7 @@ export function TaskCard({
   attempt,
   evidence,
   candidate,
+  revision,
   onError,
 }: {
   task: Task;
@@ -29,6 +30,7 @@ export function TaskCard({
   attempt: Attempt | undefined;
   evidence: Event | undefined;
   candidate: Event | undefined;
+  revision: Task | undefined;
   onError: (error: string) => void;
 }) {
   const captured = candidate
@@ -56,6 +58,7 @@ export function TaskCard({
   const [priority, setPriority] = useState(task.priority);
   const [report, setReport] = useState("");
   const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState("");
   async function act(action: () => Promise<unknown>) {
     setBusy(true);
     onError("");
@@ -87,6 +90,51 @@ export function TaskCard({
           not see the implementer's report.
         </p>
       )}
+      {task.latestRevisionTaskId && (
+        <p className="note">
+          Latest revision: {revision?.title ?? task.latestRevisionTaskId}
+          {revision ? ` (${revision.status})` : ""}. Review and report actions
+          use its current result; earlier history is retained.
+        </p>
+      )}
+      {task.revisionSourceTaskId && (
+        <p className="note">
+          This revision continues from the saved candidate in a separate
+          worktree.
+        </p>
+      )}
+      {(task.status === "AWAITING_REVIEW" ||
+        (task.status === "CHANGES_REQUESTED" &&
+          revision?.status === "CANCELLED")) &&
+        !task.reviewCandidateId &&
+        !(task.revisionSourceTaskId && task.latestRevisionTaskId) && (
+          <div>
+            <label>
+              Revision feedback
+              <textarea
+                value={feedback}
+                maxLength={8000}
+                onChange={(event) => setFeedback(event.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              disabled={
+                busy ||
+                !feedback.trim() ||
+                run.status !== "active" ||
+                run.mode === "chat_plan"
+              }
+              onClick={() =>
+                void act(() =>
+                  writeApi("tasks/revision", { taskId: task.id, feedback }),
+                )
+              }
+            >
+              Request revision
+            </button>
+          </div>
+        )}
       {dispatch?.diagnostic && <p className="warning">{dispatch.diagnostic}</p>}
       {task.proposedProfileId && (
         <p className="warning">
@@ -196,6 +244,7 @@ export function TaskCard({
               "QUEUED",
               "RUNNING",
               "AWAITING_REVIEW",
+              "CHANGES_REQUESTED",
               "RETRY_DECISION",
             ].includes(task.status)
           }
