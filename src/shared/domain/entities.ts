@@ -1,0 +1,325 @@
+import { z } from "zod";
+import { processStateSchema, taskStatusSchema } from "./states.ts";
+
+export const idSchema = z.uuid();
+export const textSchema = z.string().trim().min(1).max(32_768);
+export const absolutePathSchema = z
+  .string()
+  .startsWith("/")
+  .max(4096)
+  .refine((s) => !s.includes("\0"), "Path contains NUL");
+export const timestampSchema = z.iso.datetime();
+export const harnessSchema = z.enum(["codex", "claude-code", "opencode", "pi"]);
+export const adapterKindSchema = z.enum([
+  "codex",
+  "claude-code",
+  "opencode",
+  "pi",
+  "fake",
+]);
+export const modeSchema = z.enum([
+  "chat_plan",
+  "supervised",
+  "autonomous_bounded",
+]);
+export const repositorySchema = z.strictObject({
+  root: absolutePathSchema,
+  commonDirectory: absolutePathSchema,
+  baseSha: z.string().regex(/^[0-9a-f]{40,64}$/),
+  branch: textSchema,
+  clean: z.boolean(),
+});
+export const permissionSchema = z.enum([
+  "read_only",
+  "workspace_write",
+  "coordinator",
+]);
+export const contextPolicySchema = z.enum(["auto", "fresh", "resume"]);
+const metadata = {
+  id: idSchema,
+  createdAt: timestampSchema,
+  updatedAt: timestampSchema,
+};
+const idsSchema = z
+  .array(idSchema)
+  .max(256)
+  .refine((ids) => new Set(ids).size === ids.length, "Duplicate references");
+
+export const projectSchema = z.strictObject({
+  ...metadata,
+  name: textSchema,
+  repositoryPath: absolutePathSchema,
+  repository: repositorySchema.nullable().default(null),
+});
+export type Project = z.infer<typeof projectSchema>;
+
+export const roleTemplateSchema = z.strictObject({
+  ...metadata,
+  version: z.int().positive(),
+  name: textSchema,
+  instructions: textSchema,
+  expectedOutput: textSchema,
+});
+export type RoleTemplate = z.infer<typeof roleTemplateSchema>;
+export const agentProfileSchema = z.strictObject({
+  ...metadata,
+  name: textSchema,
+  roleId: idSchema,
+  harness: harnessSchema,
+  model: textSchema,
+  thinking: textSchema.nullable(),
+  permission: permissionSchema,
+  instructionOverride: textSchema.nullable(),
+});
+export type AgentProfile = z.infer<typeof agentProfileSchema>;
+
+export const limitsSchema = z.strictObject({
+  maxConcurrentWriters: z.int().min(1).max(64),
+  maxConcurrentReadersReviewers: z.int().min(1).max(64),
+  maxConcurrentAgentsIncludingLead: z.int().min(1).max(128),
+  maxTotalWorkerLaunchesPerRun: z.int().min(1).max(10_000),
+  maxParallelReadersPerWorkflow: z.int().min(1).max(64),
+  maxRevisionCyclesPerTask: z.int().min(0).max(100),
+  maxAutomaticLeadWakeupsPerRun: z.int().min(0).max(10_000),
+});
+export const defaultLimits = limitsSchema.parse({
+  maxConcurrentWriters: 2,
+  maxConcurrentReadersReviewers: 4,
+  maxConcurrentAgentsIncludingLead: 7,
+  maxTotalWorkerLaunchesPerRun: 24,
+  maxParallelReadersPerWorkflow: 4,
+  maxRevisionCyclesPerTask: 2,
+  maxAutomaticLeadWakeupsPerRun: 40,
+});
+export const teamPresetSchema = z.strictObject({
+  ...metadata,
+  version: z.int().positive(),
+  name: textSchema,
+  leadProfileId: idSchema,
+  workerProfileIds: idsSchema,
+  workflowTemplateIds: idsSchema,
+  mode: modeSchema,
+  limits: limitsSchema,
+});
+export type TeamPreset = z.infer<typeof teamPresetSchema>;
+
+export const workflowTemplateSchema = z.strictObject({
+  ...metadata,
+  version: z.int().positive(),
+  name: textSchema,
+  stages: z
+    .array(
+      z.strictObject({
+        id: textSchema,
+        type: z.enum([
+          "single_agent",
+          "parallel_agents",
+          "synthesize",
+          "review",
+        ]),
+        profileId: idSchema,
+        instructions: textSchema,
+        dependsOn: z.array(textSchema),
+        count: z.int().min(1).max(64),
+        partialFailure: z.enum(["stop", "include_partial"]),
+      }),
+    )
+    .min(1)
+    .max(128),
+});
+export type WorkflowTemplate = z.infer<typeof workflowTemplateSchema>;
+export const teamSnapshotSchema = z
+  .strictObject({
+    preset: teamPresetSchema,
+    roles: z.array(roleTemplateSchema),
+    profiles: z.array(agentProfileSchema),
+    workflows: z.array(workflowTemplateSchema),
+  })
+  .superRefine((snapshot, context) => {
+    const roles = new Set(snapshot.roles.map((role) => role.id));
+    const profiles = new Set(snapshot.profiles.map((profile) => profile.id));
+    const workflows = new Set(
+      snapshot.workflows.map((workflow) => workflow.id),
+    );
+    if (
+      roles.size !== snapshot.roles.length ||
+      profiles.size !== snapshot.profiles.length ||
+      workflows.size !== snapshot.workflows.length
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Snapshot contains duplicate identities",
+      });
+    if (
+      !profiles.has(snapshot.preset.leadProfileId) ||
+      snapshot.preset.workerProfileIds.some((id) => !profiles.has(id))
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Snapshot is missing a team profile",
+      });
+    if (snapshot.profiles.some((profile) => !roles.has(profile.roleId)))
+      context.addIssue({
+        code: "custom",
+        message: "Snapshot is missing profile role guidance",
+      });
+    if (
+      snapshot.preset.workflowTemplateIds.some((id) => !workflows.has(id)) ||
+      snapshot.workflows.some((workflow) =>
+        workflow.stages.some((stage) => !profiles.has(stage.profileId)),
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Snapshot is missing a workflow or stage profile",
+      });
+  });
+export const runSchema = z.strictObject({
+  ...metadata,
+  projectId: idSchema,
+  title: textSchema,
+  initialPrompt: textSchema,
+  mode: modeSchema,
+  status: z.enum(["active", "paused", "stopped", "completed"]),
+  teamSnapshot: teamSnapshotSchema.nullable(),
+  limits: limitsSchema,
+  execution: z.enum(["fake", "native"]),
+  repository: repositorySchema.nullable().default(null),
+});
+export type Run = z.infer<typeof runSchema>;
+export const taskSchema = z.strictObject({
+  ...metadata,
+  runId: idSchema,
+  parentTaskId: idSchema.nullable(),
+  workflowId: idSchema.nullable(),
+  title: textSchema,
+  objective: textSchema,
+  scope: z.array(textSchema).max(256),
+  acceptanceCriteria: z.array(textSchema).max(256),
+  priority: z.int().min(-100).max(100),
+  origin: z.enum(["owner", "lead", "workflow", "worker"]),
+  dependencyIds: idsSchema,
+  status: taskStatusSchema,
+  assignedProfileId: idSchema.nullable(),
+  ownerPinned: z.boolean(),
+  kind: z.enum(["lead", "work"]).default("work"),
+});
+export type Task = z.infer<typeof taskSchema>;
+export const attemptSchema = z.strictObject({
+  ...metadata,
+  taskId: idSchema,
+  profileId: idSchema.nullable(),
+  adapter: adapterKindSchema,
+  dispatchId: idSchema,
+  intendedOperation: textSchema,
+  cwd: absolutePathSchema,
+  worktreePath: absolutePathSchema.nullable(),
+  baseSha: textSchema.nullable(),
+  status: z.enum([
+    "created",
+    "running",
+    "completed",
+    "failed",
+    "interrupted",
+    "cancelled",
+    "RECOVERY_REQUIRED",
+  ]),
+});
+export type Attempt = z.infer<typeof attemptSchema>;
+export const sessionSchema = z.strictObject({
+  ...metadata,
+  attemptId: idSchema,
+  adapter: adapterKindSchema,
+  nativeSessionId: textSchema.nullable(),
+  processId: z.int().positive().nullable(),
+  state: processStateSchema,
+  contextPolicy: contextPolicySchema,
+  exitCode: z.int().nullable(),
+  recovery: z.enum(["none", "RECOVERY_REQUIRED"]),
+});
+export type Session = z.infer<typeof sessionSchema>;
+
+export const eventSchema = z.strictObject({
+  id: idSchema,
+  sequence: z.int().positive(),
+  createdAt: timestampSchema,
+  runId: idSchema.nullable(),
+  taskId: idSchema.nullable(),
+  attemptId: idSchema.nullable(),
+  sessionId: idSchema.nullable(),
+  type: textSchema,
+  correlationId: textSchema,
+  causationId: idSchema.nullable(),
+  payload: z.record(z.string(), z.json()),
+});
+export type Event = z.infer<typeof eventSchema>;
+export const humanRequestSchema = z.strictObject({
+  ...metadata,
+  runId: idSchema,
+  sessionId: idSchema.nullable(),
+  affectedTaskIds: idsSchema,
+  type: z.enum([
+    "permission",
+    "environment",
+    "clarification",
+    "credential_setup",
+    "risky_operation",
+    "manual_check",
+  ]),
+  urgency: z.enum(["low", "normal", "high", "urgent"]),
+  reason: textSchema,
+  suggestedAction: textSchema,
+  blocking: z.boolean(),
+  status: z.enum(["open", "deferred", "answered", "completed", "declined"]),
+  ownerResponse: textSchema.nullable(),
+  resolvedAt: timestampSchema.nullable(),
+});
+export type HumanRequest = z.infer<typeof humanRequestSchema>;
+
+export const reviewSchema = z.strictObject({
+  ...metadata,
+  taskId: idSchema,
+  reviewerAttemptId: idSchema,
+  candidateId: idSchema,
+  recommendation: z.enum(["pass", "changes_requested"]),
+  findings: z.array(
+    z.strictObject({
+      severity: z.enum(["info", "low", "medium", "high", "critical"]),
+      file: textSchema,
+      line: z.int().positive().nullable(),
+      evidence: textSchema,
+      confidence: z.number().min(0).max(1),
+    }),
+  ),
+  tests: z.array(textSchema),
+});
+export type Review = z.infer<typeof reviewSchema>;
+export const integrationCandidateSchema = z.strictObject({
+  ...metadata,
+  taskId: idSchema,
+  attemptId: idSchema,
+  baseSha: textSchema,
+  candidateSha: textSchema,
+  reviewIds: idsSchema,
+  status: z.enum([
+    "proposed",
+    "reviewed",
+    "approved",
+    "rejected",
+    "blocked",
+    "integrated",
+  ]),
+  humanDecision: z.enum(["approved", "rejected"]).nullable(),
+  decidedAt: timestampSchema.nullable(),
+});
+export type IntegrationCandidate = z.infer<typeof integrationCandidateSchema>;
+export const artifactSchema = z.strictObject({
+  ...metadata,
+  taskId: idSchema,
+  attemptId: idSchema.nullable(),
+  kind: z.enum(["report", "log", "reference"]),
+  path: absolutePathSchema,
+  mediaType: textSchema,
+  summary: textSchema,
+});
+export type Artifact = z.infer<typeof artifactSchema>;

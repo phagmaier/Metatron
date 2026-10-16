@@ -32,33 +32,34 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 
 ## M1 - Persisted domain and FakeAdapter [spec §2, 3, 10, 12, 13.1-13.2]
 
-- [ ] Define schemas/types for Project, Run, RoleTemplate, AgentProfile, TeamPreset, WorkflowTemplate, Task, Attempt, Session, Event, HumanRequest, Review, IntegrationCandidate, Artifact.
-- [ ] Define exact task and session state-transition tables; keep task status distinct from process state.
-- [ ] Add SQLite database setup, migrations, WAL, foreign keys, and durable filesystem locations using XDG conventions.
-- [ ] Add storage APIs and transactions for create/update run, task, attempt, event, human request, and session.
-- [ ] Add an append-only event journal with timestamps, causal IDs, event sequence IDs, and replay/query support.
-- [ ] Add typed service/API input validation and one idempotency primitive for mutating operations.
-- [ ] Define `HarnessAdapter` and capability discovery types without hardcoding unsupported model/think levels.
-- [ ] Build `FakeAdapter` with deterministic event playback, prompts, completion, cancellation, steering, permission requests, crash, disconnect, and resume simulations.
-- [ ] Build a tiny local event stream for UI consumers with reconnect/replay from last event ID.
-- [ ] Unit-test valid/invalid task transitions, persistence/reopen, idempotent mutations, and event ordering.
-- [ ] Wire GUI to list projects/runs/tasks from API (seeded or fake data okay).
+- [x] Define schemas/types for Project, Run, RoleTemplate, AgentProfile, TeamPreset, WorkflowTemplate, Task, Attempt, Session, Event, HumanRequest, Review, IntegrationCandidate, Artifact.
+- [x] Define exact task and session state-transition tables; keep task status distinct from process state.
+- [x] Add SQLite database setup, migrations, WAL, foreign keys, and durable filesystem locations using XDG conventions.
+- [x] Add storage APIs and transactions for create/update run, task, attempt, event, human request, and session.
+- [x] Add an append-only event journal with timestamps, causal IDs, event sequence IDs, and replay/query support.
+- [x] Add typed service/API input validation and one idempotency primitive for mutating operations.
+- [x] Define `HarnessAdapter` and capability discovery types without hardcoding unsupported model/think levels.
+- [x] Build `FakeAdapter` with deterministic event playback, prompts, completion, cancellation, steering, permission requests, crash, disconnect, and resume simulations.
+- [x] Build a tiny local event stream for UI consumers with reconnect/replay from last event ID.
+- [x] Unit-test valid/invalid task transitions, persistence/reopen, idempotent mutations, and event ordering.
+- [x] Wire GUI to list projects/runs/tasks from API (seeded or fake data okay).
 
 **M1 gate:** server restarts without losing fake tasks/sessions; UI presents persisted fake events; tests use no model tokens.
 
 ## M2 - First runnable end-to-end fake orchestration slice [spec §2, 3, 4, 7, 11, 12]
 
-- [ ] Create a project picker that validates absolute path, Git worktree cleanliness, repository identity and base SHA.
-- [ ] Implement run creation with selected mode and a lead profile (initially a fake lead if necessary).
-- [ ] Build backend command flow: owner message -> lead prompt -> proposed task -> validated assignment -> fake worker attempt -> report -> completion event.
-- [ ] Implement a basic scheduler with queue, atomic worker slot reservations, one active owner per writable worktree, and dispatch idempotency.
-- [ ] Add static simple presets (Backend Engineer, Reviewer, Reader, Synthesizer) in app-owned config or seed migration.
-- [ ] Render basic run workspace: Lead chat, task board, one worker status card, session event log/detail.
-- [ ] Add owner actions: create task manually, choose worker, change priority, pause scheduling, cancel task.
-- [ ] Enforce `chat_plan` mode in backend tool/operation policy: model cannot dispatch or mutate Git.
-- [ ] Reject a worker attempting to call a lead-only tool in policy/service unit tests.
+- [x] Create a project picker that validates absolute path, Git worktree cleanliness, repository identity and base SHA.
+- [x] Implement run creation with selected mode and a lead profile (initially a fake lead if necessary).
+- [x] Build backend command flow: owner message -> lead prompt -> proposed task -> validated assignment -> fake worker attempt -> report -> completion event.
+- [x] Implement a basic scheduler with queue, atomic worker slot reservations, one active owner per writable worktree, and dispatch idempotency.
+- [x] Add static simple presets (Backend Engineer, Reviewer, Reader, Synthesizer) in app-owned config or seed migration.
+- [x] Render basic run workspace: Lead chat, task board, one worker status card, session event log/detail.
+- [x] Add owner actions: create task manually, choose worker, change priority, pause scheduling, cancel task.
+- [x] Enforce `chat_plan` mode in backend tool/operation policy: model cannot dispatch or mutate Git.
+- [x] Reject a worker attempting to call a lead-only tool in policy/service unit tests.
 - [ ] Exercise fake success and fake failure via UI and persist task transitions.
-- [ ] Record a GIF/screenshot or reproducible manual demo instructions in `docs/progress.md` (no need for elaborate design assets).
+  - Controls and HTTP equivalents are implemented/tested; actual browser exercise is BLOCKED because no browser is connected. See README M2 demo instructions and `docs/progress.md`.
+- [x] Record a GIF/screenshot or reproducible manual demo instructions in `docs/progress.md` (no need for elaborate design assets).
 
 **M2 gate:** complete owner -> lead -> task -> worker -> result loop is visible and replayable in GUI, even before live harness integration.
 

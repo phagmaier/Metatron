@@ -1,15 +1,25 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm } from "node:fs/promises";
 import { request } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { after, before, test } from "node:test";
 import { startApp } from "../src/server/app.ts";
 import { healthSchema } from "../src/shared/health.ts";
 
 let app: Awaited<ReturnType<typeof startApp>>;
+let directory: string;
 before(async () => {
-  app = await startApp({ development: false, port: 0 });
+  directory = await mkdtemp(join(tmpdir(), "lao-server-"));
+  app = await startApp({
+    development: false,
+    port: 0,
+    databasePath: join(directory, "state.sqlite"),
+  });
 });
 after(async () => {
-  await app.close();
+  await app?.close();
+  await rm(directory, { recursive: true });
 });
 
 test("health is served by a loopback-only socket with a validated response", async () => {
@@ -18,7 +28,7 @@ test("health is served by a loopback-only socket with a validated response", asy
   assert.equal(address.address, "127.0.0.1");
   const response = await fetch(`${app.origin}/api/health`);
   assert.equal(response.status, 200);
-  assert.equal(healthSchema.parse(await response.json()).milestone, "M0");
+  assert.equal(healthSchema.parse(await response.json()).milestone, "M2");
   assert.equal(response.headers.get("access-control-allow-origin"), null);
 });
 
@@ -74,7 +84,7 @@ test("malformed request URLs are rejected without crashing the server", async ()
   assert.equal((await fetch(`${app.origin}/api/health`)).status, 200);
 });
 
-test("mutating methods are disabled before any write routes exist", async () => {
+test("health remains read only", async () => {
   for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
     const response = await fetch(`${app.origin}/api/health`, { method });
     assert.equal(response.status, 405);

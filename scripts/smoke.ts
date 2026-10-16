@@ -1,10 +1,18 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { startApp } from "../src/server/app.ts";
 import { healthSchema } from "../src/shared/health.ts";
 
 // Probe the real development and built-page serving paths without any harness calls.
 for (const development of [true, false]) {
-  const app = await startApp({ development, port: 0 });
+  const directory = await mkdtemp(join(tmpdir(), "lao-smoke-"));
+  const app = await startApp({
+    development,
+    port: 0,
+    databasePath: join(directory, "state.sqlite"),
+  });
   try {
     const health = await fetch(`${app.origin}/api/health`);
     assert.equal(health.status, 200);
@@ -27,5 +35,6 @@ for (const development of [true, false]) {
     );
   } finally {
     await app.close();
+    await rm(directory, { recursive: true });
   }
 }

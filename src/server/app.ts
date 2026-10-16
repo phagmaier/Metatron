@@ -1,15 +1,24 @@
 import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
+import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 import { healthSchema } from "../shared/health.ts";
+import { createApi } from "./api.ts";
+import { Engine } from "./orchestration/engine.ts";
+import { appLocations } from "./storage/database.ts";
+import { Store } from "./storage/store.ts";
 
 const webRoot = new URL("../../dist/web/", import.meta.url);
 
 export async function startApp(options: {
   development: boolean;
   port: number;
+  databasePath?: string;
 }) {
+  const store = new Store(options.databasePath ?? appLocations().database);
+  let engine: Engine | undefined;
+  let api: ReturnType<typeof createApi> | undefined;
   let vite: ViteDevServer | undefined;
   let origin = "";
   const server = createServer((request, response) => {
@@ -27,12 +36,6 @@ export async function startApp(options: {
       response.writeHead(403).end("Local origin required");
       return;
     }
-    // M0 has no mutations. Add per-process CSRF tokens before M1 write routes.
-    if (request.method !== "GET" && request.method !== "HEAD") {
-      response.setHeader("Allow", "GET, HEAD");
-      response.writeHead(405).end("Method not allowed");
-      return;
-    }
     let url: URL;
     try {
       url = new URL(request.url ?? "/", origin);
@@ -45,10 +48,15 @@ export async function startApp(options: {
       return;
     }
     if (url.pathname === "/api/health") {
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        response.setHeader("Allow", "GET, HEAD");
+        response.writeHead(405).end("Method not allowed");
+        return;
+      }
       const health = healthSchema.parse({
         status: "ok",
         app: "Local Agent Orchestrator",
-        milestone: "M0",
+        milestone: "M2",
       });
       response.setHeader("Content-Type", "application/json; charset=utf-8");
       response.end(
@@ -57,7 +65,16 @@ export async function startApp(options: {
       return;
     }
     if (url.pathname.startsWith("/api/")) {
-      response.writeHead(404).end("Not found");
+      if (!api) {
+        response.writeHead(503).end("Starting");
+        return;
+      }
+      void api.handle(request, response, url);
+      return;
+    }
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      response.setHeader("Allow", "GET, HEAD");
+      response.writeHead(405).end("Method not allowed");
       return;
     }
     if (vite) {
@@ -120,8 +137,18 @@ export async function startApp(options: {
     if (!address || typeof address === "string")
       throw new Error("Missing TCP address");
     origin = `http://127.0.0.1:${address.port}`;
+    // An occupied app port must be rejected before recovering live attempts.
+    store.recoverInterrupted();
+    engine = new Engine(
+      store,
+      dirname(options.databasePath ?? appLocations().database),
+    );
+    api = createApi(store, engine);
   } catch (error) {
+    await engine?.close();
+    server.close();
     await vite?.close();
+    store.close();
     throw error;
   }
 
@@ -129,11 +156,14 @@ export async function startApp(options: {
     server,
     origin,
     async close() {
+      api?.close();
+      await engine?.close();
       await vite?.close();
       await new Promise<void>((resolve, reject) => {
         server.close((error) => (error ? reject(error) : resolve()));
         server.closeIdleConnections();
       });
+      store.close();
     },
   };
 }
