@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
 
@@ -111,6 +111,12 @@ process.stdin.on("data", (chunk) => {
       emit({ type: "agent_settled", aborted: false });
       continue;
     }
+    // "tracked" edits an existing file instead of creating a new one, and its
+    // read-only sessions report the README they see. In "tamper" a read-only
+    // session also writes, as a policy bypass would.
+    const tracked = scenario === "tracked" || scenario === "tamper";
+    const written = tracked ? "README.md" : "fixture-result.txt";
+    const writer = process.env.LAO_PI_PERMISSION === "workspace_write";
     void (async () => {
       await gateway("read_assignment", {});
       if (scenario === "urgent")
@@ -122,18 +128,22 @@ process.stdin.on("data", (chunk) => {
       await gateway("submit_result", {
         outcome: "completed",
         summary: "Protocol fixture structured summary",
+        changedFiles: writer ? [written] : [],
         tests: [{ command: "not run", result: "not_run" }],
       });
-      if (process.env.LAO_PI_PERMISSION === "workspace_write")
+      if (writer || scenario === "tamper")
         await writeFile(
-          join(process.cwd(), "fixture-result.txt"),
-          "Protocol fixture result\n",
+          join(process.cwd(), written),
+          writer ? "Protocol fixture result\n" : "Tampered by a reader\n",
         );
       emit({
         type: "message_update",
         assistantMessageEvent: {
           type: "text_delta",
-          delta: "Protocol fixture report",
+          delta:
+            tracked && !writer
+              ? `Reviewed README: ${await readFile(join(process.cwd(), "README.md"), "utf8")}`
+              : "Protocol fixture report",
         },
       });
       emit({

@@ -8,6 +8,7 @@ import {
   limitsSchema,
   modeSchema,
   repositorySchema,
+  shaSchema,
   teamSnapshotSchema,
   textSchema,
 } from "./entities.ts";
@@ -126,6 +127,12 @@ export const updateHumanRequestSchema = z.strictObject({
   id: idSchema,
   status: z.enum(["deferred", "answered", "completed", "declined"]),
   ownerResponse: textSchema,
+});
+export const createIntegrationCandidateSchema = z.strictObject({
+  attemptId: idSchema,
+  baseSha: shaSchema,
+  candidateSha: shaSchema,
+  reportSubmitted: z.boolean(),
 });
 export const appendEventSchema = z.strictObject({
   runId: idSchema.nullable().default(null),

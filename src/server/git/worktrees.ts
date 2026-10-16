@@ -7,8 +7,10 @@ import {
   worktreeEvidenceSchema,
   worktreeSchema,
 } from "../../shared/worktrees.ts";
+import { getIntegrationCandidate } from "../storage/candidates.ts";
 import type { Store } from "../storage/store.ts";
-import { GitError, git } from "./command.ts";
+import { captureCandidate } from "./candidate.ts";
+import { diffCheckPasses, git } from "./command.ts";
 import { inspectRepository, requireClean } from "./inspect.ts";
 import { inside, sensitivePath } from "./paths.ts";
 
@@ -24,6 +26,14 @@ export class Worktrees {
       .prepare("SELECT data FROM worktrees ORDER BY rowid")
       .all()
       .map((row) => worktreeSchema.parse(JSON.parse(String(row.data))));
+  }
+  // Reviewers inspect the immutable candidate commit; everyone else starts at
+  // the run base.
+  reviewedCandidate(attemptId: string) {
+    const task = this.store.getTask(this.store.getAttempt(attemptId).taskId);
+    return task.reviewCandidateId
+      ? getIntegrationCandidate(this.store, task.reviewCandidateId)
+      : null;
   }
   async prepare(attemptId: string) {
     const attempt = this.store.getAttempt(attemptId);
@@ -61,6 +71,23 @@ export class Worktrees {
         "POLICY_DENIED",
         "Native attempt requires an isolated worktree",
       );
+    const reviewed = this.reviewedCandidate(attemptId);
+    if (reviewed) {
+      const current = await git(repository.root, [
+        "for-each-ref",
+        "--format=%(objectname)",
+        `refs/heads/lao/candidate-${reviewed.attemptId}`,
+      ]);
+      if (
+        current.trim() !== reviewed.candidateSha ||
+        reviewed.baseSha !== repository.baseSha
+      )
+        throw new DomainError(
+          "CONFLICT",
+          "Candidate branch or base no longer matches its record; owner review required",
+        );
+    }
+    const startSha = reviewed?.candidateSha ?? repository.baseSha;
     const root = join(this.directory, "worktrees");
     await mkdir(root, { recursive: true, mode: 0o700 });
     if (
@@ -130,7 +157,7 @@ export class Worktrees {
         manifest.branch,
         "--",
         manifest.path,
-        repository.baseSha,
+        startSha,
       ]);
       const ready = worktreeSchema.parse({ ...manifest, state: "ready" });
       await this.verify(ready);
@@ -146,6 +173,7 @@ export class Worktrees {
             path: ready.path,
             branch: ready.branch,
             baseSha: repository.baseSha,
+            startSha,
           },
         },
         `worktree:${attemptId}`,
@@ -216,20 +244,13 @@ export class Worktrees {
           });
       }
     }
-    let diffCheck: "passed" | "failed" = "passed";
-    try {
-      await git(item.path, [
-        "diff",
-        "--no-ext-diff",
-        "--no-textconv",
-        "--check",
+    const diffCheck = (await diffCheckPasses(item.path, [
+      this.reviewedCandidate(attemptId)?.candidateSha ??
         item.repository.baseSha,
-        "--",
-      ]);
-    } catch (error) {
-      if (!(error instanceof GitError) || error.exitCode !== 2) throw error;
-      diffCheck = "failed";
-    }
+      "--",
+    ]))
+      ? "passed"
+      : "failed";
     // Diff stats and status preserve staged/unstaged/untracked evidence without
     // copying potentially secret file contents into reports or the journal.
     return worktreeEvidenceSchema.parse({
@@ -255,6 +276,17 @@ export class Worktrees {
       ]),
       diffCheck,
       tests: "not_run: shell tools are disabled in M3",
+    });
+  }
+  async candidate(attemptId: string, declaredFiles: readonly string[]) {
+    const item = this.list().find((w) => w.attemptId === attemptId);
+    if (!item) throw new DomainError("NOT_FOUND", "Worktree manifest missing");
+    await this.verify(item);
+    const attempt = this.store.getAttempt(attemptId);
+    const title = this.store.getTask(attempt.taskId).title.split("\n")[0];
+    return captureCandidate(item, declaredFiles, {
+      date: attempt.createdAt,
+      message: `lao candidate: ${title?.slice(0, 60)}\n\nTask: ${attempt.taskId}\nAttempt: ${attemptId}\n`,
     });
   }
 }

@@ -475,8 +475,18 @@ export class Engine {
       },
     );
   }
-  async saveReport(task: Task, attemptId: string, report: string) {
-    const path = join(this.directory, "artifacts", `${attemptId}.txt`);
+  // A reference (a reviewer's context packet) is kept beside the attempt's report.
+  async saveReport(
+    task: Task,
+    attemptId: string,
+    report: string,
+    reference?: string,
+  ) {
+    const path = join(
+      this.directory,
+      "artifacts",
+      reference ? `${attemptId}-reference.txt` : `${attemptId}.txt`,
+    );
     await mkdir(dirname(path), { recursive: true, mode: 0o700 });
     await writeFile(path, report, { flag: "wx", mode: 0o600 });
     const now = new Date().toISOString();
@@ -486,13 +496,14 @@ export class Engine {
       updatedAt: now,
       taskId: task.id,
       attemptId,
-      kind: "report",
+      kind: reference ? "reference" : "report",
       path,
       mediaType: "text/plain",
       summary:
-        this.store.getRun(task.runId).execution === "fake"
+        reference ??
+        (this.store.getRun(task.runId).execution === "fake"
           ? "FAKE worker report"
-          : "Native Pi worker report",
+          : "Native Pi worker report"),
     });
     return artifact;
   }

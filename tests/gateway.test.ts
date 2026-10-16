@@ -6,12 +6,16 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { z } from "zod";
 import { Engine } from "../src/server/orchestration/engine.ts";
+import { createIntegrationCandidate } from "../src/server/storage/candidates.ts";
 import { Store } from "../src/server/storage/store.ts";
 import { defaultLimits, type Run } from "../src/shared/domain/entities.ts";
 import { leadTeam } from "../src/shared/native.ts";
 import { workerTools } from "../src/shared/orchestration.ts";
 
+const writer = "00000000-0000-4000-8000-000000000011";
+const reviewer = "00000000-0000-4000-8000-000000000012";
 const reader = "00000000-0000-4000-8000-000000000013";
+const baseSha = "a".repeat(40);
 // The project directory is not a Git repository, so the scheduler blocks any
 // queued dispatch instead of launching a harness during these tests.
 async function gatewayFixture(
@@ -43,6 +47,13 @@ async function gatewayFixture(
         mode,
         limits: { ...defaultLimits, ...limits },
         execution: "native",
+        repository: {
+          root: directory,
+          commonDirectory: join(directory, ".git"),
+          baseSha,
+          branch: "main",
+          clean: true,
+        },
         teamSnapshot: leadTeam({
           mode,
           lead: { model: "fixture-model", thinking: null },
@@ -125,6 +136,43 @@ async function gatewayFixture(
       token: engine.gateway.issue({ role: "worker", ...live(task.id) }),
     };
   };
+  // A writer task awaiting review with a recorded (fixture) candidate commit.
+  const candidateTask = (key: string) => {
+    const task = engine.createTask(
+      {
+        runId: run.id,
+        title: `Writer ${key}`,
+        objective: "Change the fixture",
+      },
+      `${key}:task`,
+    );
+    engine.scheduling.enqueue(
+      { role: "owner" },
+      { taskId: task.id, profileId: writer },
+      `${key}:assign`,
+    );
+    const { attemptId } = live(task.id);
+    const candidate = createIntegrationCandidate(
+      store,
+      {
+        attemptId,
+        baseSha,
+        candidateSha: "c".repeat(40),
+        reportSubmitted: true,
+      },
+      `${key}:candidate`,
+    );
+    store.transitionTask(
+      {
+        id: task.id,
+        expectedStatus: "RUNNING",
+        status: "AWAITING_REVIEW",
+        reason: "Fixture candidate",
+      },
+      `${key}:awaiting`,
+    );
+    return { task, candidate };
+  };
   return {
     store,
     engine,
@@ -135,6 +183,7 @@ async function gatewayFixture(
     tool,
     list,
     worker,
+    candidateTask,
     newRun,
     async close() {
       server.close();
@@ -219,6 +268,7 @@ test("Chat/Plan lists no dispatch tools and denies a direct dispatch call; a mod
     const tools = await f.list(f.lead);
     assert.ok(!tools.includes("assign_task"));
     assert.ok(!tools.includes("request_revision"));
+    assert.ok(!tools.includes("request_review"));
     const proposed = await f.tool(f.lead, "propose_task", {
       title: "Plan item",
       objective: "Only a proposal",
@@ -285,6 +335,92 @@ test("Supervised Lead assignment becomes a proposal; the owner's different choic
         .events({ runId: f.run.id, limit: 500 })
         .some((e) => e.type === "assignment.overridden"),
     );
+  } finally {
+    await f.close();
+  }
+});
+
+test("a Lead review request needs a captured candidate and a read-only profile, and workers cannot request one", async () => {
+  const f = await gatewayFixture("autonomous_bounded");
+  try {
+    const { task, candidate } = f.candidateTask("impl");
+    const { token } = f.worker("w");
+    const byWorker = await f.tool(token, "request_review", {
+      taskId: task.id,
+      profileId: reviewer,
+    });
+    assert.equal(byWorker.structuredContent.error.code, "POLICY_DENIED");
+    const byWriter = await f.tool(f.lead, "request_review", {
+      taskId: task.id,
+      profileId: writer,
+    });
+    assert.equal(byWriter.structuredContent.error.code, "POLICY_DENIED");
+    const backlog = await f.tool(f.lead, "propose_task", {
+      title: "No candidate yet",
+      objective: "Nothing to review",
+    });
+    const noCandidate = await f.tool(f.lead, "request_review", {
+      taskId: backlog.structuredContent.result.id,
+      profileId: reviewer,
+    });
+    assert.equal(noCandidate.structuredContent.error.code, "CONFLICT");
+    const queued = await f.tool(f.lead, "request_review", {
+      taskId: task.id,
+      profileId: reviewer,
+    });
+    assert.equal(queued.structuredContent.result.outcome, "queued");
+    const review = f.store.getTask(
+      queued.structuredContent.result.reviewTaskId,
+    );
+    assert.equal(review.reviewCandidateId, candidate.id);
+    assert.equal(review.parentTaskId, task.id);
+    assert.equal(
+      f.engine.scheduling.list().find((d) => d.taskId === review.id)?.profileId,
+      reviewer,
+    );
+    const revision = await f.tool(f.lead, "request_revision", {
+      taskId: review.id,
+      feedback: "Revise the review",
+    });
+    assert.equal(revision.structuredContent.error.code, "POLICY_DENIED");
+  } finally {
+    await f.close();
+  }
+});
+
+test("a Supervised Lead review request waits for the owner, who cannot hand it to a writer", async () => {
+  const f = await gatewayFixture("supervised");
+  try {
+    const { task } = f.candidateTask("impl");
+    const proposed = await f.tool(f.lead, "request_review", {
+      taskId: task.id,
+      profileId: reviewer,
+    });
+    assert.equal(
+      proposed.structuredContent.result.outcome,
+      "awaiting_owner_approval",
+    );
+    const reviewId = proposed.structuredContent.result.taskId;
+    assert.equal(f.store.getTask(reviewId).status, "BACKLOG");
+    assert.equal(
+      f.engine.scheduling.list().some((d) => d.taskId === reviewId),
+      false,
+    );
+    assert.throws(
+      () =>
+        f.engine.scheduling.enqueue(
+          { role: "owner" },
+          { taskId: reviewId, profileId: writer },
+          "owner-writer",
+        ),
+      { code: "POLICY_DENIED" },
+    );
+    f.engine.scheduling.enqueue(
+      { role: "owner" },
+      { taskId: reviewId, profileId: reviewer },
+      "owner-reviewer",
+    );
+    assert.equal(f.store.getTask(reviewId).status, "QUEUED");
   } finally {
     await f.close();
   }

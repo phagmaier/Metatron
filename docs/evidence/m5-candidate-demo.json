@@ -1,0 +1,79 @@
+{
+  "fixture": "/tmp/lao-git-fixture-ZG8jc7/repo with spaces",
+  "runs": [
+    {
+      "run": "Text-only writer leaves an undeclared file",
+      "workTaskStatus": "RETRY_DECISION",
+      "candidate": {
+        "attemptId": "1c19e26a-8732-440b-886e-9b6a2d2130a1",
+        "status": "blocked",
+        "baseSha": "e841b325e860034bc0213d5041b93c2380b1249a",
+        "headSha": "e841b325e860034bc0213d5041b93c2380b1249a",
+        "candidateSha": null,
+        "branch": null,
+        "files": [
+          {
+            "path": "fixture-result.txt",
+            "change": "added",
+            "disposition": "blocked",
+            "reason": "undeclared new file"
+          }
+        ],
+        "declaredUnchanged": [],
+        "blockers": [
+          "fixture-result.txt: undeclared new file"
+        ]
+      },
+      "candidateTree": null
+    },
+    {
+      "run": "Supervised Lead with owner-approved writer",
+      "workTaskStatus": "AWAITING_REVIEW",
+      "candidate": {
+        "attemptId": "d32accd5-1fe8-44a3-8f3f-06708a1c7e76",
+        "status": "captured",
+        "baseSha": "e841b325e860034bc0213d5041b93c2380b1249a",
+        "headSha": "e841b325e860034bc0213d5041b93c2380b1249a",
+        "candidateSha": "4254f225281b4e5d8d5bcdd7dfb9cee444526e6d",
+        "branch": "lao/candidate-d32accd5-1fe8-44a3-8f3f-06708a1c7e76",
+        "files": [
+          {
+            "path": "fixture-result.txt",
+            "change": "added",
+            "disposition": "included",
+            "reason": null
+          }
+        ],
+        "declaredUnchanged": [],
+        "blockers": []
+      },
+      "candidateTree": [
+        "README.md",
+        "fixture-result.txt"
+      ]
+    }
+  ],
+  "ownerReviewRequests": [
+    {
+      "id": "b5e2e4fe-9da7-40ae-8834-ef4a7163e632",
+      "createdAt": "2026-10-16T08:19:09.769Z",
+      "updatedAt": "2026-10-16T08:19:09.769Z",
+      "runId": "16d2d61b-93d8-4bd4-9ca9-420fbe49fd61",
+      "sessionId": "0a3a2bf1-64d6-4d05-a3f9-fc3fa618d7fa",
+      "affectedTaskIds": [
+        "959e2415-f63b-474b-be70-25503f6ab3b5"
+      ],
+      "type": "manual_check",
+      "urgency": "high",
+      "reason": "Candidate blocked for owner review: fixture-result.txt: undeclared new file",
+      "suggestedAction": "Inspect the retained worktree /tmp/lao-m5-candidate-demo/local-agent-orchestrator/worktrees/959e2415-f63b-474b-be70-25503f6ab3b5-6f45582c-9b7c-4656-8e1c-8f931658845b/checkout; blocked paths were left untouched. Cancel the task or decide on a retry.",
+      "blocking": false,
+      "status": "open",
+      "ownerResponse": null,
+      "resolvedAt": null
+    }
+  ],
+  "candidateBranches": "lao/candidate-d32accd5-1fe8-44a3-8f3f-06708a1c7e76 4254f225281b4e5d8d5bcdd7dfb9cee444526e6d",
+  "ownerCheckoutStatus": "",
+  "ownerHead": "main"
+}

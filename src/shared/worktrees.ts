@@ -31,3 +31,36 @@ export const worktreeEvidenceSchema = z.strictObject({
   diffCheck: z.enum(["passed", "failed"]),
   tests: z.literal("not_run: shell tools are disabled in M3"),
 });
+export const candidateSchema = z
+  .strictObject({
+    attemptId: idSchema,
+    status: z.enum(["captured", "empty", "blocked"]),
+    baseSha: z.string(),
+    headSha: z.string(),
+    candidateSha: z.string().nullable(),
+    branch: z.string().startsWith("lao/candidate-").nullable(),
+    files: z.array(
+      z.strictObject({
+        path: z.string(),
+        change: z.enum([
+          "added",
+          "modified",
+          "deleted",
+          "type_changed",
+          "ignored",
+        ]),
+        disposition: z.enum(["included", "excluded", "blocked"]),
+        reason: z.string().nullable(),
+      }),
+    ),
+    declaredUnchanged: z.array(z.string()),
+    blockers: z.array(z.string()),
+  })
+  .refine(
+    (c) =>
+      (c.status === "captured") ===
+        (c.candidateSha !== null && c.branch !== null) &&
+      (c.status === "blocked") === c.blockers.length > 0,
+    "Only a captured candidate has a commit; only a blocked one has blockers",
+  );
+export type Candidate = z.infer<typeof candidateSchema>;

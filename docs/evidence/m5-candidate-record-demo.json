@@ -1,0 +1,54 @@
+{
+  "note": "Protocol fixtures only; no native harness or model was called.",
+  "migration": {
+    "source": "/tmp/lao-m5-candidate-demo",
+    "before": {
+      "userVersion": 3,
+      "tasks": 4,
+      "events": 117,
+      "candidateEvents": 2
+    },
+    "after": {
+      "userVersion": 4,
+      "tasks": 4,
+      "events": 117,
+      "candidateRecords": 0
+    }
+  },
+  "fixture": "/tmp/lao-git-fixture-Vd30Fy/repo with spaces",
+  "run": {
+    "taskStatus": "AWAITING_REVIEW",
+    "candidateEventOverHttp": {
+      "candidateId": "2cd1d135-332f-493e-ab0d-7f658f4c8420",
+      "baseSha": "d834d7971da9e4b6d7ea6249bb78ad1ffab83f0d",
+      "candidateSha": "c02050db0bf9d12b478e49bb10a364c305125efb",
+      "reportSubmitted": true
+    },
+    "record": {
+      "id": "2cd1d135-332f-493e-ab0d-7f658f4c8420",
+      "createdAt": "2026-10-16T08:34:00.883Z",
+      "updatedAt": "2026-10-16T08:34:00.883Z",
+      "taskId": "67a9791b-55ed-4f7a-a69a-2938d05d6b34",
+      "attemptId": "de145a88-3079-4824-b0d8-e17ee3725002",
+      "baseSha": "d834d7971da9e4b6d7ea6249bb78ad1ffab83f0d",
+      "candidateSha": "c02050db0bf9d12b478e49bb10a364c305125efb",
+      "reportSubmitted": true,
+      "reviewIds": [],
+      "status": "proposed",
+      "humanDecision": null,
+      "decidedAt": null
+    },
+    "candidateBranchSha": "c02050db0bf9d12b478e49bb10a364c305125efb",
+    "candidateReadme": "Protocol fixture result",
+    "ownerCheckout": {
+      "branch": "main",
+      "status": ""
+    }
+  },
+  "restart": {
+    "sameRecord": true,
+    "taskStatus": "AWAITING_REVIEW",
+    "attemptsBefore": 1,
+    "attemptsAfter": 1
+  }
+}

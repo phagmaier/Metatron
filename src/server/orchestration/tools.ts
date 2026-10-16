@@ -4,14 +4,15 @@ import {
   artifactSchema,
   type Run,
   type Task,
-  taskSchema,
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import { type Actor, toolSchema } from "../../shared/orchestration.ts";
+import { listIntegrationCandidates } from "../storage/candidates.ts";
 import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 import { authorize } from "./policy.ts";
+import { requestReview } from "./review.ts";
 
 const summary = (task: Task) => ({
   taskId: task.id,
@@ -23,6 +24,7 @@ const summary = (task: Task) => ({
   proposedProfileId: task.proposedProfileId,
   ownerPinned: task.ownerPinned,
   parentTaskId: task.parentTaskId,
+  reviewCandidateId: task.reviewCandidateId,
 });
 function eventCount(engine: Engine, runId: string, type: string) {
   return Number(
@@ -70,56 +72,6 @@ function revisionRoot(engine: Engine, task: Task) {
     current = engine.store.getTask(current.parentTaskId);
   return current;
 }
-function propose(engine: Engine, task: Task, profileId: string, key: string) {
-  const run = engine.store.getRun(task.runId);
-  engine.scheduling.profile(run.id, profileId);
-  if (
-    !run.teamSnapshot?.preset.workerProfileIds.includes(profileId) ||
-    task.status !== "BACKLOG" ||
-    task.ownerPinned
-  )
-    throw new DomainError(
-      "POLICY_DENIED",
-      "Propose an unpinned backlog task for a roster worker",
-    );
-  return mutate(
-    engine.store.db,
-    key,
-    "proposeAssignment",
-    { taskId: task.id, profileId },
-    z.strictObject({
-      outcome: z.literal("awaiting_owner_approval"),
-      taskId: z.string(),
-      profileId: z.string(),
-    }),
-    () => {
-      const updated = taskSchema.parse({
-        ...engine.store.getTask(task.id),
-        proposedProfileId: profileId,
-        updatedAt: new Date().toISOString(),
-      });
-      engine.store.db
-        .prepare("UPDATE tasks SET data=? WHERE id=?")
-        .run(JSON.stringify(updated), task.id);
-      engine.store.recordEvent(
-        {
-          runId: run.id,
-          taskId: task.id,
-          type: "assignment.proposed",
-          correlationId: key,
-          payload: { profileId },
-        },
-        `${key}:event`,
-      );
-      return {
-        outcome: "awaiting_owner_approval" as const,
-        taskId: task.id,
-        profileId,
-      };
-    },
-  );
-}
-
 export function runTool(
   engine: Engine,
   actor: Actor,
@@ -211,6 +163,10 @@ export function runTool(
       const result = latestPayload(engine, task.id, "worker.result");
       const saved = latestPayload(engine, task.id, "report.saved");
       const evidence = latestPayload(engine, task.id, "worktree.captured");
+      const candidate = latestPayload(engine, task.id, "candidate.captured");
+      const record = listIntegrationCandidates(store, task.id).find(
+        (c) => c.attemptId === candidate?.attemptId,
+      );
       const artifact = saved
         ? store.db
             .prepare("SELECT data FROM artifacts WHERE id=?")
@@ -239,7 +195,17 @@ export function runTool(
               tests: evidence.payload.tests,
             }
           : null,
-        note: "Git evidence is engine-captured; model claims are not verified by it.",
+        candidate: candidate
+          ? {
+              candidateId: record?.id ?? null,
+              status: candidate.payload.status,
+              candidateSha: candidate.payload.candidateSha,
+              branch: candidate.payload.branch,
+              blockers: candidate.payload.blockers,
+              declaredUnchanged: candidate.payload.declaredUnchanged,
+            }
+          : null,
+        note: "Git evidence and candidates are engine-captured; model claims are not verified by them.",
       };
     }
     case "propose_task":
@@ -256,9 +222,8 @@ export function runTool(
       );
     case "assign_task": {
       if (actor.role === "lead" && run.mode === "supervised")
-        return propose(
-          engine,
-          workTask(engine, data.taskId),
+        return engine.scheduling.propose(
+          workTask(engine, data.taskId).id,
           data.profileId,
           key,
         );
@@ -272,8 +237,20 @@ export function runTool(
         key,
       );
     }
+    case "request_review":
+      return requestReview(
+        engine,
+        actor,
+        { taskId: data.taskId, profileId: data.profileId },
+        key,
+      );
     case "request_revision": {
       const task = workTask(engine, data.taskId);
+      if (task.reviewCandidateId)
+        throw new DomainError(
+          "POLICY_DENIED",
+          "Revise the implementation task, not its review",
+        );
       if (task.status !== "AWAITING_REVIEW" || !task.assignedProfileId)
         throw new DomainError(
           "CONFLICT",
@@ -336,7 +313,7 @@ export function runTool(
           `${key}:event`,
         );
         return run.mode === "supervised"
-          ? propose(engine, revision, profileId, `${key}:proposal`)
+          ? engine.scheduling.propose(revision.id, profileId, `${key}:proposal`)
           : {
               outcome: "queued",
               revisionTaskId: revision.id,
@@ -378,8 +355,14 @@ export function runTool(
         acceptanceCriteria: task.acceptanceCriteria,
         worktree: attempt?.worktreePath ?? null,
         baseSha: attempt?.baseSha ?? null,
+        review: task.reviewCandidateId
+          ? {
+              ...latestPayload(engine, task.id, "review.packet")?.payload,
+              rule: "Your worktree is the candidate commit; your prompt carried the diff. Do not modify files. Report findings with file:line locations.",
+            }
+          : null,
         reportShape:
-          "submit_result: outcome, summary, changedFiles, tests (not_run when shell is unavailable), findings, knownRisks, questions",
+          "submit_result: outcome, summary, changedFiles (every created, changed or deleted path relative to the worktree root; undeclared new files block the candidate), tests (not_run when shell is unavailable), findings, knownRisks, questions",
       };
     }
     case "report_progress": {

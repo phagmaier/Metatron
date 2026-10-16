@@ -6,74 +6,8 @@ import { checkPiTool } from "../src/server/adapters/pi-guard.ts";
 import { git } from "../src/server/git/command.ts";
 import { inspectRepository } from "../src/server/git/inspect.ts";
 import { Worktrees } from "../src/server/git/worktrees.ts";
-import { Scheduling } from "../src/server/storage/scheduling.ts";
-import { Store } from "../src/server/storage/store.ts";
-import { nativeTeam } from "../src/shared/native.ts";
-import { createGitFixture } from "./helpers/git-fixture.ts";
+import { worktreeFixture as fixture } from "./helpers/worktree-fixture.ts";
 
-async function fixture() {
-  const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-worktree-test-");
-  const db = join(data, "state.sqlite");
-  let store = new Store(db);
-  const repository = await inspectRepository(repo.directory);
-  const project = store.createProject(
-    {
-      name: "Disposable native fixture",
-      repositoryPath: repo.directory,
-      repository,
-    },
-    "project",
-  );
-  const team = nativeTeam("fixture/model", null);
-  const run = store.createRun(
-    {
-      projectId: project.id,
-      title: "Fixture",
-      initialPrompt: "Fixture",
-      repository,
-      execution: "native",
-      teamSnapshot: team,
-    },
-    "run",
-  );
-  function queue(key: string) {
-    const task = store.createTask(
-      { runId: run.id, title: key, objective: "Modify disposable file" },
-      key,
-    );
-    const profile = team.profiles.find(
-      (p) => p.permission === "workspace_write",
-    );
-    assert.ok(profile);
-    const scheduler = new Scheduling(store, data);
-    const dispatch = scheduler.enqueue(
-      { role: "owner" },
-      { taskId: task.id, profileId: profile.id },
-      `${key}:assign`,
-    );
-    const id = scheduler.reserve(dispatch);
-    assert.ok(id);
-    return { task, id, dispatch, scheduler };
-  }
-  return {
-    repo,
-    data,
-    run,
-    queue,
-    get store() {
-      return store;
-    },
-    reopen() {
-      store.close();
-      store = new Store(db);
-      store.recoverInterrupted();
-    },
-    close() {
-      store.close();
-    },
-  };
-}
 test("native attempts edit the same filename independently, retain ownership and capture all Git states", async () => {
   const f = await fixture();
   try {

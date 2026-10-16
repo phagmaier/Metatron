@@ -86,7 +86,9 @@ export function LeadPanel({
                   <strong>
                     {r.type === "clarification"
                       ? "Lead question"
-                      : "Lead escalation"}
+                      : r.type === "manual_check"
+                        ? "Owner review"
+                        : "Lead escalation"}
                   </strong>
                   <p>{r.reason}</p>
                 </div>

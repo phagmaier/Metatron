@@ -32,8 +32,14 @@ import "./style.css";
 // Conversation events are few but must never be evicted by token traffic.
 const conversation = (event: Event) =>
   event.type === "owner.message" || event.type === "lead.message";
+// Candidate records are review state; token traffic must not evict them.
 const retain = (events: Event[]) =>
-  events.filter((e, i) => conversation(e) || i >= events.length - 200);
+  events.filter(
+    (e, i) =>
+      conversation(e) ||
+      e.type === "candidate.captured" ||
+      i >= events.length - 200,
+  );
 function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
@@ -341,6 +347,11 @@ function App() {
                                 (e) =>
                                   e.taskId === task.id &&
                                   e.type === "worktree.captured",
+                              )}
+                              candidate={merged.findLast(
+                                (e) =>
+                                  e.taskId === task.id &&
+                                  e.type === "candidate.captured",
                               )}
                               onError={setError}
                             />

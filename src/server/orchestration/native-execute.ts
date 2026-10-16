@@ -1,10 +1,17 @@
 import { z } from "zod";
-import type { Dispatch } from "../../shared/orchestration.ts";
+import {
+  type Dispatch,
+  handoffReportSchema,
+} from "../../shared/orchestration.ts";
+import type { Candidate } from "../../shared/worktrees.ts";
 import type { ManagedSession } from "../adapters/contract.ts";
 import { PiAdapter } from "../adapters/pi.ts";
+import { GitError } from "../git/command.ts";
+import { createIntegrationCandidate } from "../storage/candidates.ts";
 import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
+import { reviewPacket } from "./review.ts";
 
 export async function executeNativeTurn(
   engine: Engine,
@@ -55,6 +62,8 @@ export async function executeNativeTurn(
   };
   try {
     await engine.worktrees.prepare(attemptId);
+    const prompt =
+      (await reviewPacket(engine, task, attemptId)) ?? task.objective;
     if (store.getTask(task.id).status === "CANCELLED") {
       interrupted = true;
       throw new Error("Owner cancelled before native process launch");
@@ -77,7 +86,7 @@ export async function executeNativeTurn(
       taskId: task.id,
       attemptId,
       cwd: dispatch.cwd,
-      roleInstructions: `${role.instructions}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.${token ? "\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once with your structured report; report tests as not_run." : ""}`,
+      roleInstructions: `${role.instructions}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.${token ? "\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once with your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate." : ""}`,
       model: profile.model,
       thinking: profile.thinking,
       permission: profile.permission,
@@ -105,7 +114,7 @@ export async function executeNativeTurn(
       interrupted = true;
       throw new Error("Owner cancelled/stopped during native startup");
     }
-    for await (const event of engine.pi.prompt(active, task.objective)) {
+    for await (const event of engine.pi.prompt(active, prompt)) {
       store.recordEvent(
         {
           runId: run.id,
@@ -214,10 +223,14 @@ export async function executeNativeTurn(
           },
           `evidence:${attemptId}`,
         );
+        // Writers are gated by candidate capture below; readers and reviewers
+        // by any change or a HEAD that left their starting commit.
+        const start =
+          engine.worktrees.reviewedCandidate(attemptId)?.candidateSha ??
+          evidence.baseSha;
         if (
-          evidence.files.some((f) => f.sensitive) ||
-          evidence.diffCheck !== "passed" ||
-          (profile.permission === "read_only" && evidence.files.length)
+          profile.permission === "read_only" &&
+          (evidence.files.length || evidence.headSha !== start)
         ) {
           terminal = "failed";
           diagnostic =
@@ -254,6 +267,44 @@ export async function executeNativeTurn(
         .object({ report: z.unknown() })
         .parse(JSON.parse(String(submitted.payload))).report
     : null;
+  const report = handoffReportSchema.safeParse(structured);
+  let candidate: Candidate | null = null;
+  let blocked: string | null = null;
+  if (profile.permission === "workspace_write") {
+    try {
+      const captured = await engine.worktrees.candidate(
+        attemptId,
+        report.success ? report.data.changedFiles : [],
+      );
+      candidate = captured;
+      store.recordEvent(
+        {
+          runId: run.id,
+          taskId: task.id,
+          attemptId,
+          sessionId: session.id,
+          type: "candidate.captured",
+          correlationId: attemptId,
+          payload: captured,
+        },
+        `candidate:${attemptId}`,
+      );
+      if (captured.status === "blocked")
+        blocked =
+          `Candidate blocked for owner review: ${captured.blockers.join("; ")}`.slice(
+            0,
+            4000,
+          );
+    } catch (error) {
+      blocked = `Candidate capture failed; worktree retained for owner inspection: ${
+        error instanceof GitError
+          ? `${error.message} (exit ${error.exitCode ?? error.signal ?? "unknown"})`
+          : error instanceof Error
+            ? error.message
+            : "unknown error"
+      }`;
+    }
+  }
   const text =
     output ||
     "Pi completed without text output. Inspect native events and Git evidence.";
@@ -291,6 +342,35 @@ export async function executeNativeTurn(
         },
         `report:${attemptId}`,
       );
+      if (blocked) {
+        // Unknown or sensitive paths are never committed, copied or deleted.
+        store.createHumanRequest(
+          {
+            runId: run.id,
+            sessionId: session.id,
+            affectedTaskIds: [task.id],
+            type: "manual_check",
+            urgency: "high",
+            reason: blocked,
+            suggestedAction: `Inspect the retained worktree ${dispatch.cwd}; blocked paths were left untouched. Cancel the task or decide on a retry.`,
+            blocking: false,
+          },
+          `candidate-review:${attemptId}`,
+        );
+        engine.fail(task.id, attemptId, blocked);
+        return true;
+      }
+      if (candidate?.status === "captured")
+        createIntegrationCandidate(
+          store,
+          {
+            attemptId,
+            baseSha: candidate.baseSha,
+            candidateSha: candidate.candidateSha,
+            reportSubmitted: report.success,
+          },
+          `integration-candidate:${attemptId}`,
+        );
       store.updateAttempt(
         { id: attemptId, status: "completed" },
         `attempt:${attemptId}:completed`,
@@ -300,7 +380,10 @@ export async function executeNativeTurn(
           id: task.id,
           expectedStatus: "RUNNING",
           status: "AWAITING_REVIEW",
-          reason: "Native result and Git evidence captured; not integrated",
+          reason:
+            candidate?.status === "captured"
+              ? `Candidate ${candidate.candidateSha} captured on ${candidate.branch}; not integrated`
+              : "Native result and Git evidence captured; not integrated",
         },
         `task:${attemptId}:review`,
       );

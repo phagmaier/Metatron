@@ -35,6 +35,8 @@ const descriptions: Record<ToolName, string> = {
     "Assign a backlog task to a roster worker profile. Supervised mode records a proposal for owner approval; Chat/Plan cannot dispatch.",
   request_revision:
     "Request a bounded revision of a task awaiting review; creates a revision task for the same worker profile.",
+  request_review:
+    "Request an independent read-only review of a task's captured candidate by a read-only roster profile. The reviewer inspects the candidate commit in its own worktree and never sees the implementer's report. Supervised mode records a proposal for owner approval.",
   escalate_issue:
     "Escalate a risk or blocker to the owner's inbox. Does not pause work.",
   request_human_input:

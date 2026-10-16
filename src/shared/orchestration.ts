@@ -105,6 +105,11 @@ export const toolSchema = z.discriminatedUnion("name", [
     taskId: idSchema,
     feedback: shortText(8000),
   }),
+  z.strictObject({
+    name: z.literal("request_review"),
+    taskId: idSchema,
+    profileId: idSchema,
+  }),
   humanTool("escalate_issue"),
   humanTool("request_human_input"),
   taskTool("read_assignment"),

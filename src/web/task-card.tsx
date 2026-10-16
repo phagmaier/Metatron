@@ -9,6 +9,7 @@ import {
   type Task,
 } from "../shared/domain/entities.ts";
 import type { Dispatch } from "../shared/orchestration.ts";
+import { candidateSchema } from "../shared/worktrees.ts";
 import { readApi, writeApi } from "./api.ts";
 
 export function TaskCard({
@@ -18,6 +19,7 @@ export function TaskCard({
   dispatch,
   attempt,
   evidence,
+  candidate,
   onError,
 }: {
   task: Task;
@@ -26,8 +28,12 @@ export function TaskCard({
   dispatch: Dispatch | undefined;
   attempt: Attempt | undefined;
   evidence: Event | undefined;
+  candidate: Event | undefined;
   onError: (error: string) => void;
 }) {
+  const captured = candidate
+    ? candidateSchema.safeParse(candidate.payload)
+    : undefined;
   const profiles =
     run.teamSnapshot?.profiles.filter((profile) =>
       run.teamSnapshot?.preset.workerProfileIds.includes(profile.id),
@@ -41,6 +47,11 @@ export function TaskCard({
       task.assignedProfileId ?? task.proposedProfileId ?? defaultProfileId,
     );
   }, [task.assignedProfileId, task.proposedProfileId, defaultProfileId]);
+  const reviewable =
+    task.status === "AWAITING_REVIEW" &&
+    !task.reviewCandidateId &&
+    captured?.success === true &&
+    captured.data.status === "captured";
   const [scenario, setScenario] = useState("success");
   const [priority, setPriority] = useState(task.priority);
   const [report, setReport] = useState("");
@@ -70,6 +81,12 @@ export function TaskCard({
           ? ` · ${task.dependencyIds.length} prerequisites`
           : ""}
       </p>
+      {task.reviewCandidateId && (
+        <p className="note">
+          Read-only review of an immutable candidate commit. The reviewer does
+          not see the implementer's report.
+        </p>
+      )}
       {dispatch?.diagnostic && <p className="warning">{dispatch.diagnostic}</p>}
       {task.proposedProfileId && (
         <p className="warning">
@@ -149,6 +166,26 @@ export function TaskCard({
         >
           Assign / approve
         </button>
+        {reviewable && (
+          <button
+            type="button"
+            title="Choose a read-only worker such as the Reviewer"
+            disabled={
+              busy ||
+              run.status !== "active" ||
+              run.mode === "chat_plan" ||
+              profiles.find((p) => p.id === profileId)?.permission !==
+                "read_only"
+            }
+            onClick={() =>
+              void act(() =>
+                writeApi("tasks/review", { taskId: task.id, profileId }),
+              )
+            }
+          >
+            Request review
+          </button>
+        )}
         <button
           type="button"
           disabled={
@@ -237,6 +274,26 @@ export function TaskCard({
             {run.teamSnapshot?.profiles.find((p) => p.id === attempt.profileId)
               ?.thinking ?? "native default"}
           </p>
+          {captured?.success && (
+            <div
+              className={
+                captured.data.status === "blocked" ? "warning" : "note"
+              }
+            >
+              <p>
+                Candidate {captured.data.status}
+                {captured.data.candidateSha &&
+                  ` · ${captured.data.branch} @ ${captured.data.candidateSha}`}
+              </p>
+              {captured.data.blockers.length > 0 && (
+                <ul>
+                  {captured.data.blockers.map((blocker) => (
+                    <li key={blocker}>{blocker}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           {evidence ? (
             <pre className="report">
               {JSON.stringify(evidence.payload, null, 2)}

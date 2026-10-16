@@ -178,6 +178,7 @@ summary:focus-visible {
   border-radius: 6px;
   padding: 12px;
   margin-bottom: 12px;
+  overflow-wrap: anywhere;
 }
 .task-card p {
   font-size: 0.9rem;

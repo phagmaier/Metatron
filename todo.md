@@ -99,9 +99,9 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 
 ## M5 - Review, candidate commits and local integration [spec §8, 13.2]
 
-- [ ] Implement deterministic candidate capture with tracked + explicitly allowed untracked files, secret-sensitive path filtering and blocked unsafe candidate state.
-- [ ] Persist candidate base/candidate commit SHAs and task/attempt linkage; test retry idempotency and missing report handling.
-- [ ] Add a `Reviewer` role with capability to inspect stable candidate snapshot **and surrounding repository**, not just diff text.
+- [x] Implement deterministic candidate capture with tracked + explicitly allowed untracked files, secret-sensitive path filtering and blocked unsafe candidate state.
+- [x] Persist candidate base/candidate commit SHAs and task/attempt linkage; test retry idempotency and missing report handling.
+- [x] Add a `Reviewer` role with capability to inspect stable candidate snapshot **and surrounding repository**, not just diff text.
 - [ ] Run reviewer independently of implementing worker; collect actionable file/line findings, confidence/evidence and pass/change-request recommendation.
 - [ ] Support `CHANGES_REQUESTED` and safe revision assignment to implementer; preserve old review history.
 - [ ] Create separate isolated integration worktree; verify diff and `git diff --check`, targeted tests, destination base SHA.

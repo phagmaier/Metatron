@@ -1,0 +1,55 @@
+{
+  "note": "Protocol fixtures only; no native harness or model was called.",
+  "fixture": "/tmp/lao-git-fixture-ea4pmc/repo with spaces",
+  "writer": {
+    "status": "AWAITING_REVIEW",
+    "candidate": {
+      "id": "e70cf7e0-d0be-4b93-9e9d-1bb22e80f626",
+      "createdAt": "2026-10-16T08:50:49.863Z",
+      "updatedAt": "2026-10-16T08:50:49.863Z",
+      "taskId": "90cca18f-9acf-47ec-849a-512abddf4646",
+      "attemptId": "d1137204-0c06-4ba2-9106-4e6b8297cf57",
+      "baseSha": "2f9b65c6fde2bf4490dbf08d62d922aea9bd65c5",
+      "candidateSha": "1ba627fe869825b63925b286e5a53937c437a12a",
+      "reportSubmitted": true,
+      "reviewIds": [],
+      "status": "proposed",
+      "humanDecision": null,
+      "decidedAt": null
+    }
+  },
+  "gui": {
+    "before": {
+      "disabledWithWriter": true
+    },
+    "clickedEnabled": true,
+    "reviewCard": "Review: Pi writer\nAWAITING_REVIEW",
+    "reviewShot": true
+  },
+  "review": {
+    "task": {
+      "title": "Review: Pi writer",
+      "status": "AWAITING_REVIEW",
+      "parentTaskId": "90cca18f-9acf-47ec-849a-512abddf4646",
+      "reviewCandidateId": "e70cf7e0-d0be-4b93-9e9d-1bb22e80f626",
+      "origin": "owner"
+    },
+    "worktree": "/tmp/lao-m5-review-demo/local-agent-orchestrator/worktrees/3fff84d4-5655-4341-82ae-24683a63d30a-200d9658-9a60-450e-8bbb-36808a192f4e/checkout",
+    "separateFromWriter": true,
+    "headIsCandidate": true,
+    "surroundingFile": "export {};\n",
+    "worktreeStatus": "",
+    "packetHasDiff": true,
+    "packetHasImplementerReport": false,
+    "implementerReportHasText": true,
+    "reviewerReport": "Structured report (tool-submitted):\n{\n  \"outcome\": \"completed\",\n  \"summary\": \"Protocol fixture structured summary\",\n  \"changedFiles\": [],\n  \"tests\": [\n    {\n      \"command\": \"not run\",\n      \"result\": \"not_run\"\n    }\n  ],\n  \"findings\": [],\n  \"knownRisks\": [],\n  \"questions\": [],\n  \"artifactRefs\": [],\n  \"revisionOrCommit\": null\n}\n\nFinal text:\nReviewed README: Protocol fixture result\n"
+  },
+  "ownerCheckout": {
+    "branch": "main",
+    "status": ""
+  },
+  "candidateBranchUnchanged": true,
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:33725/favicon.ico"
+  ]
+}

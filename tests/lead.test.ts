@@ -9,6 +9,7 @@ import { CodexRpc } from "../src/server/adapters/codex-rpc.ts";
 import { PiAdapter } from "../src/server/adapters/pi.ts";
 import { PiRpc } from "../src/server/adapters/pi-rpc.ts";
 import { startApp } from "../src/server/app.ts";
+import { listIntegrationCandidates } from "../src/server/storage/candidates.ts";
 import type { Run } from "../src/shared/domain/entities.ts";
 import { createGitFixture } from "./helpers/git-fixture.ts";
 
@@ -257,14 +258,24 @@ test("Supervised proposals wait; the owner's override is pinned and delivered to
       f.store.listAttempts().filter((a) => a.taskId === task.id).length,
       0,
     );
-    const reviewer = "00000000-0000-4000-8000-000000000012";
+    const writer = "00000000-0000-4000-8000-000000000011";
     f.engine.scheduling.enqueue(
       { role: "owner" },
-      { taskId: task.id, profileId: reviewer },
+      { taskId: task.id, profileId: writer },
       "owner-approval",
     );
     await f.engine.idle();
     assert.equal(f.store.getTask(task.id).status, "AWAITING_REVIEW");
+    // The writer declared its new file through the gateway, so it is captured.
+    const candidate = f.events(run.id, "candidate.captured")[0];
+    assert.equal(candidate?.payload.status, "captured");
+    assert.equal(
+      candidate?.payload.branch,
+      `lao/candidate-${candidate?.attemptId}`,
+    );
+    const [record] = listIntegrationCandidates(f.store, task.id);
+    assert.equal(record?.candidateSha, candidate?.payload.candidateSha);
+    assert.equal(record?.reportSubmitted, true);
     assert.equal(f.store.getTask(task.id).ownerPinned, true);
     const delivered = f.events(run.id, "lead.turn.delivered");
     assert.equal(delivered.length, 2);

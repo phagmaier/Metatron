@@ -18,8 +18,18 @@ const planningTools: readonly ToolName[] = [
 // owner-approval proposals; only Autonomous mode lets the Lead dispatch.
 const leadTools: Record<Run["mode"], readonly ToolName[]> = {
   chat_plan: planningTools,
-  supervised: [...planningTools, "assign_task", "request_revision"],
-  autonomous_bounded: [...planningTools, "assign_task", "request_revision"],
+  supervised: [
+    ...planningTools,
+    "assign_task",
+    "request_revision",
+    "request_review",
+  ],
+  autonomous_bounded: [
+    ...planningTools,
+    "assign_task",
+    "request_revision",
+    "request_review",
+  ],
 };
 export function toolsFor(role: "lead" | "worker", mode: Run["mode"]) {
   return role === "lead" ? leadTools[mode] : workerTools;
@@ -81,7 +91,11 @@ export function authorize(
         "Worker reports require the current running attempt",
       );
   }
-  if (operation === "assign_task" || operation === "request_revision") {
+  if (
+    operation === "assign_task" ||
+    operation === "request_revision" ||
+    operation === "request_review"
+  ) {
     if (run.mode === "chat_plan")
       throw new DomainError(
         "POLICY_DENIED",

@@ -9,6 +9,7 @@ export const absolutePathSchema = z
   .max(4096)
   .refine((s) => !s.includes("\0"), "Path contains NUL");
 export const timestampSchema = z.iso.datetime();
+export const shaSchema = z.string().regex(/^[0-9a-f]{40,64}$/);
 export const harnessSchema = z.enum(["codex", "claude-code", "opencode", "pi"]);
 export const adapterKindSchema = z.enum([
   "codex",
@@ -25,7 +26,7 @@ export const modeSchema = z.enum([
 export const repositorySchema = z.strictObject({
   root: absolutePathSchema,
   commonDirectory: absolutePathSchema,
-  baseSha: z.string().regex(/^[0-9a-f]{40,64}$/),
+  baseSha: shaSchema,
   branch: textSchema,
   clean: z.boolean(),
 });
@@ -205,6 +206,8 @@ export const taskSchema = z.strictObject({
   proposedProfileId: idSchema.nullable().default(null),
   ownerPinned: z.boolean(),
   kind: z.enum(["lead", "work"]).default("work"),
+  // Set only by the engine: a read-only review of this immutable candidate.
+  reviewCandidateId: idSchema.nullable().default(null),
 });
 export type Task = z.infer<typeof taskSchema>;
 export const attemptSchema = z.strictObject({
@@ -300,8 +303,11 @@ export const integrationCandidateSchema = z.strictObject({
   ...metadata,
   taskId: idSchema,
   attemptId: idSchema,
-  baseSha: textSchema,
-  candidateSha: textSchema,
+  baseSha: shaSchema,
+  candidateSha: shaSchema,
+  // False when the worker never submitted a structured report: the candidate
+  // then rests on Git state alone, with every new file blocked.
+  reportSubmitted: z.boolean(),
   reviewIds: idsSchema,
   status: z.enum([
     "proposed",

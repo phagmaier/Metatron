@@ -38,6 +38,57 @@ export class Scheduling {
       );
     return profile;
   }
+  // A Supervised Lead's assignment: recorded for owner approval, never dispatched.
+  propose(taskId: string, profileId: string, key: string) {
+    const task = this.store.getTask(taskId);
+    const run = this.store.getRun(task.runId);
+    this.profile(run.id, profileId);
+    if (
+      !run.teamSnapshot?.preset.workerProfileIds.includes(profileId) ||
+      task.status !== "BACKLOG" ||
+      task.ownerPinned
+    )
+      throw new DomainError(
+        "POLICY_DENIED",
+        "Propose an unpinned backlog task for a roster worker",
+      );
+    return mutate(
+      this.store.db,
+      key,
+      "proposeAssignment",
+      { taskId: task.id, profileId },
+      z.strictObject({
+        outcome: z.literal("awaiting_owner_approval"),
+        taskId: z.string(),
+        profileId: z.string(),
+      }),
+      () => {
+        const updated = taskSchema.parse({
+          ...this.store.getTask(task.id),
+          proposedProfileId: profileId,
+          updatedAt: new Date().toISOString(),
+        });
+        this.store.db
+          .prepare("UPDATE tasks SET data=? WHERE id=?")
+          .run(JSON.stringify(updated), task.id);
+        this.store.recordEvent(
+          {
+            runId: run.id,
+            taskId: task.id,
+            type: "assignment.proposed",
+            correlationId: key,
+            payload: { profileId },
+          },
+          `${key}:event`,
+        );
+        return {
+          outcome: "awaiting_owner_approval" as const,
+          taskId: task.id,
+          profileId,
+        };
+      },
+    );
+  }
   enqueue(actor: Actor, input: unknown, key: string) {
     const data = assignSchema.parse(input);
     return mutate(
@@ -66,6 +117,12 @@ export class Scheduling {
           throw new DomainError(
             "POLICY_DENIED",
             "Choose a worker from this run's roster",
+          );
+        // Reviews inspect a candidate; a writer profile could alter its evidence.
+        if (task.reviewCandidateId && profile.permission !== "read_only")
+          throw new DomainError(
+            "POLICY_DENIED",
+            "A review task runs only on a read-only profile",
           );
         if (actor.role !== "owner" && task.ownerPinned)
           throw new DomainError("POLICY_DENIED", "Owner assignment is pinned");

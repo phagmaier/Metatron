@@ -24,12 +24,17 @@ export class GitError extends DomainError {
   }
 }
 
-export async function git(cwd: string, args: readonly string[]) {
+export async function git(
+  cwd: string,
+  args: readonly string[],
+  extraEnv: Readonly<Record<string, string>> = {},
+) {
   absolutePathSchema.parse(cwd);
   if (args.some((arg) => arg.includes("\0")))
     throw new GitError("Git argument contains NUL");
   // Do not inherit repository selectors, aliases, hooks, external diff drivers,
   // fsmonitor or global config. No shell, automatic cleanup, reset or stash.
+  // extraEnv carries engine-chosen values only (private index, fixed identity).
   const env = Object.fromEntries(
     Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")),
   );
@@ -38,6 +43,7 @@ export async function git(cwd: string, args: readonly string[]) {
     GIT_TERMINAL_PROMPT: "0",
     GIT_CONFIG_NOSYSTEM: "1",
     GIT_CONFIG_GLOBAL: "/dev/null",
+    ...extraEnv,
   });
   try {
     return (
@@ -62,5 +68,23 @@ export async function git(cwd: string, args: readonly string[]) {
       `Git ${args[0] ?? "command"} failed; retained working copies require inspection`,
       error,
     );
+  }
+}
+// `git diff --check` exits 2 for whitespace errors or conflict markers.
+export async function diffCheckPasses(
+  cwd: string,
+  args: readonly string[],
+  extraEnv: Readonly<Record<string, string>> = {},
+) {
+  try {
+    await git(
+      cwd,
+      ["diff", "--no-ext-diff", "--no-textconv", "--check", ...args],
+      extraEnv,
+    );
+    return true;
+  } catch (error) {
+    if (!(error instanceof GitError) || error.exitCode !== 2) throw error;
+    return false;
   }
 }
