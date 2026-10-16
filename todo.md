@@ -108,7 +108,7 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 - [x] Detect and correctly present overlapping-file merge conflict and destination branch drift; never silently overwrite.
 - [x] Render review details + candidate diff + test summaries in GUI; owner can approve or decline.
 - [x] Require explicit human confirmation immediately before applying to selected local branch and revalidate destination SHA/clean status.
-- [ ] Preserve task, diff, logs and worktree if approval denied or integration blocked.
+- [x] Preserve task, diff, logs and worktree if approval denied or integration blocked.
 - [ ] Use Git fixture integration test for clean merge, conflict, dirty main, and successful approved integration.
 
 **M5 gate:** demo implementation -> independent review -> human approval -> safe local integration, with no destructive action on an owner's dirty checkout.

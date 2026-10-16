@@ -328,24 +328,17 @@ export function TaskCard({
       {lineageRoot && history && history.candidates.length > 0 && (
         <ReviewPanel history={history} run={run} onError={onError} />
       )}
-      {lineageRoot &&
-        (reviewable ||
-          [
-            "READY_TO_INTEGRATE",
-            "BLOCKED_CONFLICT",
-            "INTEGRATING",
-            "DONE",
-          ].includes(task.status)) && (
-          <IntegrationPanel
-            task={task}
-            run={run}
-            candidate={history?.candidates.find(
-              (c) => c.id === history.currentCandidateId,
-            )}
-            refresh={integrationEvent}
-            onError={onError}
-          />
-        )}
+      {lineageRoot && history && history.candidates.length > 0 && (
+        <IntegrationPanel
+          task={task}
+          run={run}
+          candidate={history?.candidates.find(
+            (c) => c.id === history.currentCandidateId,
+          )}
+          refresh={integrationEvent}
+          onError={onError}
+        />
+      )}
       {attempt?.adapter === "pi" && (
         <details>
           <summary>Worktree and Git evidence</summary>

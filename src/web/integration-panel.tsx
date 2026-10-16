@@ -70,6 +70,7 @@ export function IntegrationPanel({
   onError: (error: string) => void;
 }) {
   const [previews, setPreviews] = useState<IntegrationPreview[]>([]);
+  const [selectedId, setSelectedId] = useState("");
   const [branch, setBranch] = useState(
     run.repository?.branch === "HEAD" ? "" : (run.repository?.branch ?? ""),
   );
@@ -90,13 +91,15 @@ export function IntegrationPanel({
     return () => controller.abort();
   }, [task.id, refresh, onError]);
   const latest = previews.at(-1);
+  const shown = previews.find((preview) => preview.id === selectedId) ?? latest;
   const declined = candidate?.humanDecision === "rejected";
   // An approved, unapplied candidate may get a new preview, e.g. after the
   // destination moved; approving it replaces the earlier approval.
   const approvedStage =
     ["READY_TO_INTEGRATE", "BLOCKED_CONFLICT"].includes(task.status) &&
     candidate?.humanDecision === "approved";
-  const reviewStage = task.status === "AWAITING_REVIEW" && !declined;
+  const reviewStage =
+    task.status === "AWAITING_REVIEW" && !!candidate && !declined;
   const approved = previews.findLast(
     (p) =>
       p.decision?.outcome === "approved" && p.candidateId === candidate?.id,
@@ -112,6 +115,7 @@ export function IntegrationPanel({
         ...items.filter((item) => item.id !== preview.id),
         preview,
       ]);
+      setSelectedId("");
     } catch (error) {
       onError(error instanceof Error ? error.message : "Action failed");
     } finally {
@@ -120,6 +124,7 @@ export function IntegrationPanel({
   }
   const decidable =
     latest &&
+    shown?.id === latest.id &&
     latest.status !== "preparing" &&
     !latest.decision &&
     candidate?.id === latest.candidateId &&
@@ -139,6 +144,29 @@ export function IntegrationPanel({
         moved) and runs your test commands there. Previews never change your
         checkout or branches, and conflicts are never resolved for you.
       </p>
+      <p className="note">
+        Saved previews, diffs, test logs and worktrees remain available after
+        denial, blocked integration, revision or cancellation.
+      </p>
+      {previews.length > 1 && (
+        <label>
+          Saved preview
+          <select
+            value={shown?.id ?? ""}
+            onChange={(event) => setSelectedId(event.target.value)}
+          >
+            {previews.toReversed().map((preview) => (
+              <option key={preview.id} value={preview.id}>
+                {preview.id === latest?.id ? "Latest" : "Earlier"} ·{" "}
+                {preview.destinationBranch} · {preview.status}
+                {preview.decision ? ` · ${preview.decision.outcome}` : ""} ·{" "}
+                {short(preview.candidateSha)} ·{" "}
+                {new Date(preview.createdAt).toLocaleString()}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {task.status === "AWAITING_REVIEW" && declined && (
         <p className="warning">
           You declined this candidate. Request a revision to integrate new work;
@@ -196,52 +224,54 @@ export function IntegrationPanel({
           </button>
         </div>
       )}
-      {latest && (
+      {shown && (
         <div
+          key={`evidence-${shown.id}`}
           className={
-            latest.status === "passed" &&
-            latest.checks.every((check) => check.status !== "warning")
+            shown.status === "passed" &&
+            shown.checks.every((check) => check.status !== "warning")
               ? "note"
               : "warning"
           }
         >
           <p>
-            Preview {latest.status} · {latest.destinationBranch} @{" "}
-            {short(latest.destinationSha)} →{" "}
-            {latest.resultSha ? short(latest.resultSha) : "no result commit"}
-            {previews.length > 1
-              ? ` · ${previews.length - 1} earlier previews retained`
-              : ""}
+            Preview {shown.status} · {shown.destinationBranch} @{" "}
+            {short(shown.destinationSha)} →{" "}
+            {shown.resultSha ? short(shown.resultSha) : "no result commit"}
+            {shown.id !== latest?.id ? " · saved earlier preview" : ""}
           </p>
-          <p className="path">{latest.worktreePath}</p>
-          {latest.drift && (
+          <p className="note">
+            Candidate {short(shown.candidateSha)} · {shown.branch}
+          </p>
+          <p className="path">{shown.worktreePath}</p>
+          {shown.drift && (
             <p>
-              Destination moved {latest.drift.commits}{" "}
-              {latest.drift.commits === 1 ? "commit" : "commits"} since the
+              Destination moved {shown.drift.commits}{" "}
+              {shown.drift.commits === 1 ? "commit" : "commits"} since the
               candidate base; changed there:{" "}
-              {latest.drift.files.map((file) => file.path).join(", ") || "none"}
-              {latest.drift.filesTruncated ? " …" : ""}
-              {latest.drift.overlapping.length > 0 &&
-                `. Also changed by the candidate: ${latest.drift.overlapping.join(", ")}`}
+              {shown.drift.files.map((file) => file.path).join(", ") || "none"}
+              {shown.drift.filesTruncated ? " …" : ""}
+              {shown.drift.overlapping.length > 0 &&
+                `. Also changed by the candidate: ${shown.drift.overlapping.join(", ")}`}
             </p>
           )}
-          {latest.conflicts.length > 0 && (
+          {shown.conflicts.length > 0 && (
             <p>
               Conflicts left unresolved in the worktree above:{" "}
-              {latest.conflicts.join(", ")}. Reconcile the destination or
-              request a revision, then prepare a new preview.
+              {shown.conflicts.join(", ")}. Reconcile the destination or request
+              a revision, then prepare a new preview.
             </p>
           )}
           <ul>
-            {latest.checks.map((check) => (
+            {shown.checks.map((check) => (
               <li key={check.name}>
                 {check.name}: {check.status} — {check.detail}
               </li>
             ))}
           </ul>
-          {latest.testResults.length > 0 && (
+          {shown.testResults.length > 0 && (
             <ul className="reviews">
-              {latest.testResults.map((result, index) => (
+              {shown.testResults.map((result, index) => (
                 <li key={result.artifactId}>
                   Test {index + 1} <code>{result.argv.join(" ")}</code>:{" "}
                   {result.result}
@@ -258,25 +288,25 @@ export function IntegrationPanel({
               ))}
             </ul>
           )}
-          {latest.diffArtifactId && (
+          {shown.diffArtifactId && (
             <ArtifactText
-              artifactId={latest.diffArtifactId}
-              label={`Show final diff ${short(latest.destinationSha)}..${short(latest.resultSha)}`}
+              artifactId={shown.diffArtifactId}
+              label={`Show final diff ${short(shown.destinationSha)}..${short(shown.resultSha)}`}
               onError={onError}
             />
           )}
-          {latest.diagnostic && <p>{latest.diagnostic}</p>}
+          {shown.diagnostic && <p>{shown.diagnostic}</p>}
         </div>
       )}
-      {latest?.decision && (
+      {shown?.decision && (
         <p className="note">
-          {latest.decision.outcome === "approved"
-            ? `Approved for ${latest.destinationBranch} @ ${short(latest.destinationSha)} (result ${short(latest.resultSha)}).`
+          {shown.decision.outcome === "approved"
+            ? `Approved for ${shown.destinationBranch} @ ${short(shown.destinationSha)} (result ${short(shown.resultSha)}).`
             : "Declined; the candidate is rejected and kept as history."}{" "}
-          <time dateTime={latest.decision.decidedAt}>
-            {new Date(latest.decision.decidedAt).toLocaleString()}
+          <time dateTime={shown.decision.decidedAt}>
+            {new Date(shown.decision.decidedAt).toLocaleString()}
           </time>
-          {latest.decision.rationale ? ` · ${latest.decision.rationale}` : ""}
+          {shown.decision.rationale ? ` · ${shown.decision.rationale}` : ""}
         </p>
       )}
       {decidable && (
@@ -329,10 +359,12 @@ export function IntegrationPanel({
           </div>
         </div>
       )}
-      {approved && task.status !== "AWAITING_REVIEW" && (
+      {shown?.decision?.outcome === "approved" && (
         <ApplyPanel
-          preview={approved}
+          key={`apply-${shown.id}`}
+          preview={shown}
           task={task}
+          canApply={shown.id === approved?.id}
           onApplied={(preview) =>
             setPreviews((items) =>
               items.map((item) => (item.id === preview.id ? preview : item)),

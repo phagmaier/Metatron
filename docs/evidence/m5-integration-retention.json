@@ -1,0 +1,60 @@
+{
+  "kind": "Pi RPC subprocess fixtures only; no native/provider model calls",
+  "taskId": "8f3b2853-d1d2-4854-8ce5-15f23b8d0bb7",
+  "data": "/tmp/lao-review-result-bWHyZT",
+  "repository": "/tmp/lao-git-fixture-IfbLu8/repo with spaces",
+  "taskStatus": "CANCELLED",
+  "previewHistory": [
+    {
+      "id": "fdf83b94-456b-44d8-aba4-a2495981c1ff",
+      "status": "failed",
+      "decision": null,
+      "applications": [],
+      "worktreePath": "/tmp/lao-review-result-bWHyZT/worktrees/integration-fdf83b94-456b-44d8-aba4-a2495981c1ff/checkout"
+    },
+    {
+      "id": "ebef55ef-0ed8-4e0c-8a79-89c8fedcd0e4",
+      "status": "passed",
+      "decision": "declined",
+      "applications": [],
+      "worktreePath": "/tmp/lao-review-result-bWHyZT/worktrees/integration-ebef55ef-0ed8-4e0c-8a79-89c8fedcd0e4/checkout"
+    },
+    {
+      "id": "2e5c8211-8f60-417c-ac2f-3855c4f7f015",
+      "status": "passed",
+      "decision": "approved",
+      "applications": [
+        "blocked"
+      ],
+      "worktreePath": "/tmp/lao-review-result-bWHyZT/worktrees/integration-2e5c8211-8f60-417c-ac2f-3855c4f7f015/checkout"
+    }
+  ],
+  "candidateHistory": [
+    {
+      "id": "fedcf0a2-f005-4c77-ba37-dcd5c6cade00",
+      "sha": "96c5d8368bcc5bfa1611ae534661fd6109951fa6",
+      "status": "rejected"
+    },
+    {
+      "id": "8b5cd3b7-81f3-49d4-9d97-2646ba8e732f",
+      "sha": "64681affbc6e3aa19b7407c19bb6d704162408b6",
+      "status": "approved"
+    }
+  ],
+  "attemptsBeforeRestart": 4,
+  "attemptsAfterRestart": 4,
+  "eventsUnchangedAfterRestart": true,
+  "allLogsAndDiffsAccessible": true,
+  "scratchFileRetained": true,
+  "ownerIgnoredFileUnchanged": true,
+  "destinationUnchanged": true,
+  "gui": [
+    "Opened declined preview log and diff",
+    "Opened failed log, switched back to approved log with one evidence block",
+    "Opened rejected earlier candidate diff",
+    "Cancelled task through UI; all 3 previews and both candidates still selectable; no apply controls"
+  ],
+  "consoleErrors": [
+    "favicon.ico 404"
+  ]
+}

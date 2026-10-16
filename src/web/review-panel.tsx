@@ -82,8 +82,8 @@ function ReviewItem({ entry, run }: { entry: ReviewEntry; run: Run }) {
   );
 }
 
-// Independent review findings and the base..candidate diff for the candidate
-// that integration actions resolve to; earlier candidates stay as history.
+// Browse saved candidates and their independent reviews without changing the
+// current candidate that integration actions resolve to.
 export function ReviewPanel({
   history,
   run,
@@ -96,16 +96,18 @@ export function ReviewPanel({
   const [diff, setDiff] =
     useState<z.infer<typeof candidateDiffResponseSchema>>();
   const [busy, setBusy] = useState(false);
-  const current = history.candidates.find(
-    (c) => c.id === history.currentCandidateId,
-  );
-  const currentReviews = history.reviews
-    .filter((entry) => entry.review.candidateId === current?.id)
+  const [selectedId, setSelectedId] = useState("");
+  const shown =
+    history.candidates.find((c) => c.id === selectedId) ??
+    history.candidates.find((c) => c.id === history.currentCandidateId) ??
+    history.candidates.at(-1);
+  const shownReviews = history.reviews
+    .filter((entry) => entry.review.candidateId === shown?.id)
     .reverse();
   const earlier = history.reviews
-    .filter((entry) => entry.review.candidateId !== current?.id)
+    .filter((entry) => entry.review.candidateId !== shown?.id)
     .reverse();
-  const latest = currentReviews[0]?.review.recommendation;
+  const latest = shownReviews[0]?.review.recommendation;
   async function loadDiff(candidateId: string) {
     setBusy(true);
     onError("");
@@ -124,20 +126,44 @@ export function ReviewPanel({
   return (
     <details>
       <summary>
-        Review · {currentReviews.length}{" "}
-        {currentReviews.length === 1 ? "review" : "reviews"}
+        Review · {shownReviews.length}{" "}
+        {shownReviews.length === 1 ? "review" : "reviews"}
         {latest
           ? ` · latest ${latest === "pass" ? "pass" : "changes requested"}`
           : ""}
       </summary>
-      {current ? (
+      {history.candidates.length > 1 && (
+        <label>
+          Saved candidate
+          <select
+            value={shown?.id ?? ""}
+            onChange={(event) => setSelectedId(event.target.value)}
+          >
+            {history.candidates.toReversed().map((candidate) => (
+              <option key={candidate.id} value={candidate.id}>
+                {short(candidate.candidateSha)} · {candidate.status}
+                {candidate.id === history.currentCandidateId
+                  ? " · current"
+                  : " · earlier"}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {shown ? (
         <div>
           <p className="note">
-            Candidate {short(current.candidateSha)} on base{" "}
-            {short(current.baseSha)} · {current.status}
-            {current.reportSubmitted ? "" : " · no worker report submitted"}
+            Candidate {short(shown.candidateSha)} on base {short(shown.baseSha)}{" "}
+            · {shown.status}
+            {shown.reportSubmitted ? "" : " · no worker report submitted"}
           </p>
-          {diff?.candidateId === current.id ? (
+          {shown.id !== history.currentCandidateId && (
+            <p className="note">
+              Saved candidate from an earlier attempt. Its diff and reviews
+              remain available while revisions proceed or after cancellation.
+            </p>
+          )}
+          {diff?.candidateId === shown.id ? (
             <div>
               <p className="note">
                 {diff.files.length} {diff.files.length === 1 ? "file" : "files"}{" "}
@@ -156,27 +182,27 @@ export function ReviewPanel({
             <button
               type="button"
               disabled={busy}
-              onClick={() => void loadDiff(current.id)}
+              onClick={() => void loadDiff(shown.id)}
             >
               Show candidate diff
             </button>
           )}
         </div>
       ) : (
-        <p className="note">The current revision has no captured candidate.</p>
+        <p className="note">The shown revision has no captured candidate.</p>
       )}
-      {currentReviews.length === 0 ? (
+      {shownReviews.length === 0 ? (
         <p className="note">No independent review of this candidate yet.</p>
       ) : (
         <ul className="reviews">
-          {currentReviews.map((entry) => (
+          {shownReviews.map((entry) => (
             <ReviewItem key={entry.review.id} entry={entry} run={run} />
           ))}
         </ul>
       )}
       {earlier.length > 0 && (
         <details>
-          <summary>Reviews of earlier candidates ({earlier.length})</summary>
+          <summary>Reviews of other candidates ({earlier.length})</summary>
           <ul className="reviews">
             {earlier.map((entry) => (
               <ReviewItem key={entry.review.id} entry={entry} run={run} />

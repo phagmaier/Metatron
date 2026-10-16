@@ -32,18 +32,22 @@ function describe(plan: ApplyPlan) {
 export function ApplyPanel({
   preview,
   task,
+  canApply,
   onApplied,
   onError,
 }: {
   preview: IntegrationPreview;
   task: Task;
+  canApply: boolean;
   onApplied: (preview: IntegrationPreview) => void;
   onError: (error: string) => void;
 }) {
   const [plan, setPlan] = useState<ApplyPlan>();
   const [busy, setBusy] = useState(false);
   const branch = preview.destinationBranch;
-  const open = ["READY_TO_INTEGRATE", "BLOCKED_CONFLICT"].includes(task.status);
+  const open =
+    canApply &&
+    ["READY_TO_INTEGRATE", "BLOCKED_CONFLICT"].includes(task.status);
   async function act(action: () => Promise<void>) {
     setBusy(true);
     onError("");
@@ -102,11 +106,23 @@ export function ApplyPanel({
           ))}
         </ul>
       )}
-      {task.status === "INTEGRATING" && <p className="warning">Applying…</p>}
-      {task.status === "DONE" && (
+      {preview.applications.at(-1)?.status === "applying" && (
+        <p className="warning">Applying…</p>
+      )}
+      {preview.applications.some(
+        (application) => application.status === "applied",
+      ) && (
         <p className="note">
           Integrated into {branch}. The integration worktree, its branch, diff
           and logs are kept.
+        </p>
+      )}
+      {preview.applications.some((application) =>
+        ["blocked", "interrupted"].includes(application.status),
+      ) && (
+        <p className="note">
+          The task, diff, logs and worktrees are kept for inspection. Nothing
+          retries automatically.
         </p>
       )}
       {open && !plan && (
