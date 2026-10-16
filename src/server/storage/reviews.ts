@@ -8,9 +8,17 @@ import {
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import { worktreeEvidenceSchema } from "../../shared/worktrees.ts";
-import { getIntegrationCandidate } from "./candidates.ts";
+import {
+  getIntegrationCandidate,
+  listIntegrationCandidates,
+} from "./candidates.ts";
 import { appendEvent } from "./journal.ts";
 import { mutate } from "./mutations.ts";
+import {
+  implementationTask,
+  revisionAncestors,
+  revisionTaskIds,
+} from "./revisions.ts";
 import type { Store } from "./store.ts";
 
 const createSchema = z.strictObject({
@@ -131,4 +139,30 @@ export function listReviews(store: Store, taskId: string) {
     )
     .all(taskId, taskId)
     .map((row) => reviewSchema.parse(JSON.parse(String(row.data))));
+}
+
+// Read-only owner view: everything reviewed across the revision lineage, with
+// the candidate that integration actions currently resolve to.
+export function reviewHistory(store: Store, taskId: string) {
+  const task = store.getTask(taskId);
+  const root = revisionAncestors(store, task).at(-1) ?? task;
+  const ids = revisionTaskIds(store, root);
+  const candidates = ids
+    .flatMap((id) => listIntegrationCandidates(store, id))
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const reviews = ids
+    .flatMap((id) => listReviews(store, id))
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((review) => ({
+      review,
+      reviewerProfileId: store.getAttempt(review.reviewerAttemptId).profileId,
+    }));
+  return {
+    currentCandidateId:
+      listIntegrationCandidates(store, implementationTask(store, root).id).at(
+        -1,
+      )?.id ?? null,
+    candidates,
+    reviews,
+  };
 }

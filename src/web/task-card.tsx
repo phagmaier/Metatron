@@ -12,6 +12,7 @@ import type { Dispatch } from "../shared/orchestration.ts";
 import { candidateSchema } from "../shared/worktrees.ts";
 import { readApi, writeApi } from "./api.ts";
 import { IntegrationPanel } from "./integration-panel.tsx";
+import { ReviewPanel, useReviewHistory } from "./review-panel.tsx";
 
 export function TaskCard({
   task,
@@ -23,6 +24,7 @@ export function TaskCard({
   candidate,
   revision,
   integrationEvent,
+  reviewEvent,
   onError,
 }: {
   task: Task;
@@ -34,6 +36,7 @@ export function TaskCard({
   candidate: Event | undefined;
   revision: Task | undefined;
   integrationEvent: number | undefined;
+  reviewEvent: number | undefined;
   onError: (error: string) => void;
 }) {
   const captured = candidate
@@ -57,6 +60,17 @@ export function TaskCard({
     !task.reviewCandidateId &&
     captured?.success === true &&
     captured.data.status === "captured";
+  // Review history and integration live on the original task card only.
+  const lineageRoot =
+    run.execution === "native" &&
+    task.kind === "work" &&
+    !task.reviewCandidateId &&
+    !task.revisionSourceTaskId;
+  const history = useReviewHistory(
+    lineageRoot ? task.id : null,
+    `${reviewEvent}:${integrationEvent}`,
+    onError,
+  );
   const [scenario, setScenario] = useState("success");
   const [priority, setPriority] = useState(task.priority);
   const [report, setReport] = useState("");
@@ -248,6 +262,8 @@ export function TaskCard({
               "RUNNING",
               "AWAITING_REVIEW",
               "CHANGES_REQUESTED",
+              "READY_TO_INTEGRATE",
+              "BLOCKED_CONFLICT",
               "RETRY_DECISION",
             ].includes(task.status)
           }
@@ -309,14 +325,27 @@ export function TaskCard({
           can be cancelled.
         </p>
       )}
-      {reviewable && !task.revisionSourceTaskId && (
-        <IntegrationPanel
-          task={task}
-          run={run}
-          refresh={integrationEvent}
-          onError={onError}
-        />
+      {lineageRoot && history && history.candidates.length > 0 && (
+        <ReviewPanel history={history} run={run} onError={onError} />
       )}
+      {lineageRoot &&
+        (reviewable ||
+          [
+            "READY_TO_INTEGRATE",
+            "BLOCKED_CONFLICT",
+            "INTEGRATING",
+            "DONE",
+          ].includes(task.status)) && (
+          <IntegrationPanel
+            task={task}
+            run={run}
+            candidate={history?.candidates.find(
+              (c) => c.id === history.currentCandidateId,
+            )}
+            refresh={integrationEvent}
+            onError={onError}
+          />
+        )}
       {attempt?.adapter === "pi" && (
         <details>
           <summary>Worktree and Git evidence</summary>

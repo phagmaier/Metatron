@@ -1,0 +1,208 @@
+{
+  "execution": "protocol fixtures only (Pi RPC fixture); no native harness/provider calls; GUI driven via system Chromium over CDP",
+  "approval": {
+    "database": "/tmp/lao-review-result-8ADdHc/state.sqlite",
+    "repository": "/tmp/lao-git-fixture-Rj984l/repo with spaces",
+    "runId": "e77c0613-b2df-46d8-997d-34cb8b8b0ab0",
+    "taskId": "ba711612-c091-4620-b8f5-abc0581bbdbe",
+    "candidate": {
+      "id": "f6155e49-dad7-417d-9e07-e6fffcef74c2",
+      "createdAt": "2026-10-16T12:21:21.787Z",
+      "updatedAt": "2026-10-16T12:21:24.789Z",
+      "taskId": "ba711612-c091-4620-b8f5-abc0581bbdbe",
+      "attemptId": "a5566b70-8773-469e-b2d9-431f47d190fa",
+      "baseSha": "93fb1a88d2d57a468053acf962ba483b7ebe2950",
+      "candidateSha": "b25571c75d6005206656635e66133f9e400a0c46",
+      "reportSubmitted": true,
+      "reviewIds": [
+        "4c1ece1d-8c34-4c82-9314-5d8ef240ce5c"
+      ],
+      "status": "approved",
+      "humanDecision": "approved",
+      "decidedAt": "2026-10-16T12:21:24.789Z"
+    },
+    "reviews": [
+      {
+        "id": "4c1ece1d-8c34-4c82-9314-5d8ef240ce5c",
+        "recommendation": "pass",
+        "findings": 0
+      }
+    ],
+    "previews": [
+      {
+        "id": "6103d4d7-22e5-4423-bfc1-80ea36730c13",
+        "createdAt": "2026-10-16T12:21:24.121Z",
+        "updatedAt": "2026-10-16T12:21:24.789Z",
+        "runId": "e77c0613-b2df-46d8-997d-34cb8b8b0ab0",
+        "taskId": "ba711612-c091-4620-b8f5-abc0581bbdbe",
+        "implementationTaskId": "ba711612-c091-4620-b8f5-abc0581bbdbe",
+        "candidateId": "f6155e49-dad7-417d-9e07-e6fffcef74c2",
+        "reviewId": "4c1ece1d-8c34-4c82-9314-5d8ef240ce5c",
+        "baseSha": "93fb1a88d2d57a468053acf962ba483b7ebe2950",
+        "candidateSha": "b25571c75d6005206656635e66133f9e400a0c46",
+        "destinationBranch": "main",
+        "destinationSha": "93fb1a88d2d57a468053acf962ba483b7ebe2950",
+        "worktreePath": "/tmp/lao-review-result-8ADdHc/worktrees/integration-6103d4d7-22e5-4423-bfc1-80ea36730c13/checkout",
+        "branch": "lao/integration-6103d4d7-22e5-4423-bfc1-80ea36730c13",
+        "tests": [
+          [
+            "grep",
+            "-q",
+            "Protocol",
+            "README.md"
+          ]
+        ],
+        "timeoutSeconds": 600,
+        "status": "passed",
+        "resultSha": "b25571c75d6005206656635e66133f9e400a0c46",
+        "files": [
+          {
+            "status": "M",
+            "path": "README.md"
+          }
+        ],
+        "drift": null,
+        "conflicts": [],
+        "checks": [
+          {
+            "name": "destination",
+            "status": "passed",
+            "detail": "main is at the candidate base 93fb1a88d2d57a468053acf962ba483b7ebe2950"
+          },
+          {
+            "name": "candidate",
+            "status": "passed",
+            "detail": "Candidate branch still records b25571c75d6005206656635e66133f9e400a0c46"
+          },
+          {
+            "name": "apply",
+            "status": "passed",
+            "detail": "Fast-forwarded lao/integration-6103d4d7-22e5-4423-bfc1-80ea36730c13 to b25571c75d6005206656635e66133f9e400a0c46"
+          },
+          {
+            "name": "overlap",
+            "status": "passed",
+            "detail": "No file was changed on both sides"
+          },
+          {
+            "name": "diff",
+            "status": "passed",
+            "detail": "1 changed file, all from the reviewed candidate"
+          },
+          {
+            "name": "diff_check",
+            "status": "passed",
+            "detail": "git diff --check passed"
+          },
+          {
+            "name": "tests",
+            "status": "passed",
+            "detail": "1/1 declared commands passed"
+          },
+          {
+            "name": "final_destination",
+            "status": "passed",
+            "detail": "main unchanged during preparation"
+          }
+        ],
+        "testResults": [
+          {
+            "argv": [
+              "grep",
+              "-q",
+              "Protocol",
+              "README.md"
+            ],
+            "result": "passed",
+            "exitCode": 0,
+            "signal": null,
+            "durationMs": 5,
+            "artifactId": "20dc8401-3558-41c3-8a88-e5e515a0567d",
+            "outputTruncated": false
+          }
+        ],
+        "diffArtifactId": "5ef31b12-9a1c-492e-a861-070cdcbf41cb",
+        "diagnostic": null,
+        "decision": {
+          "outcome": "approved",
+          "decidedAt": "2026-10-16T12:21:24.789Z",
+          "rationale": "Reviewed diff and test output"
+        }
+      }
+    ],
+    "integrationEvents": [
+      "integration.requested",
+      "integration.worktree_creating",
+      "integration.applied",
+      "integration.test_finished",
+      "integration.passed",
+      "integration.approved"
+    ],
+    "ownerCheckout": {
+      "before": {
+        "status": "M README.md\n?? notes.txt",
+        "head": "93fb1a88d2d57a468053acf962ba483b7ebe2950",
+        "branch": "main",
+        "main": "93fb1a88d2d57a468053acf962ba483b7ebe2950"
+      },
+      "after": {
+        "status": "M README.md\n?? notes.txt",
+        "head": "93fb1a88d2d57a468053acf962ba483b7ebe2950",
+        "branch": "main",
+        "main": "93fb1a88d2d57a468053acf962ba483b7ebe2950"
+      },
+      "untouched": true
+    },
+    "integrationBranchHead": "b25571c75d6005206656635e66133f9e400a0c46",
+    "taskStatusAfterRestart": "READY_TO_INTEGRATE",
+    "restart": {
+      "previewIdentical": true,
+      "attemptsBefore": 2,
+      "attemptsAfter": 2
+    }
+  },
+  "findings": {
+    "database": "/tmp/lao-review-result-TUNRV5/state.sqlite",
+    "taskId": "5d536494-20f6-4b9c-af15-87df0c1d6cb4",
+    "reviews": [
+      {
+        "summary": "Fixture review: README loses the project heading",
+        "recommendation": "changes_requested",
+        "findings": [
+          {
+            "severity": "important",
+            "file": "README.md",
+            "line": 1,
+            "justification": "Restore the project heading so readers can identify the project.",
+            "evidence": "The candidate replaces the heading with 'Protocol fixture result'.",
+            "confidence": 0.95
+          }
+        ],
+        "tests": [
+          {
+            "command": "Tests unavailable: shell is disabled",
+            "result": "not_run"
+          }
+        ],
+        "id": "924b67c6-0f81-4f7d-b0b1-892f7057ad82",
+        "createdAt": "2026-10-16T12:21:23.117Z",
+        "updatedAt": "2026-10-16T12:21:23.117Z",
+        "taskId": "5d536494-20f6-4b9c-af15-87df0c1d6cb4",
+        "reviewerAttemptId": "eda31350-7d1a-4d45-84bc-bc9b535ae3f4",
+        "candidateId": "b6fa48bc-8094-4e8b-857e-d6f45817385a"
+      }
+    ],
+    "taskStatus": "AWAITING_REVIEW"
+  },
+  "gui": {
+    "beforeApproval": "Pi writer\nAWAITING_REVIEW\n\nKeep a project heading in README\n\nowner \u00b7 priority 0 \u00b7 owner assignment pinned\n\nRevision feedback\nRequest revision\n\nNative pi worker \u00b7 Pi Backend Engineer \u00b7 exited\nfixture-914608\n\nWorker\nPi Backend Engineer \u00b7 workspace_write\nPi Reviewer \u00b7 read_only\nPi Reader \u00b7 read_only\nPi Synthesizer \u00b7 read_only\nAssign / approve\nRequest review\nCancel task\nPriority\nSave priority\nView report\nReview \u00b7 1 review \u00b7 latest pass\n\nCandidate b25571c75d60 on base 93fb1a88d2d5 \u00b7 reviewed\n\n1 file changed: M README.md\n\ndiff --git a/README.md b/README.md\nindex b30231f..a52f9b1 100644\n--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-# Disposable fixture\n+Protocol fixture result\n\n\nPass \u00b7 Pi Reviewer (fixture/model) \u00b7 10/16/2026, 5:21:22 AM\n\nFixture review: candidate and surrounding code inspected\n\nNo findings.\n\nTests the reviewer named, not run (reviewers have no shell): Tests unavailable: shell is disabled\n\nIntegration \u00b7 passed\n\nApplies the reviewed candidate to the destination's recorded commit in a separate worktree (a fast-forward, or a merge if the branch moved) and runs your test commands there. Your checkout and branches are not changed; nothing is applied and conflicts are never resolved for you.\n\nDestination branch\nTest commands (one per line)\n\nCommands run with your user permissions on agent-written code; no shell, so quotes, pipes and variables are not interpreted.\n\nPrepare integration preview\n\nPreview passed \u00b7 main @ 93fb1a88d2d5 \u2192 b25571c75d60\n\n/tmp/lao-review-result-8ADdHc/worktrees/integration-6103d4d7-22e5-4423-bfc1-80ea36730c13/checkout\n\ndestination: passed \u2014 main is at the candidate base 93fb1a88d2d57a468053acf962ba483b7ebe2950\ncandidate: passed \u2014 Candidate branch still records b25571c75d6005206656635e66133f9e400a0c46\napply: passed \u2014 Fast-forwarded lao/integration-6103d4d7-22e5-4423-bfc1-80ea36730c13 to b25571c75d6005206656635e66133f9e400a0c46\noverlap: passed \u2014 No file was changed on both sides\ndiff: passed \u2014 1 changed file, all from the reviewed candidate\ndiff_check: passed \u2014 git diff --check passed\ntests: passed \u2014 1/1 declared commands passed\nfinal_destination: passed \u2014 main unchanged during preparation\nTest 1 grep -q Protocol README.md: passed \u00b7 exit 0 \u00b7 0.0 s\n$ grep -q Protocol README.md\n\ndiff --git a/README.md b/README.md\nindex b30231f..a52f9b1 100644\n--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-# Disposable fixture\n+Protocol fixture result\n\nDecision note (optional)\n\nApproving records your decision for this exact preview; nothing is applied to main. Declining rejects the candidate; the task stays open for a revision or cancellation.\n\nApprove for main\nDecline candidate\nWorktree and Git evidence",
+    "afterApproval": "Pi writer\nREADY_TO_INTEGRATE\n\nKeep a project heading in README\n\nowner \u00b7 priority 0 \u00b7 owner assignment pinned\n\nNative pi worker \u00b7 Pi Backend Engineer \u00b7 exited\nfixture-914608\n\nWorker\nPi Backend Engineer \u00b7 workspace_write\nPi Reviewer \u00b7 read_only\nPi Reader \u00b7 read_only\nPi Synthesizer \u00b7 read_only\nAssign / approve\nCancel task\nPriority\nSave priority\nView report\nReview \u00b7 1 review \u00b7 latest pass\n\nCandidate b25571c75d60 on base 93fb1a88d2d5 \u00b7 approved\n\n1 file changed: M README.md\n\ndiff --git a/README.md b/README.md\nindex b30231f..a52f9b1 100644\n--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-# Disposable fixture\n+Protocol fixture result\n\n\nPass \u00b7 Pi Reviewer (fixture/model) \u00b7 10/16/2026, 5:21:22 AM\n\nFixture review: candidate and surrounding code inspected\n\nNo findings.\n\nTests the reviewer named, not run (reviewers have no shell): Tests unavailable: shell is disabled\n\nIntegration \u00b7 passed \u00b7 approved\n\nApplies the reviewed candidate to the destination's recorded commit in a separate worktree (a fast-forward, or a merge if the branch moved) and runs your test commands there. Your checkout and branches are not changed; nothing is applied and conflicts are never resolved for you.\n\nPreview passed \u00b7 main @ 93fb1a88d2d5 \u2192 b25571c75d60\n\n/tmp/lao-review-result-8ADdHc/worktrees/integration-6103d4d7-22e5-4423-bfc1-80ea36730c13/checkout\n\ndestination: passed \u2014 main is at the candidate base 93fb1a88d2d57a468053acf962ba483b7ebe2950\ncandidate: passed \u2014 Candidate branch still records b25571c75d6005206656635e66133f9e400a0c46\napply: passed \u2014 Fast-forwarded lao/integration-6103d4d7-22e5-4423-bfc1-80ea36730c13 to b25571c75d6005206656635e66133f9e400a0c46\noverlap: passed \u2014 No file was changed on both sides\ndiff: passed \u2014 1 changed file, all from the reviewed candidate\ndiff_check: passed \u2014 git diff --check passed\ntests: passed \u2014 1/1 declared commands passed\nfinal_destination: passed \u2014 main unchanged during preparation\nTest 1 grep -q Protocol README.md: passed \u00b7 exit 0 \u00b7 0.0 s\n$ grep -q Protocol README.md\n\ndiff --git a/README.md b/README.md\nindex b30231f..a52f9b1 100644\n--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-# Disposable fixture\n+Protocol fixture result\n\n\nApproved for main @ 93fb1a88d2d5 (result b25571c75d60). Nothing has been applied to main. 10/16/2026, 5:21:24 AM \u00b7 Reviewed diff and test output\n\nWorktree and Git evidence",
+    "approvalConsoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:44759/favicon.ico"
+    ],
+    "findings": "Review \u00b7 1 review \u00b7 latest changes requested\n\nCandidate e6d6a468fef7 on base 59d16682b5ff \u00b7 reviewed\n\nShow candidate diff\n\nChanges requested \u00b7 Pi Reviewer (fixture/model) \u00b7 10/16/2026, 5:21:23 AM\n\nFixture review: README loses the project heading\n\nimportant README.md:1 \u00b7 confidence 95%\n\nRestore the project heading so readers can identify the project.\n\nEvidence: The candidate replaces the heading with 'Protocol fixture result'.\n\nTests the reviewer named, not run (reviewers have no shell): Tests unavailable: shell is disabled",
+    "findingsConsoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:36325/favicon.ico"
+    ]
+  }
+}

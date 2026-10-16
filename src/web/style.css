@@ -271,3 +271,18 @@ pre {
   font-size: 0.8rem;
   line-height: 1.5;
 }
+.reviews {
+  list-style: none;
+  padding: 0;
+}
+.reviews > li {
+  border-top: 1px solid #d5ddd6;
+  padding: 8px 0;
+}
+.findings {
+  padding-left: 18px;
+}
+.diff {
+  max-height: 420px;
+  overflow: auto;
+}

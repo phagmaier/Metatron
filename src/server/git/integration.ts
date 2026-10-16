@@ -157,7 +157,7 @@ export async function mergeCandidate(
   };
 }
 
-async function changedFiles(path: string, from: string, to: string) {
+export async function changedFiles(path: string, from: string, to: string) {
   const fields = (
     await git(path, [
       "diff",
@@ -289,16 +289,20 @@ export async function verifyIntegrationDiff(
       refs.resultSha,
       "--",
     ]),
-    patch: await git(path, [
-      "diff",
-      "--no-ext-diff",
-      "--no-textconv",
-      "--no-renames",
-      refs.destinationSha,
-      refs.resultSha,
-      "--",
-    ]),
+    patch: await diffPatch(path, refs.destinationSha, refs.resultSha),
   };
+}
+
+export function diffPatch(path: string, from: string, to: string) {
+  return git(path, [
+    "diff",
+    "--no-ext-diff",
+    "--no-textconv",
+    "--no-renames",
+    from,
+    to,
+    "--",
+  ]);
 }
 
 export async function worktreeState(path: string) {

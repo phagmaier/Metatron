@@ -297,6 +297,8 @@ export class Engine {
             "RUNNING",
             "AWAITING_REVIEW",
             "CHANGES_REQUESTED",
+            "READY_TO_INTEGRATE",
+            "BLOCKED_CONFLICT",
             "RETRY_DECISION",
             "FAILED",
             "INTERRUPTED",

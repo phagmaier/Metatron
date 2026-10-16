@@ -86,6 +86,14 @@ export function implementationTask(store: Store, task: Task): Task {
   }
 }
 
+// The current implementation first, then every revision ancestor up to the
+// original task. Integration decisions move them together.
+export function implementationLineage(store: Store, task: Task) {
+  const root = revisionAncestors(store, task).at(-1) ?? task;
+  const current = implementationTask(store, root);
+  return [current, ...revisionAncestors(store, current)];
+}
+
 export function revisionCandidate(store: Store, task: Task) {
   const source = revisionSource(store, task);
   const candidate = task.revisionCandidateId

@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import { chmod, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { z } from "zod";
+import { getIntegration } from "../../src/server/storage/integrations.ts";
 import type { Store } from "../../src/server/storage/store.ts";
 import { artifactSchema } from "../../src/shared/domain/entities.ts";
 import { reviewFixture } from "./review-fixture.ts";
 
 export const node = process.execPath;
 export const owner = { role: "owner" } as const;
-type Repo = Awaited<ReturnType<typeof reviewFixture>>["repo"];
+type Fixture = Awaited<ReturnType<typeof reviewFixture>>;
+type Repo = Fixture["repo"];
 
 // A writer candidate with a recorded passing review, ready for integration.
 export async function reviewed() {
@@ -63,4 +66,46 @@ export async function ownerCommit(
   const sha = await repo.git("rev-parse", "HEAD");
   if (options.from) await repo.git("switch", "-q", "main");
   return sha;
+}
+
+// GET, or a token-authenticated POST with an idempotency key.
+export async function api(
+  f: Fixture,
+  path: string,
+  body?: { input: unknown; key: string },
+) {
+  const { token } = z
+    .object({ token: z.string() })
+    .parse(await (await fetch(`${f.app.origin}/api/local-session`)).json());
+  const response = await fetch(
+    `${f.app.origin}/api/${path}`,
+    body
+      ? {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Local-Token": token,
+            "Idempotency-Key": body.key,
+          },
+          body: JSON.stringify(body.input),
+        }
+      : {},
+  );
+  return { status: response.status, value: (await response.json()) as unknown };
+}
+
+// A passed preview of the current candidate that the owner has approved.
+export async function approvedPreview(f: Fixture, key: string) {
+  const { id } = f.engine.integrations.request(
+    owner,
+    { taskId: f.original.id },
+    key,
+  );
+  await f.engine.integrations.idle();
+  assert.equal(getIntegration(f.store, id).status, "passed");
+  return f.engine.integrations.decide(
+    owner,
+    { integrationId: id, decision: "approve" },
+    `${key}:approve`,
+  );
 }

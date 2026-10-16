@@ -69,6 +69,67 @@ export const integrationDriftSchema = z.strictObject({
   overlapping: z.array(z.string()).max(500),
 });
 export type IntegrationDrift = z.infer<typeof integrationDriftSchema>;
+// The owner's verdict on one finished preview. Approval applies nothing.
+export const integrationDecisionSchema = z.strictObject({
+  outcome: z.enum(["approved", "declined"]),
+  decidedAt: timestampSchema,
+  rationale: z.string().max(4000).nullable(),
+});
+export const integrationDecisionRequestSchema = z.strictObject({
+  integrationId: idSchema,
+  decision: z.enum(["approve", "decline"]),
+  rationale: z.string().trim().max(4000).optional(),
+});
+// How an approved result reaches the destination branch. A branch checked out
+// in the owner's checkout is fast-forwarded there; otherwise only the ref moves.
+export const applyMethodSchema = z.enum([
+  "update_ref",
+  "fast_forward_checkout",
+  "record_existing",
+]);
+export const applyCommandSchema = z.strictObject({
+  cwd: absolutePathSchema,
+  args: z.array(z.string()),
+});
+export const integrationApplicationSchema = z.strictObject({
+  id: idSchema,
+  status: z.enum(["applying", "applied", "blocked", "interrupted"]),
+  method: applyMethodSchema,
+  checkoutPath: absolutePathSchema.nullable(),
+  expectedSha: shaSchema,
+  resultSha: shaSchema,
+  commands: z.array(applyCommandSchema),
+  startedAt: timestampSchema,
+  finishedAt: timestampSchema.nullable(),
+  // The destination branch as Git reported it after the attempt.
+  observedSha: shaSchema.nullable(),
+  diagnostic: z.string().max(2000).nullable(),
+});
+export type IntegrationApplication = z.infer<
+  typeof integrationApplicationSchema
+>;
+export const applyPlanSchema = z.strictObject({
+  integrationId: idSchema,
+  destinationBranch: destinationBranchSchema,
+  expectedSha: shaSchema,
+  currentSha: shaSchema.nullable(),
+  resultSha: shaSchema,
+  method: applyMethodSchema,
+  checkoutPath: absolutePathSchema.nullable(),
+  commands: z.array(applyCommandSchema),
+  blockers: z.array(z.string()),
+});
+export type ApplyPlan = z.infer<typeof applyPlanSchema>;
+// The owner confirms the plan they were shown; any difference refuses the apply.
+export const applyRequestSchema = z.strictObject({
+  integrationId: idSchema,
+  confirm: z.strictObject({
+    method: applyMethodSchema,
+    expectedSha: shaSchema,
+    resultSha: shaSchema,
+    checkoutPath: absolutePathSchema.nullable(),
+  }),
+});
 export const integrationPreviewSchema = z.strictObject({
   id: idSchema,
   createdAt: timestampSchema,
@@ -97,5 +158,7 @@ export const integrationPreviewSchema = z.strictObject({
   testResults: z.array(integrationTestResultSchema),
   diffArtifactId: idSchema.nullable(),
   diagnostic: z.string().max(2000).nullable(),
+  decision: integrationDecisionSchema.nullable().default(null),
+  applications: z.array(integrationApplicationSchema).default([]),
 });
 export type IntegrationPreview = z.infer<typeof integrationPreviewSchema>;

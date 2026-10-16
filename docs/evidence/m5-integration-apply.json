@@ -1,0 +1,168 @@
+{
+  "execution": "protocol fixtures only (Pi RPC fixture); no native harness/provider calls; GUI driven via system Chromium over CDP",
+  "database": "/tmp/lao-review-result-uvfR69/state.sqlite",
+  "repository": "/tmp/lao-git-fixture-wOXYhy/repo with spaces",
+  "runId": "33e3128d-8fad-4787-8e7d-79b812cf3e5c",
+  "taskId": "d153b060-e5da-4e9d-8354-f6186b3e149f",
+  "candidate": {
+    "id": "1fbc3a89-dd55-442e-8544-7632f05f827b",
+    "createdAt": "2026-10-16T12:46:21.919Z",
+    "updatedAt": "2026-10-16T12:46:23.736Z",
+    "taskId": "d153b060-e5da-4e9d-8354-f6186b3e149f",
+    "attemptId": "52792714-c0a0-41c6-9f13-c3a537058de3",
+    "baseSha": "4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072",
+    "candidateSha": "58e88357797f08ba0b41072dc1663b67c53961e1",
+    "reportSubmitted": true,
+    "reviewIds": [
+      "8fd81a1b-0772-4fb7-9f0f-c4eb7aecf22a"
+    ],
+    "status": "integrated",
+    "humanDecision": "approved",
+    "decidedAt": "2026-10-16T12:46:22.428Z"
+  },
+  "preview": {
+    "id": "b43f472e-3d71-4701-8459-d86001b70792",
+    "createdAt": "2026-10-16T12:46:22.283Z",
+    "updatedAt": "2026-10-16T12:46:23.736Z",
+    "runId": "33e3128d-8fad-4787-8e7d-79b812cf3e5c",
+    "taskId": "d153b060-e5da-4e9d-8354-f6186b3e149f",
+    "implementationTaskId": "d153b060-e5da-4e9d-8354-f6186b3e149f",
+    "candidateId": "1fbc3a89-dd55-442e-8544-7632f05f827b",
+    "reviewId": "8fd81a1b-0772-4fb7-9f0f-c4eb7aecf22a",
+    "baseSha": "4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072",
+    "candidateSha": "58e88357797f08ba0b41072dc1663b67c53961e1",
+    "destinationBranch": "main",
+    "destinationSha": "4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072",
+    "worktreePath": "/tmp/lao-review-result-uvfR69/worktrees/integration-b43f472e-3d71-4701-8459-d86001b70792/checkout",
+    "branch": "lao/integration-b43f472e-3d71-4701-8459-d86001b70792",
+    "tests": [],
+    "timeoutSeconds": 600,
+    "status": "passed",
+    "resultSha": "58e88357797f08ba0b41072dc1663b67c53961e1",
+    "files": [
+      {
+        "status": "M",
+        "path": "README.md"
+      }
+    ],
+    "drift": null,
+    "conflicts": [],
+    "checks": [
+      {
+        "name": "destination",
+        "status": "passed",
+        "detail": "main is at the candidate base 4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072"
+      },
+      {
+        "name": "candidate",
+        "status": "passed",
+        "detail": "Candidate branch still records 58e88357797f08ba0b41072dc1663b67c53961e1"
+      },
+      {
+        "name": "apply",
+        "status": "passed",
+        "detail": "Fast-forwarded lao/integration-b43f472e-3d71-4701-8459-d86001b70792 to 58e88357797f08ba0b41072dc1663b67c53961e1"
+      },
+      {
+        "name": "overlap",
+        "status": "passed",
+        "detail": "No file was changed on both sides"
+      },
+      {
+        "name": "diff",
+        "status": "passed",
+        "detail": "1 changed file, all from the reviewed candidate"
+      },
+      {
+        "name": "diff_check",
+        "status": "passed",
+        "detail": "git diff --check passed"
+      },
+      {
+        "name": "tests",
+        "status": "skipped",
+        "detail": "No tests declared"
+      },
+      {
+        "name": "final_destination",
+        "status": "passed",
+        "detail": "main unchanged during preparation"
+      }
+    ],
+    "testResults": [],
+    "diffArtifactId": "823baa1a-394d-4653-a4ee-841ad278c646",
+    "diagnostic": null,
+    "decision": {
+      "outcome": "approved",
+      "decidedAt": "2026-10-16T12:46:22.428Z",
+      "rationale": null
+    },
+    "applications": [
+      {
+        "id": "44462c65-e0eb-4bdb-bd48-ed173bbe27b7",
+        "status": "applied",
+        "method": "fast_forward_checkout",
+        "checkoutPath": "/tmp/lao-git-fixture-wOXYhy/repo with spaces",
+        "expectedSha": "4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072",
+        "resultSha": "58e88357797f08ba0b41072dc1663b67c53961e1",
+        "commands": [
+          {
+            "cwd": "/tmp/lao-git-fixture-wOXYhy/repo with spaces",
+            "args": [
+              "-c",
+              "submodule.recurse=false",
+              "merge",
+              "--ff-only",
+              "--no-stat",
+              "--no-autostash",
+              "--no-overwrite-ignore",
+              "--no-verify-signatures",
+              "58e88357797f08ba0b41072dc1663b67c53961e1"
+            ]
+          }
+        ],
+        "startedAt": "2026-10-16T12:46:23.695Z",
+        "finishedAt": "2026-10-16T12:46:23.736Z",
+        "observedSha": "58e88357797f08ba0b41072dc1663b67c53961e1",
+        "diagnostic": null
+      }
+    ]
+  },
+  "integrationEvents": [
+    "integration.requested",
+    "integration.worktree_creating",
+    "integration.applied",
+    "integration.passed",
+    "integration.approved",
+    "integration.application_started",
+    "integration.application_applied"
+  ],
+  "ownerCheckout": {
+    "beforeApply": {
+      "status": "M README.md\n?? notes.txt",
+      "branch": "main",
+      "main": "4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072"
+    },
+    "after": {
+      "status": "",
+      "branch": "main",
+      "main": "58e88357797f08ba0b41072dc1663b67c53961e1"
+    }
+  },
+  "mainReadme": "Protocol fixture result",
+  "taskStatusAfterRestart": "DONE",
+  "restart": {
+    "previewIdentical": true,
+    "attemptsBefore": 2,
+    "attemptsAfter": 2
+  },
+  "gui": {
+    "dirtyPlan": "Integration \u00b7 passed \u00b7 approved\n\nA preview applies the reviewed candidate to the destination's recorded commit in a separate worktree (a fast-forward, or a merge if the branch moved) and runs your test commands there. Previews never change your checkout or branches, and conflicts are never resolved for you.\n\nIf the destination moved, prepare a new preview against it and approve that one before applying.\n\nDestination branch\nTest commands (one per line)\n\nCommands run with your user permissions on agent-written code; no shell, so quotes, pipes and variables are not interpreted.\n\nPrepare integration preview\n\nPreview passed \u00b7 main @ 4aa3b4f4bbc4 \u2192 58e88357797f\n\n/tmp/lao-review-result-uvfR69/worktrees/integration-b43f472e-3d71-4701-8459-d86001b70792/checkout\n\ndestination: passed \u2014 main is at the candidate base 4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072\ncandidate: passed \u2014 Candidate branch still records 58e88357797f08ba0b41072dc1663b67c53961e1\napply: passed \u2014 Fast-forwarded lao/integration-b43f472e-3d71-4701-8459-d86001b70792 to 58e88357797f08ba0b41072dc1663b67c53961e1\noverlap: passed \u2014 No file was changed on both sides\ndiff: passed \u2014 1 changed file, all from the reviewed candidate\ndiff_check: passed \u2014 git diff --check passed\ntests: skipped \u2014 No tests declared\nfinal_destination: passed \u2014 main unchanged during preparation\nShow final diff 4aa3b4f4bbc4..58e88357797f\n\nApproved for main @ 4aa3b4f4bbc4 (result 58e88357797f). 10/16/2026, 5:46:22 AM\n\nApply to main\n\nmain is checked out in /tmp/lao-git-fixture-wOXYhy/repo with spaces. It is fast-forwarded there, which updates the files in that checkout. Local and ignored files are never overwritten; Git refuses instead.\n\nmain now 4aa3b4f4bbc4 \u00b7 approved 4aa3b4f4bbc4 \u2192 58e88357797f\n\ngit -C '/tmp/lao-git-fixture-wOXYhy/repo with spaces' -c submodule.recurse=false merge --ff-only --no-stat --no-autostash --no-overwrite-ignore --no-verify-signatures 58e88357797f08ba0b41072dc1663b67c53961e1\n\nThe app also disables hooks and global/system Git config.\n\nYour checkout /tmp/lao-git-fixture-wOXYhy/repo with spaces is on main and has uncommitted or untracked changes; commit or clean them yourself (the app never stashes or resets them)\nRecheck",
+    "confirmOfferedWhileDirty": false,
+    "cleanPlan": "Integration \u00b7 passed \u00b7 approved\n\nA preview applies the reviewed candidate to the destination's recorded commit in a separate worktree (a fast-forward, or a merge if the branch moved) and runs your test commands there. Previews never change your checkout or branches, and conflicts are never resolved for you.\n\nIf the destination moved, prepare a new preview against it and approve that one before applying.\n\nDestination branch\nTest commands (one per line)\n\nCommands run with your user permissions on agent-written code; no shell, so quotes, pipes and variables are not interpreted.\n\nPrepare integration preview\n\nPreview passed \u00b7 main @ 4aa3b4f4bbc4 \u2192 58e88357797f\n\n/tmp/lao-review-result-uvfR69/worktrees/integration-b43f472e-3d71-4701-8459-d86001b70792/checkout\n\ndestination: passed \u2014 main is at the candidate base 4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072\ncandidate: passed \u2014 Candidate branch still records 58e88357797f08ba0b41072dc1663b67c53961e1\napply: passed \u2014 Fast-forwarded lao/integration-b43f472e-3d71-4701-8459-d86001b70792 to 58e88357797f08ba0b41072dc1663b67c53961e1\noverlap: passed \u2014 No file was changed on both sides\ndiff: passed \u2014 1 changed file, all from the reviewed candidate\ndiff_check: passed \u2014 git diff --check passed\ntests: skipped \u2014 No tests declared\nfinal_destination: passed \u2014 main unchanged during preparation\nShow final diff 4aa3b4f4bbc4..58e88357797f\n\nApproved for main @ 4aa3b4f4bbc4 (result 58e88357797f). 10/16/2026, 5:46:22 AM\n\nApply to main\n\nmain is checked out in /tmp/lao-git-fixture-wOXYhy/repo with spaces. It is fast-forwarded there, which updates the files in that checkout. Local and ignored files are never overwritten; Git refuses instead.\n\nmain now 4aa3b4f4bbc4 \u00b7 approved 4aa3b4f4bbc4 \u2192 58e88357797f\n\ngit -C '/tmp/lao-git-fixture-wOXYhy/repo with spaces' -c submodule.recurse=false merge --ff-only --no-stat --no-autostash --no-overwrite-ignore --no-verify-signatures 58e88357797f08ba0b41072dc1663b67c53961e1\n\nThe app also disables hooks and global/system Git config.\n\nConfirm apply to main\nRecheck",
+    "afterApply": "Pi writer\nDONE\n\nKeep a project heading in README\n\nowner \u00b7 priority 0 \u00b7 owner assignment pinned\n\nNative pi worker \u00b7 Pi Backend Engineer \u00b7 exited\nfixture-993470\n\nWorker\nPi Backend Engineer \u00b7 workspace_write\nPi Reviewer \u00b7 read_only\nPi Reader \u00b7 read_only\nPi Synthesizer \u00b7 read_only\nAssign / approve\nCancel task\nPriority\nSave priority\nView report\nReview \u00b7 1 review \u00b7 latest pass\nIntegration \u00b7 passed \u00b7 approved \u00b7 applied\n\nA preview applies the reviewed candidate to the destination's recorded commit in a separate worktree (a fast-forward, or a merge if the branch moved) and runs your test commands there. Previews never change your checkout or branches, and conflicts are never resolved for you.\n\nPreview passed \u00b7 main @ 4aa3b4f4bbc4 \u2192 58e88357797f\n\n/tmp/lao-review-result-uvfR69/worktrees/integration-b43f472e-3d71-4701-8459-d86001b70792/checkout\n\ndestination: passed \u2014 main is at the candidate base 4aa3b4f4bbc42ab68dbd6544cf6e7028f045f072\ncandidate: passed \u2014 Candidate branch still records 58e88357797f08ba0b41072dc1663b67c53961e1\napply: passed \u2014 Fast-forwarded lao/integration-b43f472e-3d71-4701-8459-d86001b70792 to 58e88357797f08ba0b41072dc1663b67c53961e1\noverlap: passed \u2014 No file was changed on both sides\ndiff: passed \u2014 1 changed file, all from the reviewed candidate\ndiff_check: passed \u2014 git diff --check passed\ntests: skipped \u2014 No tests declared\nfinal_destination: passed \u2014 main unchanged during preparation\nShow final diff 4aa3b4f4bbc4..58e88357797f\n\nApproved for main @ 4aa3b4f4bbc4 (result 58e88357797f). 10/16/2026, 5:46:22 AM\n\nApply to main\n\napplied \u00b7 fast-forwarded in your checkout \u00b7 main at 58e88357797f \u00b7 10/16/2026, 5:46:23 AM\n\nIntegrated into main. The integration worktree, its branch, diff and logs are kept.\n\nWorktree and Git evidence",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:37927/favicon.ico"
+    ]
+  }
+}

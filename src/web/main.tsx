@@ -358,6 +358,15 @@ function App() {
                                     e.type.startsWith("integration."),
                                 )?.sequence
                               }
+                              reviewEvent={
+                                merged.findLast(
+                                  (e) =>
+                                    e.runId === selectedRun.id &&
+                                    (e.type === "review.saved" ||
+                                      e.type ===
+                                        "integration_candidate.created"),
+                                )?.sequence
+                              }
                               candidate={merged.findLast(
                                 (e) =>
                                   e.taskId ===

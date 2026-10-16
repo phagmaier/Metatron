@@ -7,6 +7,7 @@ import {
 import { DomainError } from "../../shared/domain/states.ts";
 import type { Actor } from "../../shared/orchestration.ts";
 import { git } from "../git/command.ts";
+import { changedFiles, diffPatch } from "../git/integration.ts";
 import {
   getIntegrationCandidate,
   listIntegrationCandidates,
@@ -18,6 +19,7 @@ import { authorize } from "./policy.ts";
 
 const requestSchema = z.strictObject({ taskId: idSchema, profileId: idSchema });
 const maxDiff = 48_000;
+const maxOwnerDiff = 400_000;
 export const reviewInstructions =
   "Submit a structured review through submit_result: summary, recommendation (pass or changes_requested), findings [{severity: blocking|important|suggestion|nit, file, line, justification, evidence, confidence: 0..1}], tests [{command, result: not_run}]. Use repository-relative paths and positive candidate line numbers (base lines for deleted files). A pass cannot include blocking/important findings; changes_requested requires an actionable finding. Shell is disabled, so report tests as not_run. Text alone is not a completed review.";
 
@@ -200,4 +202,31 @@ export async function reviewPacket(
     },
   );
   return text;
+}
+
+// The owner's base..candidate view: a comparison of two commits, with external
+// diff/textconv drivers off. The owner's checkout and index are not changed.
+export async function candidateDiff(engine: Engine, candidateId: string) {
+  const { store } = engine;
+  const candidate = getIntegrationCandidate(store, candidateId);
+  const repository = store.getRun(
+    store.getTask(candidate.taskId).runId,
+  ).repository;
+  if (!repository)
+    throw new DomainError(
+      "CONFLICT",
+      "Only native runs have candidate commits",
+    );
+  const [files, patch] = await Promise.all([
+    changedFiles(repository.root, candidate.baseSha, candidate.candidateSha),
+    diffPatch(repository.root, candidate.baseSha, candidate.candidateSha),
+  ]);
+  return {
+    candidateId: candidate.id,
+    baseSha: candidate.baseSha,
+    candidateSha: candidate.candidateSha,
+    files,
+    patch: patch.slice(0, maxOwnerDiff),
+    truncated: patch.length > maxOwnerDiff,
+  };
 }

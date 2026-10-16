@@ -1,11 +1,15 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { z } from "zod";
 import {
+  artifactContentResponseSchema,
   attemptsResponseSchema,
+  candidateDiffResponseSchema,
   eventsResponseSchema,
   humanRequestsResponseSchema,
   projectsResponseSchema,
+  reviewHistoryResponseSchema,
   runsResponseSchema,
   sessionsResponseSchema,
   tasksResponseSchema,
@@ -20,13 +24,36 @@ import {
   mutationKeySchema,
 } from "../shared/domain/inputs.ts";
 import { DomainError } from "../shared/domain/states.ts";
+import { applyPlanSchema } from "../shared/integration.ts";
 import { dispatchSchema } from "../shared/orchestration.ts";
 import { capabilitiesSchema } from "./adapters/contract.ts";
 import { inspectRepository } from "./git/inspect.ts";
 import type { Engine } from "./orchestration/engine.ts";
-import { requestReview } from "./orchestration/review.ts";
+import { candidateDiff, requestReview } from "./orchestration/review.ts";
 import { requestRevision } from "./orchestration/revision.ts";
+import { reviewHistory } from "./storage/reviews.ts";
 import type { Store } from "./storage/store.ts";
+
+const maxArtifactText = 512 * 1024;
+// Only paths the engine recorded are read; a missing file is reported, not hidden.
+async function artifactContent(store: Store, id: string) {
+  const row = store.db.prepare("SELECT data FROM artifacts WHERE id=?").get(id);
+  if (!row) throw new DomainError("NOT_FOUND", "Artifact not found");
+  const artifact = artifactSchema.parse(JSON.parse(String(row.data)));
+  let content: string;
+  try {
+    content = await readFile(artifact.path, "utf8");
+  } catch (error) {
+    if (!(error instanceof Error && "code" in error && error.code === "ENOENT"))
+      throw error;
+    throw new DomainError("NOT_FOUND", "Artifact file is missing");
+  }
+  return {
+    artifact,
+    content: content.slice(0, maxArtifactText),
+    truncated: content.length > maxArtifactText,
+  };
+}
 
 function json(
   response: ServerResponse,
@@ -170,6 +197,38 @@ export function createApi(store: Store, engine: Engine) {
               result = engine.integrations.list(parsed.taskId);
               break;
             }
+            case "/api/integrations/plan": {
+              const parsed = z
+                .strictObject({ integrationId: idSchema })
+                .parse(query);
+              result = applyPlanSchema.parse(
+                await engine.integrations.plan(parsed.integrationId),
+              );
+              break;
+            }
+            case "/api/reviews": {
+              const parsed = z.strictObject({ taskId: idSchema }).parse(query);
+              result = reviewHistoryResponseSchema.parse(
+                reviewHistory(store, parsed.taskId),
+              );
+              break;
+            }
+            case "/api/candidates/diff": {
+              const parsed = z
+                .strictObject({ candidateId: idSchema })
+                .parse(query);
+              result = candidateDiffResponseSchema.parse(
+                await candidateDiff(engine, parsed.candidateId),
+              );
+              break;
+            }
+            case "/api/artifacts": {
+              const parsed = z.strictObject({ id: idSchema }).parse(query);
+              result = artifactContentResponseSchema.parse(
+                await artifactContent(store, parsed.id),
+              );
+              break;
+            }
             case "/api/projects":
               z.strictObject({}).parse(query);
               result = projectsResponseSchema.parse({
@@ -260,6 +319,10 @@ export function createApi(store: Store, engine: Engine) {
               requestRevision(engine, { role: "owner" }, input, key),
             "POST /api/tasks/integration": (input, key) =>
               engine.integrations.request({ role: "owner" }, input, key),
+            "POST /api/integrations/decision": (input, key) =>
+              engine.integrations.decide({ role: "owner" }, input, key),
+            "POST /api/integrations/apply": (input, key) =>
+              engine.integrations.apply({ role: "owner" }, input, key),
             "POST /api/tasks/cancel": (input, key) =>
               engine.cancel(
                 z.strictObject({ taskId: idSchema }).parse(input).taskId,
