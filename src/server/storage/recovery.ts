@@ -141,14 +141,17 @@ export function recoverInterrupted(
       },
     );
   }
-  // Reservations represent live execution only. Recovered ambiguous attempts
-  // retain their dispatch history but must never be considered queued again.
+  // A crash can occur after terminal state commits but before executor release.
+  // Drop only execution bookkeeping; never requeue or refund the attempt.
   db.exec("BEGIN IMMEDIATE");
   try {
     db.exec(`
       UPDATE worktrees SET data=json_set(data,'$.state','retained') WHERE json_extract(data,'$.state')='ready' AND attempt_id IN (SELECT id FROM attempts WHERE json_extract(data,'$.status')='RECOVERY_REQUIRED');
       DELETE FROM reservations WHERE attempt_id IN (SELECT id FROM attempts WHERE json_extract(data,'$.status') NOT IN ('created','running'));
-      UPDATE dispatches SET state='released',diagnostic='Recovery decision required after restart' WHERE state='active' AND attempt_id IN (SELECT id FROM attempts WHERE json_extract(data,'$.status')='RECOVERY_REQUIRED');
+      UPDATE dispatches SET state='released',
+        diagnostic=CASE WHEN attempt_id IN (SELECT id FROM attempts WHERE json_extract(data,'$.status')='RECOVERY_REQUIRED')
+          THEN 'Recovery decision required after restart' ELSE diagnostic END
+        WHERE state='active' AND attempt_id IN (SELECT id FROM attempts WHERE json_extract(data,'$.status') NOT IN ('created','running'));
     `);
     db.exec("COMMIT");
   } catch (error) {

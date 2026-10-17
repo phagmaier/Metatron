@@ -6,8 +6,14 @@ import {
   startWorkflowSchema,
   type WorkflowRun,
   workflowRunSchema,
+  workflowSourceSchema,
 } from "../../shared/workflows.ts";
 import { mutate } from "../storage/mutations.ts";
+import {
+  saveWorkflowHandoff,
+  workflowEvidence,
+  workflowSource,
+} from "../storage/workflow-evidence.ts";
 import {
   getWorkflowRun,
   listWorkflowRuns,
@@ -156,6 +162,9 @@ export class Workflows {
       }),
     );
   }
+  evidence(id: string) {
+    return workflowEvidence(this.engine.store, id);
+  }
 
   private async packet(workflow: WorkflowRun, stage: Stage, index: number) {
     const { store } = this.engine;
@@ -165,11 +174,9 @@ export class Workflows {
         const state = workflow.stages.find(
           (state) => state.stageId === input.ref,
         );
-        return (state?.taskIds ?? []).map((taskId) => ({
-          input: input.name,
-          stageId: input.ref,
-          ...workflowOutcome(store, taskId),
-        }));
+        return (state?.taskIds ?? []).map((taskId) =>
+          workflowSource(store, input.name, input.ref, taskId),
+        );
       });
     if (
       sources.some(
@@ -182,24 +189,20 @@ export class Workflows {
         "CONFLICT",
         "Upstream results changed; this stage cannot consume their current outcomes",
       );
-    const signature = JSON.stringify(
-      sources.map(({ taskId, status, report }) => [taskId, status, report?.id]),
+    const signature = JSON.stringify(sources);
+    const bindings = sources.map(({ report, ...source }) =>
+      workflowSourceSchema.parse({ ...source, artifactId: report?.id ?? null }),
     );
     const values = Object.fromEntries(
       stage.inputs
         .filter((input) => input.source === "parameter")
         .map((input) => [input.name, workflow.parameters[input.ref]]),
     );
-    const references = sources.map(
-      ({ input, stageId, taskId, status, report }) => ({
-        input,
-        stageId,
-        taskId,
-        status,
-        artifactId: report?.id ?? null,
-        excerpt: "",
-      }),
-    );
+    const references = bindings.map((source) => ({
+      ...source,
+      diagnostic: source.diagnostic?.slice(0, 500) ?? null,
+      excerpt: "",
+    }));
     const base = () =>
       [
         stage.instructions,
@@ -240,7 +243,7 @@ export class Workflows {
         "CONFLICT",
         "Workflow handoff exceeds the context bound",
       );
-    return { text, sources, signature };
+    return { text, sources, signature, bindings, parameters: values };
   }
 
   async reconcile() {
@@ -322,10 +325,9 @@ export class Workflows {
               (packet) =>
                 packet.signature !==
                 JSON.stringify(
-                  packet.sources.map(({ taskId }) => {
-                    const current = workflowOutcome(store, taskId);
-                    return [taskId, current.status, current.report?.id];
-                  }),
+                  packet.sources.map(({ input, stageId, taskId }) =>
+                    workflowSource(store, input, stageId, taskId),
+                  ),
                 ),
             )
           )
@@ -340,7 +342,10 @@ export class Workflows {
             () => {
               if (
                 state.taskIds.some(
-                  (id) => store.getTask(id).status !== "BACKLOG",
+                  (id) =>
+                    !["BACKLOG", "WAITING_HUMAN", "CANCELLED"].includes(
+                      store.getTask(id).status,
+                    ),
                 )
               )
                 throw new DomainError(
@@ -352,10 +357,32 @@ export class Workflows {
               workflow.updatedAt = new Date().toISOString();
               saveWorkflowRun(store, workflow, `${key}:prepared`);
               for (const [index, taskId] of state.taskIds.entries()) {
+                const task = store.getTask(taskId);
+                if (task.status === "CANCELLED") continue;
+                const packet = packets[index];
+                if (!packet)
+                  throw new DomainError(
+                    "CONFLICT",
+                    "Prepared child inputs are missing",
+                  );
+                saveWorkflowHandoff(
+                  store,
+                  {
+                    taskId,
+                    workflowId: workflow.id,
+                    stageId: stage.id,
+                    parameters: packet.parameters,
+                    sources: packet.bindings,
+                  },
+                  `${key}:${index}:handoff`,
+                );
                 store.updateTask(
-                  { id: taskId, objective: packets[index]?.text },
+                  { id: taskId, objective: packet.text },
                   `${key}:${index}:input`,
                 );
+                // Preparation records immutable inputs, not permission to resume.
+                // Held children require the owner's normal assignment afterward.
+                if (task.status === "WAITING_HUMAN") continue;
                 this.engine.scheduling.enqueue(
                   { role: "owner" },
                   {

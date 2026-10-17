@@ -82,6 +82,18 @@ Bounds: 64 children per parallel stage, at most 128 children per recipe, and the
 
 Regression demo: `mise x -- node --test tests/workflows.test.ts`. A separate disposable runtime smoke exercised single → parallel → synthesis under a one-reader cap with four completed attempts and an unchanged owner checkout: [observed output](docs/evidence/m7-workflows-smoke.json). Only FAKE playback was exercised; real harness workflow verification remains M7's later gate.
 
+### Reader evidence and synthesis provenance
+
+`engine.workflows.evidence(workflowId)` is the read-only backend view of every child, its attempt history, original artifact metadata, submitted result events and failure/recovery diagnostics. `taskArtifacts` retains task-owned artifacts such as integration diffs/test logs without falsely assigning them to a worker attempt. Full report contents remain available through the existing report service/API; bounded synthesis excerpts never replace originals.
+
+SQLite migration v10 adds immutable `workflow_handoffs` records keyed by prepared child task. Each records the stage's parameter bindings and exact upstream task, attempt, report artifact, result-event and failure-event references. Failed/cancelled sources retain an explicit failure kind and diagnostic with a null successful-report artifact. A provisional model-submitted partial report remains in the journal even if its attempt fails; its claims do not turn failure or ambiguous execution into success.
+
+Source bindings commit in the same transaction as prepared inputs and child dispatches. Source changes during report reads invalidate preparation; rollback leaves no orphan bindings. Held children retain prepared inputs but still need explicit owner continuation; budget-held synthesis can have source bindings without an attempt. Records describe prepared provenance, not proof that a model inspected each source.
+
+Earlier v9 prepared/completed children return `handoff: null`: the upgrade preserves their reports, attempts and dispatch identities without inventing historical bindings or rerunning work. Newly prepared stages record bindings normally. No grouped workflow UI or owner/Lead invocation surface is added by this persistence slice.
+
+Checks: `mise x -- node --test tests/workflow-evidence.test.ts tests/workflow-artifacts.test.ts tests/workflow-lifecycle.test.ts`. [Disposable FAKE app evidence](docs/evidence/m7-workflow-evidence-smoke.json) covers successful/partial synthesis, ambiguity, budget holds, original-report hashes, task-owned artifacts and restart without replay. Live native-harness workflow verification remains a later M7 gate.
+
 ### Child scheduling and launch budgets
 
 Workflow cards have no special quota: each child acquires the ordinary global reader/writer and total-agent slots, including contention with other runs and active Lead turns. Idle sessions consume no slot. Concurrency pressure leaves funded children queued with their FIFO identity intact; each spawned worker attempt, including synthesis, failures and retries, counts against the run's launch budget.

@@ -107,12 +107,14 @@ test("the saved Explore Subsystem preset runs four readers before one synthesize
     const readers = started.stages[0]?.taskIds ?? [];
     const synth = started.stages[1]?.taskIds[0] ?? "";
     assert.equal(readers.length, 4);
-    await f.engine.pump();
-    assert.ok(readers.every((id) => f.store.getTask(id).status === "RUNNING"));
-    assert.equal(f.store.getTask(synth).status, "BACKLOG");
     await f.engine.idle();
     const workflow = getWorkflowRun(f.store, started.id);
     assert.equal(workflow.status, "completed");
+    const events = f.store.events({ runId: run.id, limit: 500 });
+    const synthesisStart = events.find(
+      (event) => event.type === "attempt.created" && event.taskId === synth,
+    );
+    assert.ok(synthesisStart);
     const packet = JSON.parse(
       f.store.getTask(synth).objective.split("\n\n").at(-1) ?? "",
     );
@@ -127,6 +129,11 @@ test("the saved Explore Subsystem preset runs four readers before one synthesize
         (entry) => entry.artifact.kind === "report",
       );
       assert.equal(source.artifactId, original?.artifact.id);
+      const saved = events.find(
+        (event) =>
+          event.type === "report.saved" && event.taskId === source.taskId,
+      );
+      assert.ok(saved && saved.sequence < synthesisStart.sequence);
     }
     const attempts = f.store
       .listAttempts()

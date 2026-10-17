@@ -329,7 +329,7 @@ test("migrations v5-v7 preserve candidates and events from a v4 database while a
   try {
     const events = f.store.events({ limit: 500 });
     f.store.db.exec(
-      "DROP TABLE workflow_runs; DROP TABLE integrations; DROP INDEX one_review_per_attempt; DROP TRIGGER reviews_no_update; DROP TRIGGER reviews_no_delete; ALTER TABLE dispatches DROP COLUMN context_policy; ALTER TABLE dispatches DROP COLUMN resume_session_id; ALTER TABLE dispatches DROP COLUMN blocked_reason; PRAGMA user_version=4;",
+      "DROP TABLE workflow_handoffs; DROP TABLE workflow_runs; DROP TABLE integrations; DROP INDEX one_review_per_attempt; DROP TRIGGER reviews_no_update; DROP TRIGGER reviews_no_delete; ALTER TABLE dispatches DROP COLUMN context_policy; ALTER TABLE dispatches DROP COLUMN resume_session_id; ALTER TABLE dispatches DROP COLUMN blocked_reason; PRAGMA user_version=4;",
     );
     await f.app.close();
     const reopened = new Store(join(f.data, "state.sqlite"));

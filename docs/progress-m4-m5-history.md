@@ -315,3 +315,75 @@ Exact original entries retained when the active log reached 200 lines.
 - Browser PASS (managed Chromium, production app): select Fake Reader/Synthesizer plus Explore Subsystem, save team and reload; [inspected screenshot](evidence/m7-explore-preset.png), [persisted readback](evidence/m7-explore-browser.json); twelve existing attempts unchanged by saving, no page/console errors. Demo server exited cleanly; throwaway script/fixtures removed.
 - Scope: no workflow invocation endpoint, Lead tool, grouped board or Review preset; later M7 items remain unchecked. Live cost-bearing workflow turns intentionally omitted; no new ADR, dependency/toolchain/spec change, adapter limitation or blocker. Older M7 entries archived intact to keep progress near the size cap; M7/beta incomplete.
 - Next: M7 item 6 — normal scheduling/attempt/launch budgets for every child, retaining queued children over cap. Resume: "Implement M7 item 6 only"; focused check above.
+
+## 2026-10-16 — M5 item 1: deterministic candidate capture (archived)
+
+- Completed deterministic private-index capture, create-only candidate refs and unsafe-state refusal, preserving owner checkout/worktree evidence. Checks passed: 96/96 tests, fixtures 3/3, typecheck/lint/build/smoke, protocol demo and browser QA; live calls omitted for cost.
+- [Original files, commands, ADR and evidence](progress-m4-m5-history.md#2026-10-16--m5-item-1-deterministic-candidate-capture); next was candidate persistence.
+
+## 2026-10-16 — M5 item 2: persisted integration candidates (archived)
+
+- Completed durable candidate records, atomic completion/report linkage, base/attempt validation and migration v4 uniqueness. Checks passed: 100/100 tests, fixtures 3/3, typecheck/lint/build/smoke and protocol restart demo; live calls omitted for cost.
+- [Original files, commands, ADR and evidence](progress-m4-m5-history.md#2026-10-16--m5-item-2-persisted-integration-candidates); next was independent review.
+
+## 2026-10-16 — M5 item 3: Reviewer on the candidate snapshot (archived)
+
+- Completed read-only candidate-bound reviews in separate worktrees with bounded context, gateway/API policy and request-review GUI. Checks passed: 105/105 tests, fixtures 3/3, typecheck/lint/build/smoke and protocol/browser QA; live calls omitted for cost.
+- [Original files, commands, ADR and evidence](progress-m4-m5-history.md#2026-10-16--m5-item-3-reviewer-on-the-candidate-snapshot); next was structured review results.
+
+## 2026-10-16 — M5 item 4: structured independent review results (archived)
+
+- Completed typed independent review persistence, candidate linkage and structured findings with policy/Git gates. Tests 117/117; typecheck/lint/fixtures/build/smoke and protocol demo/restart passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — Explicit retry dispatch fix (archived)
+
+- Explicit retries use a fresh dispatch generation and bounded launch budget; stale lifecycle callbacks cannot affect newer attempts. Tests 120/120; typecheck/lint/build/smoke passed; history preserved and live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — Recovery cleanup rollback fix (archived)
+
+- Recovery cleanup rolls back atomically on SQLite ABORT/ROLLBACK failures while retaining explicit recovery decisions. Tests 122/122 plus targeted recovery 2/2; typecheck/lint/smoke passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — M5 item 5: revision lifecycle and parent reconciliation (archived)
+
+- Completed bounded revision handoffs, candidate lineage, safe fresh worktrees, parent reconciliation and retained review history. Tests 134/134; typecheck/lint/fixtures/build/smoke and protocol demo/restart passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — Review fixes (no checklist change)
+
+- `storage/scheduling.ts`: owner and Lead assignments both reject with `BUDGET_EXCEEDED` once attempts + queued work reach the permanent launch budget; reassigning an already-queued task keeps its counted slot. `orchestration/tools.ts`: `read_report` returns structured report, candidate and reviews with `textExcerpt: null, textUnavailable: true` when the report file is missing/unreadable.
+- `adapters/pi-rpc.ts`, `codex-rpc.ts`: native request rejection is `NATIVE_REJECTED`; process exit before/after a request is `NATIVE_TRANSPORT` (was `UNSUPPORTED`/`CONFLICT`). Native error text is still never surfaced. `pi.ts`/`codex.ts` `dispose` releases the session even when the diagnostics write fails. README health milestone (M4) and technology summary corrected.
+- Checks PASS: `mise x -- pnpm test` (137/137), `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `git diff --check`. Live harness tests intentionally omitted (cost). No dependency, toolchain, migration or spec changes. Next unchanged: M5 item 6.
+
+## 2026-10-16 — M5 item 6: isolated integration preview (archived)
+
+- Completed owner-only, review-gated integration preview in an app-owned worktree: base/candidate ref checks, exact diff, `git diff --check`, argv-only owner tests with process-group kill; owner checkout untouched. Tests 143/143; typecheck/lint/fixtures/build/smoke and CDP GUI/restart demo passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — M5 item 7: destination drift and merge conflicts (archived)
+
+- Completed drift recording and `--no-ff` candidate merges in the isolated integration worktree; conflicts retained with a nonblocking owner request, never resolved/aborted/retried. Tests 147/147; typecheck/lint/fixtures/build/smoke and CDP GUI/restart demo passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — M5 item 8: review details and owner approve/decline (archived)
+
+- Completed owner-only approve/decline of a finished preview, review/diff/test GUI panels and lineage transitions; nothing applied. Tests 150/150; typecheck/lint/fixtures/build/smoke and CDP GUI/restart demo passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — M5 item 9: confirmed application to the local branch (archived)
+
+- Completed revalidated apply plans and owner-confirmed compare-and-swap/fast-forward application with claims, interruption on restart and no rerun. Tests 156/156; typecheck/lint/fixtures/build/smoke and CDP GUI/restart demo passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — M5 item 10: retained integration evidence (archived)
+
+- Completed GUI access to every saved candidate, review, preview, test log and diff across denial, blockage, revision and cancellation; server retention already existed. Tests 159/159; typecheck/lint/fixtures/build/smoke and GUI/restart demo passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+
+## 2026-10-16 — M5 item 11: Git fixture integration gate (archived)
+
+- Completed four owner-HTTP Git fixture workflows (fast-forward, clean merge, conflict, dirty main); all M5 items checked and its gate passes with protocol fixtures. Tests 163/163; typecheck/lint/fixtures/build/smoke passed; live calls omitted.
+- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
+

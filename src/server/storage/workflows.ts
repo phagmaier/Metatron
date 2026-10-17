@@ -176,8 +176,18 @@ export function workflowOutcome(store: Store, taskId: string) {
     store.db
       .prepare("SELECT 1 FROM reservations WHERE attempt_id=?")
       .get(attempt.id);
+  const dispatch = store.db
+    .prepare(
+      "SELECT state,attempt_id,diagnostic FROM dispatches WHERE task_id=?",
+    )
+    .get(taskId);
+  // A new unlaunched generation cannot inherit an earlier attempt's outcome
+  // or report. Its own queue/block state remains authoritative until launch.
+  const pending =
+    dispatch?.attempt_id === null &&
+    (dispatch.state === "queued" || dispatch.state === "blocked");
   const artifact =
-    attempt?.status === "completed" && task.status !== "CANCELLED"
+    !pending && attempt?.status === "completed" && task.status !== "CANCELLED"
       ? store.db
           .prepare(
             "SELECT data FROM artifacts WHERE attempt_id=? AND json_extract(data,'$.kind')='report' ORDER BY rowid DESC LIMIT 1",
@@ -187,29 +197,34 @@ export function workflowOutcome(store: Store, taskId: string) {
   const report = artifact
     ? artifactSchema.parse(JSON.parse(String(artifact.data)))
     : null;
-  const blocked = store.db
-    .prepare(
-      "SELECT diagnostic FROM dispatches WHERE task_id=? AND state='blocked'",
-    )
-    .get(taskId);
+  const blocked = dispatch?.state === "blocked";
+  // Cancellation is terminal only after the executor releases its live slot.
   const status = reserved
     ? "waiting"
-    : report
-      ? "completed"
-      : blocked ||
-          attempt?.status === "RECOVERY_REQUIRED" ||
-          attempt?.status === "interrupted" ||
-          attempt?.status === "completed"
+    : task.status === "CANCELLED"
+      ? "failed"
+      : blocked
         ? "blocked"
-        : task.status === "CANCELLED" || attempt?.status === "failed"
-          ? "failed"
-          : "waiting";
+        : pending
+          ? "waiting"
+          : report
+            ? "completed"
+            : attempt?.status === "RECOVERY_REQUIRED" ||
+                attempt?.status === "interrupted" ||
+                attempt?.status === "completed"
+              ? "blocked"
+              : attempt?.status === "failed"
+                ? "failed"
+                : "waiting";
   return {
     taskId,
     status,
     report,
-    attemptId: attempt?.id ?? null,
-    diagnostic: blocked?.diagnostic == null ? null : String(blocked.diagnostic),
+    attemptId: pending ? null : (attempt?.id ?? null),
+    diagnostic:
+      blocked && dispatch.diagnostic != null
+        ? String(dispatch.diagnostic)
+        : null,
   };
 }
 

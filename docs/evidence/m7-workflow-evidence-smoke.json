@@ -1,0 +1,64 @@
+{
+  "command": "mise x -- node .m7-evidence-smoke.ts",
+  "execution": "FAKE playback only; no repository analysis or native harness/provider turn",
+  "workflowInvocation": "Internal service; no new owner/Lead invocation surface",
+  "evidenceView": "engine.workflows.evidence(id)",
+  "manualPump": true,
+  "migrationVersion": 10,
+  "scenarios": [
+    {
+      "scenario": "success",
+      "workflowId": "0b10bd85-f026-40ea-ae74-405dc8b43112",
+      "status": "completed",
+      "readerSourceStatuses": ["completed", "completed"],
+      "retainedReaderAttempts": 2,
+      "synthesisAttempts": 1
+    },
+    {
+      "scenario": "partial",
+      "workflowId": "7e576ad5-36d2-4fb1-8632-479fea9cda00",
+      "status": "partial",
+      "readerSourceStatuses": ["completed", "failed"],
+      "retainedReaderAttempts": 2,
+      "synthesisAttempts": 1,
+      "failedSource": {
+        "taskId": "8803f011-ef75-4179-a506-fef163080e7c",
+        "attemptId": "1535e712-da89-4a05-ac21-ac428230f711",
+        "artifactId": null,
+        "resultEventId": null,
+        "failureEventId": "a5f23793-ccf8-48b9-b778-682e37b1e134",
+        "failure": "failed",
+        "diagnostic": "Deliberately simulated worker failure"
+      }
+    },
+    {
+      "scenario": "ambiguous",
+      "workflowId": "5fb6a756-b61a-401b-aec6-359904a6bf0f",
+      "status": "blocked",
+      "synthesisSourceBindings": 0,
+      "retainedReaderAttempts": 2,
+      "synthesisAttempts": 0
+    },
+    {
+      "scenario": "budget",
+      "status": "blocked",
+      "readerSourceStatuses": ["completed", "completed"],
+      "preparedSynthesisSources": 2,
+      "retainedReaderAttempts": 2,
+      "synthesisAttempts": 0
+    }
+  ],
+  "restart": {
+    "attemptsBefore": 10,
+    "attemptsAfter": 10,
+    "unchangedBindings": 11,
+    "originalReportsHashVerified": 8,
+    "taskOwnedArtifactsHashVerified": 1,
+    "automaticReplay": false
+  },
+  "taskOwnedArtifact": "Explicitly simulated integration-log artifact with attemptId:null; retained without attributing it to a worker attempt",
+  "reportReadback": "Existing loopback report API returned saved FAKE reader reports",
+  "ownerCheckoutUnchanged": true,
+  "cleanup": "Disposable script, app database/artifacts and Git fixture removed after successful verification",
+  "limits": "No grouped workflow UI, owner/Lead invocation surface or live harness workflow verification"
+}

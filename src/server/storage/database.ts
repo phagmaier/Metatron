@@ -107,6 +107,13 @@ CREATE INDEX workflow_runs_run ON workflow_runs(run_id);
 const migration9 = `
 ALTER TABLE dispatches ADD COLUMN blocked_reason TEXT CHECK(blocked_reason IS NULL OR (blocked_reason='launch_budget' AND state='blocked' AND attempt_id IS NULL));
 `;
+// Prepared source bindings are immutable even if tasks later retry or cancel.
+const migration10 = `
+CREATE TABLE workflow_handoffs (task_id TEXT PRIMARY KEY REFERENCES tasks(id), workflow_id TEXT NOT NULL REFERENCES workflow_runs(id), data TEXT NOT NULL CHECK(json_valid(data))) STRICT;
+CREATE INDEX workflow_handoffs_workflow ON workflow_handoffs(workflow_id);
+CREATE TRIGGER workflow_handoffs_no_update BEFORE UPDATE ON workflow_handoffs BEGIN SELECT RAISE(ABORT, 'Workflow handoffs are immutable'); END;
+CREATE TRIGGER workflow_handoffs_no_delete BEFORE DELETE ON workflow_handoffs BEGIN SELECT RAISE(ABORT, 'Workflow handoffs are immutable'); END;
+`;
 function migrateModes(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(migrateModes);
   if (value && typeof value === "object")
@@ -138,7 +145,7 @@ export function openDatabase(path: string) {
       if (version === 0) {
         database.exec(migration1);
         database.exec("PRAGMA user_version=1");
-      } else if (![1, 2, 3, 4, 5, 6, 7, 8, 9].includes(Number(version))) {
+      } else if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(Number(version))) {
         throw new DomainError("STORAGE", "Unsupported database schema version");
       }
       if (version === 0 || version === 1) {
@@ -191,6 +198,10 @@ export function openDatabase(path: string) {
       if (Number(version) < 9) {
         database.exec(migration9);
         database.exec("PRAGMA user_version=9");
+      }
+      if (Number(version) < 10) {
+        database.exec(migration10);
+        database.exec("PRAGMA user_version=10");
       }
       database.exec("COMMIT");
     } catch (error) {

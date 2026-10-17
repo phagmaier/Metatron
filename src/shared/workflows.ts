@@ -40,3 +40,41 @@ export const workflowRunSchema = z.strictObject({
 });
 export type WorkflowRun = z.infer<typeof workflowRunSchema>;
 export type WorkflowStageState = z.infer<typeof workflowStageStateSchema>;
+
+export const workflowSourceSchema = z
+  .strictObject({
+    input: z.string().min(1).max(64),
+    stageId: z.string().min(1).max(64),
+    taskId: idSchema,
+    attemptId: idSchema.nullable(),
+    status: z.enum(["completed", "failed"]),
+    artifactId: idSchema.nullable(),
+    resultEventId: idSchema.nullable(),
+    failureEventId: idSchema.nullable(),
+    failure: z.enum(["failed", "cancelled"]).nullable(),
+    diagnostic: z.string().min(1).max(4000).nullable(),
+  })
+  .refine(
+    (source) =>
+      source.status === "completed"
+        ? source.attemptId !== null &&
+          source.artifactId !== null &&
+          source.failure === null &&
+          source.failureEventId === null &&
+          source.diagnostic === null
+        : source.artifactId === null &&
+          source.failure !== null &&
+          source.diagnostic !== null,
+    "Completed sources require a report; failed sources retain a reason, never a fabricated report",
+  );
+export type WorkflowSource = z.infer<typeof workflowSourceSchema>;
+
+export const workflowHandoffSchema = z.strictObject({
+  taskId: idSchema,
+  workflowId: idSchema,
+  stageId: z.string().min(1).max(64),
+  createdAt: timestampSchema,
+  parameters: z.record(z.string(), z.string().max(4000)),
+  sources: z.array(workflowSourceSchema).max(4096),
+});
+export type WorkflowHandoff = z.infer<typeof workflowHandoffSchema>;

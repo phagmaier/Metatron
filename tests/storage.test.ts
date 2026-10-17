@@ -473,7 +473,7 @@ test("migration v2 preserves v1 runs while correcting legacy mode names and save
   const f = await domainFixture();
   try {
     f.store.db.exec(
-      "DROP TABLE workflow_runs; DROP TABLE integrations; DROP INDEX one_review_per_attempt; DROP TRIGGER reviews_no_update; DROP TRIGGER reviews_no_delete; DROP INDEX one_candidate_per_attempt; DROP TABLE worktrees; DROP INDEX one_writer; DROP INDEX one_lead; DROP TABLE reservations; DROP TABLE dispatches; PRAGMA user_version=1;",
+      "DROP TABLE workflow_handoffs; DROP TABLE workflow_runs; DROP TABLE integrations; DROP INDEX one_review_per_attempt; DROP TRIGGER reviews_no_update; DROP TRIGGER reviews_no_delete; DROP INDEX one_candidate_per_attempt; DROP TABLE worktrees; DROP INDEX one_writer; DROP INDEX one_lead; DROP TABLE reservations; DROP TABLE dispatches; PRAGMA user_version=1;",
     );
     f.store.db
       .prepare("UPDATE runs SET data=json_set(data,'$.mode','chat') WHERE id=?")

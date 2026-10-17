@@ -404,7 +404,7 @@ test("upgrading a v8 queue preserves FIFO, idempotency and one launch per existi
     );
     f.store.updateRun({ id: f.run.id, status: "paused" }, "pause");
     f.store.db.exec(
-      "ALTER TABLE dispatches DROP COLUMN blocked_reason; UPDATE mutations SET result=json_remove(result,'$.blockedReason') WHERE key='legacy-queue'; PRAGMA user_version=8;",
+      "DROP TABLE workflow_handoffs; ALTER TABLE dispatches DROP COLUMN blocked_reason; UPDATE mutations SET result=json_remove(result,'$.blockedReason') WHERE key='legacy-queue'; PRAGMA user_version=8;",
     );
     await f.restart();
     const migrated = f.engine.scheduling

@@ -1,0 +1,53 @@
+{
+  "command": "mise x -- node .boundary-fixes-smoke.ts",
+  "execution": "FAKE only; no native harness/provider turns",
+  "manualPump": true,
+  "publicWorkflowInvocation": false,
+  "ownerActions": "Authenticated loopback HTTP for recovery, assignment, cancellation and human-request resolution; workflow start uses its current internal engine service",
+  "funded": {
+    "priorAttemptCharged": true,
+    "retryAttempt": "7a3933ae-2afb-44f5-8923-a9d35d1fc2e5",
+    "retryProfile": "00000000-0000-4000-8000-000000000014",
+    "generationPreserved": true,
+    "stage": "partial",
+    "synthesisTask": "AWAITING_REVIEW",
+    "synthesisBudgetHold": null,
+    "chargedLaunches": 3
+  },
+  "budgetAdmitted": {
+    "priorAttemptCharged": true,
+    "retryAttempt": "604823be-f6a7-4017-bf8b-8630679d02dd",
+    "retryProfile": "00000000-0000-4000-8000-000000000014",
+    "generationPreserved": true,
+    "stage": "partial",
+    "synthesisTask": "QUEUED",
+    "synthesisBudgetHold": "launch_budget",
+    "chargedLaunches": 2
+  },
+  "cancelCompleted": {
+    "task": "CANCELLED",
+    "attempt": "completed",
+    "savedReportRetained": true,
+    "workflow": "partial"
+  },
+  "cancelPreparation": {
+    "cancelledNeverLaunched": true,
+    "sibling": "AWAITING_REVIEW",
+    "workflow": "partial"
+  },
+  "humanHold": {
+    "responseDidNotResume": true,
+    "explicitOwnerContinuation": "completed",
+    "workflow": "completed"
+  },
+  "restart": {
+    "reconciledTerminalDispatch": true,
+    "noAutomaticReplay": true,
+    "explicitRetry": "completed",
+    "chargedLaunches": 2
+  },
+  "ownerCheckoutUnchanged": true,
+  "attempts": 15,
+  "limits": "Terminal-before-release restart uses a committed fixture snapshot, not a killed native worker; no UI or live-harness verification",
+  "cleanup": "Throwaway script, app database, artifacts and disposable Git fixture removed after verification"
+}
