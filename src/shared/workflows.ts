@@ -8,16 +8,24 @@ import {
   workflowTemplateSchema,
 } from "./domain/entities.ts";
 
-export const startWorkflowSchema = z
-  .strictObject({
-    runId: idSchema,
-    templateId: idSchema,
-    parameters: z.record(z.string(), z.string().trim().min(1).max(4000)),
-  })
+// Values only: a caller names a saved template and fills its declared inputs,
+// never a stage graph. Owner HTTP and the Lead tool share this bound.
+export const workflowParametersSchema = z
+  .record(z.string(), z.string().trim().min(1).max(4000))
   .refine(
-    (input) => Object.values(input.parameters).join("").length <= 4000,
+    (parameters) => Object.values(parameters).join("").length <= 4000,
     "Workflow parameter values exceed 4000 characters",
   );
+export const startWorkflowSchema = z.strictObject({
+  runId: idSchema,
+  templateId: idSchema,
+  parameters: workflowParametersSchema,
+});
+export const workflowProposalSchema = z.strictObject({
+  outcome: z.literal("awaiting_owner_approval"),
+  templateId: idSchema,
+  humanRequestId: idSchema,
+});
 export const workflowStageStateSchema = z.strictObject({
   stageId: z.string(),
   taskIds: z.array(idSchema),

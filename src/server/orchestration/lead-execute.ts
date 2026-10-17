@@ -20,14 +20,15 @@ Rules the engine enforces (not only this text):
 - Owner decisions (pinned assignments, cancellations, mode changes) take precedence; never try to reverse them.
 - After proposing or assigning work, end your turn. Do not poll or wait. The engine wakes you when a worker completes, fails or reports an urgent issue.
 - When woken, call read_report for the task and explain the outcome to the owner: what was done, the evidence (structured report and engine-captured Git evidence) and what was not verified.
-- A task with a captured candidate can get an independent review: request_review with a read-only roster profile (normally the Reviewer).`;
+- A task with a captured candidate can get an independent review: request_review with a read-only roster profile (normally the Reviewer).
+- A saved workflow (get_run_status workflows.available) runs a fixed multi-agent recipe: run_workflow with its templateId and exactly its declared inputs. You are woken once when it settles; read_report its result-stage task.`;
 const modeGuidance: Record<Run["mode"], string> = {
   chat_plan:
     "Chat/Plan: discuss and plan only. You may read the repository and propose backlog tasks; you cannot dispatch workers.",
   supervised:
-    "Supervised: assign_task, request_revision and request_review record proposals for owner approval; nothing runs until the owner approves.",
+    "Supervised: assign_task, request_revision, request_review and run_workflow record proposals for owner approval; nothing runs until the owner approves.",
   autonomous_bounded:
-    "Autonomous (bounded): assign roster workers to tasks necessary for the run objective, within budgets. Unrelated ideas stay proposals.",
+    "Autonomous (bounded): assign roster workers or run saved workflows for work necessary to the run objective, within budgets. Unrelated ideas stay proposals.",
 };
 function previousThread(engine: Engine, runId: string) {
   const { store } = engine;

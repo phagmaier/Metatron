@@ -7,6 +7,7 @@ import {
 import type { createRunSchema } from "../../shared/domain/inputs.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import { hasNativeLead, leadRunSchema, leadTeam } from "../../shared/native.ts";
+import type { WorkflowRun } from "../../shared/workflows.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
 import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
@@ -246,13 +247,61 @@ export function notifyLead(
         },
         `${key}:event`,
       );
-      if (
-        ["completed", "failed", "urgent_issue", "human_request"].includes(kind)
-      )
+      // A workflow child's outcome reaches the Lead once, when its workflow
+      // settles, instead of one paid Lead turn per child.
+      const wakes = task.workflowId
+        ? ["urgent_issue", "human_request"]
+        : ["completed", "failed", "urgent_issue", "human_request"];
+      if (wakes.includes(kind))
         return Boolean(
           requestLeadTurn(engine, run.id, "automatic", summary, `${key}:turn`),
         );
       return false;
+    },
+  );
+}
+
+export function notifyWorkflowSettled(
+  engine: Engine,
+  workflow: WorkflowRun,
+  key: string,
+) {
+  const run = engine.store.getRun(workflow.runId);
+  if (!hasNativeLead(run)) return false;
+  const results = workflow.template.results.map((result) => {
+    const state = workflow.stages.find((s) => s.stageId === result.stageId);
+    return `${result.name} from stage ${result.stageId} (${state?.status ?? "missing"}; tasks ${state?.taskIds.join(", ") || "none"})`;
+  });
+  const summary =
+    `${workflow.status}: ${workflow.template.name} (${workflow.id}) — ${results.join("; ")}`.slice(
+      0,
+      2000,
+    );
+  return mutate(
+    engine.store.db,
+    key,
+    "notifyWorkflowSettled",
+    { workflowId: workflow.id, status: workflow.status },
+    z.boolean(),
+    () => {
+      engine.store.recordEvent(
+        {
+          runId: run.id,
+          type: "lead.notification",
+          correlationId: key,
+          payload: { kind: "workflow", summary },
+        },
+        `${key}:event`,
+      );
+      return Boolean(
+        requestLeadTurn(
+          engine,
+          run.id,
+          "automatic",
+          `Workflow ${summary}`,
+          `${key}:turn`,
+        ),
+      );
     },
   );
 }
@@ -343,7 +392,9 @@ export function leadDigest(engine: Engine, runId: string) {
         lines.push(`Owner message: ${String(payload.text)}`);
         break;
       case "lead.notification":
-        lines.push(`Worker ${String(payload.summary)}`);
+        lines.push(
+          `${payload.kind === "workflow" ? "Workflow" : "Worker"} ${String(payload.summary)}`,
+        );
         break;
       case "assignment.overridden":
         lines.push(

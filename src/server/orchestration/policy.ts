@@ -15,22 +15,18 @@ const planningTools: readonly ToolName[] = [
   "escalate_issue",
   "request_human_input",
 ];
-// Backend allowlist per spec §4.2. Supervised assignment/revision calls become
+const dispatchTools: readonly ToolName[] = [
+  "assign_task",
+  "request_revision",
+  "request_review",
+  "run_workflow",
+];
+// Backend allowlist per spec §4.2. Supervised dispatch calls become
 // owner-approval proposals; only Autonomous mode lets the Lead dispatch.
 const leadTools: Record<Run["mode"], readonly ToolName[]> = {
   chat_plan: planningTools,
-  supervised: [
-    ...planningTools,
-    "assign_task",
-    "request_revision",
-    "request_review",
-  ],
-  autonomous_bounded: [
-    ...planningTools,
-    "assign_task",
-    "request_revision",
-    "request_review",
-  ],
+  supervised: [...planningTools, ...dispatchTools],
+  autonomous_bounded: [...planningTools, ...dispatchTools],
 };
 export function toolsFor(role: "lead" | "worker", mode: Run["mode"]) {
   return role === "lead" ? leadTools[mode] : workerTools;
@@ -104,16 +100,10 @@ export function authorize(
         "Worker is stopping for owner help; further reports/results are refused",
       );
   }
-  if (
-    operation === "assign_task" ||
-    operation === "request_revision" ||
-    operation === "request_review"
-  ) {
-    if (run.mode === "chat_plan")
-      throw new DomainError(
-        "POLICY_DENIED",
-        "Chat/Plan cannot dispatch workers or mutate source",
-      );
-  }
+  if (dispatchTools.includes(operation) && run.mode === "chat_plan")
+    throw new DomainError(
+      "POLICY_DENIED",
+      "Chat/Plan cannot dispatch workers or mutate source",
+    );
   return run;
 }

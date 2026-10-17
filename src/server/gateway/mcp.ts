@@ -12,7 +12,7 @@ import {
 import type { Engine } from "../orchestration/engine.ts";
 import { toolsFor } from "../orchestration/policy.ts";
 
-export const TOOL_SCHEMA_VERSION = "lao-tools/4";
+export const TOOL_SCHEMA_VERSION = "lao-tools/5";
 type Binding = {
   role: "lead" | "worker";
   sessionId: string;
@@ -38,6 +38,8 @@ const descriptions: Record<ToolName, string> = {
     "Request a bounded revision of a task awaiting review; creates a revision task for the same worker profile.",
   request_review:
     "Request an independent read-only review of a task's captured candidate by a read-only roster profile. The reviewer inspects the candidate commit in its own worktree and never sees the implementer's report. Supervised mode records a proposal for owner approval.",
+  run_workflow:
+    "Start a saved workflow from this run's team snapshot (get_run_status lists workflows.available with templateId and declared inputs). parameters must name exactly the declared inputs with text values; templates, stages, profiles and agent counts cannot be supplied or changed. Each child agent uses normal slots and launch budget, and the whole workflow must fit the remaining launch budget. Supervised mode records a validated proposal for the owner; Chat/Plan cannot run workflows. End your turn afterward: you are woken once when the workflow settles; then read_report its result-stage tasks (workflows.runs).",
   escalate_issue:
     "Escalate a risk or blocker to the owner's inbox. Does not pause work.",
   request_human_input:

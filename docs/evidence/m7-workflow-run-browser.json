@@ -1,0 +1,28 @@
+{
+  "workflowItemsBefore": 0,
+  "options": [
+    "Explore Subsystem \u00b7 v1"
+  ],
+  "shape": "readers \u00d74 (parallel_agents) \u2192 synthesis \u00d71 (synthesize)",
+  "inputs": 1,
+  "emptySubmitBlocked": true,
+  "workflowItemsAfterEmptySubmit": 0,
+  "summary": "Explore Subsystem \u00b7 v1 completed \u00b7 5 agents \u00b7 5 reported \u00b7 0 failed \u00b7 0 running",
+  "workflowItems": 1,
+  "boardCards": 0,
+  "children": 5,
+  "reloadWorkflowItems": 1,
+  "reloadSummary": "Explore Subsystem \u00b7 v1 completed \u00b7 5 agents \u00b7 5 reported \u00b7 0 failed \u00b7 0 running",
+  "mobileOverflow": false,
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "failedResponses": [],
+  "note": "Production build, disposable FAKE fixture (seeded Explore Subsystem v1, 4 readers + synthesis) driven through installed /usr/bin/chromium. Console 404 is the pre-existing /favicon.ico.",
+  "appFinal": {
+    "attempts": 5,
+    "workflows": 1,
+    "ownerCheckoutStatus": "",
+    "ownerHeadUnchanged": true
+  }
+}

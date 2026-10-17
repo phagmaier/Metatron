@@ -425,6 +425,8 @@ export function createApi(store: Store, engine: Engine) {
               recheckRecovery(engine, input, key),
             "POST /api/recovery/decision": (input, key) =>
               decideRecovery(engine, input, key),
+            "POST /api/workflows": (input, key) =>
+              engine.workflows.start(input, key),
             "POST /api/tasks/cancel": (input, key) =>
               engine.cancel(
                 z.strictObject({ taskId: idSchema }).parse(input).taskId,

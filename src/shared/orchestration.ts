@@ -10,6 +10,7 @@ import {
   reviewResultSchema,
   textSchema,
 } from "./domain/entities.ts";
+import { workflowParametersSchema } from "./workflows.ts";
 
 export const scenarioSchema = z.enum(["success", "failure", "disconnect"]);
 export const openProjectSchema = z.strictObject({
@@ -126,6 +127,11 @@ export const toolSchema = z.discriminatedUnion("name", [
     name: z.literal("request_review"),
     taskId: idSchema,
     profileId: idSchema,
+  }),
+  z.strictObject({
+    name: z.literal("run_workflow"),
+    templateId: idSchema,
+    parameters: workflowParametersSchema,
   }),
   humanTool("escalate_issue"),
   humanTool("request_human_input"),

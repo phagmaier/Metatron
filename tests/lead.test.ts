@@ -9,11 +9,19 @@ import { CodexRpc } from "../src/server/adapters/codex-rpc.ts";
 import { PiAdapter } from "../src/server/adapters/pi.ts";
 import { PiRpc } from "../src/server/adapters/pi-rpc.ts";
 import { startApp } from "../src/server/app.ts";
-import { requestLeadTurn } from "../src/server/orchestration/lead-run.ts";
+import {
+  beginLeadRun,
+  requestLeadTurn,
+} from "../src/server/orchestration/lead-run.ts";
 import { emergencyStop } from "../src/server/orchestration/stops.ts";
 import { listIntegrationCandidates } from "../src/server/storage/candidates.ts";
 import { updateRole } from "../src/server/storage/roles.ts";
-import type { Run } from "../src/shared/domain/entities.ts";
+import {
+  createExploreSubsystemTemplate,
+  listWorkflowRuns,
+} from "../src/server/storage/workflows.ts";
+import { defaultLimits, type Run } from "../src/shared/domain/entities.ts";
+import { leadTeam } from "../src/shared/native.ts";
 import { createGitFixture } from "./helpers/git-fixture.ts";
 
 const fixturePath = (name: string) =>
@@ -173,6 +181,7 @@ async function leadFixture(
   return {
     app,
     engine,
+    project,
     store: engine.store,
     piArgs,
     async log() {
@@ -551,6 +560,71 @@ test("wake-ups never overlap a Lead turn, coalesce while queued and stop at the 
     );
     const suppressed = f.events(run.id, "lead.wakeup.suppressed").length;
     assert.ok(coalesced === 2 || suppressed === 1);
+  } finally {
+    await f.close();
+  }
+});
+
+test("an Autonomous Lead runs a saved workflow by template and inputs, and is woken once with its synthesized result", async () => {
+  const f = await leadFixture({ scenario: "workflow" });
+  try {
+    const template = createExploreSubsystemTemplate(
+      f.store,
+      {
+        readerProfileId: "00000000-0000-4000-8000-000000000013",
+        synthesizerProfileId: "00000000-0000-4000-8000-000000000014",
+        readerCount: 2,
+      },
+      "template",
+    );
+    const team = leadTeam({
+      mode: "autonomous_bounded",
+      lead: { model: "fixture-model", thinking: "low" },
+      worker: { model: "fixture/model", thinking: "off" },
+    });
+    const run = beginLeadRun(
+      f.engine,
+      {
+        projectId: f.project.id,
+        title: "Lead workflow run",
+        initialPrompt: "Explore the README",
+        mode: "autonomous_bounded",
+        limits: defaultLimits,
+        repository: f.project.repository,
+        teamSnapshot: {
+          ...team,
+          roles: f.engine.presets().roles,
+          preset: { ...team.preset, workflowTemplateIds: [template.id] },
+          workflows: [template],
+        },
+      },
+      "workflow-run",
+    );
+    await f.engine.idle();
+    await delay(200);
+    await f.engine.idle();
+    const [workflow] = listWorkflowRuns(f.store, run.id);
+    assert.equal(workflow?.status, "completed");
+    assert.equal(workflow?.template.id, template.id);
+    assert.deepEqual(workflow?.parameters, { target: "README.md" });
+    const started = f.events(run.id, "workflow.started");
+    assert.deepEqual(
+      started.map((e) => e.payload.invokedBy),
+      ["lead"],
+    );
+    const work = f.store.listTasks(run.id).filter((t) => t.kind === "work");
+    assert.equal(work.length, 3);
+    assert.ok(work.every((t) => t.origin === "workflow"));
+    // Three child notifications are journaled; only the settled workflow wakes.
+    assert.equal(f.events(run.id, "lead.notification").length, 4);
+    assert.equal(f.events(run.id, "lead.wakeup").length, 1);
+    const messages = f
+      .events(run.id, "lead.message")
+      .map((e) => String(e.payload.text));
+    assert.deepEqual(messages, [
+      "Lead turn: workflow started",
+      "Workflow completed: Protocol fixture structured summary",
+    ]);
   } finally {
     await f.close();
   }

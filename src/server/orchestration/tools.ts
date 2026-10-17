@@ -12,9 +12,11 @@ import {
   handoffReportSchema,
   toolSchema,
 } from "../../shared/orchestration.ts";
+import type { WorkflowRun } from "../../shared/workflows.ts";
 import { listIntegrationCandidates } from "../storage/candidates.ts";
 import { listReviews } from "../storage/reviews.ts";
 import { implementationTask, revisionTaskIds } from "../storage/revisions.ts";
+import { listWorkflowRuns } from "../storage/workflows.ts";
 import type { Engine } from "./engine.ts";
 import { authorize } from "./policy.ts";
 import { requestReview, reviewInstructions } from "./review.ts";
@@ -69,6 +71,38 @@ function roster(run: Run) {
     };
   });
 }
+const workflowStatus = (workflow: WorkflowRun) => ({
+  workflowId: workflow.id,
+  templateId: workflow.template.id,
+  name: workflow.template.name,
+  status: workflow.status,
+  parameters: workflow.parameters,
+  stages: workflow.stages,
+  results: workflow.template.results,
+});
+// Template identity, declared inputs and stage shape only. Instructions,
+// profiles and partitions stay in the saved template; the Lead supplies values.
+function workflowSummary(engine: Engine, run: Run) {
+  const snapshot = run.teamSnapshot;
+  return {
+    available: (snapshot?.workflows ?? [])
+      .filter((t) => snapshot?.preset.workflowTemplateIds.includes(t.id))
+      .map((t) => ({
+        templateId: t.id,
+        name: t.name,
+        version: t.version,
+        inputs: t.inputs,
+        agents: t.stages.reduce((sum, stage) => sum + stage.count, 0),
+        stages: t.stages.map((stage) => ({
+          id: stage.id,
+          type: stage.type,
+          count: stage.count,
+        })),
+        results: t.results,
+      })),
+    runs: listWorkflowRuns(engine.store, run.id).map(workflowStatus),
+  };
+}
 function workTask(engine: Engine, taskId: string) {
   const task = engine.store.getTask(taskId);
   if (task.kind !== "work")
@@ -108,6 +142,7 @@ export function runTool(
           status: run.status,
         },
         roster: roster(run),
+        workflows: workflowSummary(engine, run),
         limits: run.limits,
         budget: {
           workerLaunchesCommitted: engine.scheduling.committedLaunches(run.id),
@@ -270,6 +305,19 @@ export function runTool(
         { taskId: data.taskId, feedback: data.feedback },
         key,
       );
+    case "run_workflow": {
+      const request = {
+        runId,
+        templateId: data.templateId,
+        parameters: data.parameters,
+      };
+      return actor.role === "lead" && run.mode === "supervised"
+        ? engine.workflows.propose(actor, request, key)
+        : {
+            outcome: "started",
+            ...workflowStatus(engine.workflows.start(request, key, actor)),
+          };
+    }
     case "escalate_issue":
     case "request_human_input":
       return store.createHumanRequest(

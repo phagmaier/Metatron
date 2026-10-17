@@ -14,6 +14,7 @@ import {
 } from "../shared/workflows.ts";
 import { readApi } from "./api.ts";
 import { ArtifactText } from "./integration-panel.tsx";
+import { WorkflowRunForm } from "./workflow-run-form.tsx";
 
 type Child = WorkflowView["children"][number];
 type Stage = WorkflowView["workflow"]["template"]["stages"][number];
@@ -455,7 +456,12 @@ export function WorkflowPanel({
       controller.abort();
     };
   }, [run.id, refresh]);
-  if (views.length === 0 && !error) return null;
+  if (
+    views.length === 0 &&
+    !error &&
+    !run.teamSnapshot?.preset.workflowTemplateIds.length
+  )
+    return null;
   return (
     <>
       <h3>Workflows</h3>
@@ -464,6 +470,7 @@ export function WorkflowPanel({
         separate board cards. Every child still uses normal scheduling slots and
         launch budget. Cancelling a child keeps the workflow's history.
       </p>
+      <WorkflowRunForm run={run} onError={onError} />
       {error && <p className="warning">{error}</p>}
       <ul className="workflows">
         {views.map((view) => (

@@ -143,6 +143,60 @@ function finish(status: "completed" | "interrupted" | "failed") {
 const rosterSchema = z.object({
   roster: z.array(z.object({ profileId: z.string(), role: z.string() })),
 });
+const workflowsSchema = z.object({
+  workflows: z.object({
+    available: z.array(
+      z.object({
+        templateId: z.string(),
+        inputs: z.array(z.object({ name: z.string() })),
+      }),
+    ),
+    runs: z.array(
+      z.object({
+        status: z.string(),
+        stages: z.array(
+          z.object({ stageId: z.string(), taskIds: z.array(z.string()) }),
+        ),
+        results: z.array(z.object({ stageId: z.string() })),
+      }),
+    ),
+  }),
+});
+// Starts the first saved workflow; once woken, reads its result-stage reports.
+async function workflowLead(prompt: string) {
+  const { workflows } = workflowsSchema.parse(
+    (await tool("get_run_status")).value,
+  );
+  if (prompt.includes("Run objective")) {
+    const [template] = workflows.available;
+    const started = await tool("run_workflow", {
+      templateId: template?.templateId,
+      parameters: Object.fromEntries(
+        (template?.inputs ?? []).map((input) => [input.name, "README.md"]),
+      ),
+    });
+    say(
+      started.error
+        ? `run_workflow ${started.error.code}`
+        : "Lead turn: workflow started",
+    );
+    return finish("completed");
+  }
+  const [run] = workflows.runs;
+  const reports = [];
+  for (const result of run?.results ?? [])
+    for (const taskId of run?.stages.find((s) => s.stageId === result.stageId)
+      ?.taskIds ?? []) {
+      const report = z
+        .object({
+          structuredReport: z.object({ summary: z.string() }).nullable(),
+        })
+        .parse((await tool("read_report", { taskId })).value);
+      reports.push(report.structuredReport?.summary ?? "none");
+    }
+  say(`Workflow ${run?.status ?? "missing"}: ${reports.join("; ")}`);
+  finish("completed");
+}
 async function lead(prompt: string) {
   if (scenario === "hold") return;
   if (scenario.startsWith("provider-")) {
@@ -192,6 +246,7 @@ async function lead(prompt: string) {
     });
     return;
   }
+  if (scenario === "workflow") return workflowLead(prompt);
   if (scenario === "slow") await delay(300);
   const status = rosterSchema.parse((await tool("get_run_status")).value);
   const reader = status.roster.find((r) => r.role === "Reader");

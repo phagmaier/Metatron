@@ -1,10 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { open } from "node:fs/promises";
+import type { z } from "zod";
 import type { WorkflowTemplate } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import type { Actor } from "../../shared/orchestration.ts";
 import {
   startWorkflowSchema,
   type WorkflowRun,
+  workflowProposalSchema,
   workflowRunSchema,
   workflowSourceSchema,
 } from "../../shared/workflows.ts";
@@ -22,6 +25,7 @@ import {
   workflowResultSchema,
 } from "../storage/workflows.ts";
 import type { Engine } from "./engine.ts";
+import { notifyWorkflowSettled } from "./lead-run.ts";
 import { authorize } from "./policy.ts";
 
 type Stage = WorkflowTemplate["stages"][number];
@@ -34,8 +38,118 @@ export class Workflows {
     this.engine = engine;
   }
 
-  // Internal engine service only. HTTP/Lead invocation is a later M7 item.
-  start(input: unknown, key: string) {
+  // Owner HTTP and the Lead tool resolve the same saved, snapshotted template.
+  // Callers supply input values only; no graph, profile or count is accepted.
+  private resolve(actor: Actor, data: z.infer<typeof startWorkflowSchema>) {
+    const { store } = this.engine;
+    const run = authorize(store, actor, data.runId, "run_workflow");
+    if (run.status !== "active")
+      throw new DomainError("CONFLICT", "Workflow needs an active run");
+    const template = run.teamSnapshot?.workflows.find(
+      (template) => template.id === data.templateId,
+    );
+    if (
+      !template ||
+      !run.teamSnapshot?.preset.workflowTemplateIds.includes(template.id)
+    )
+      throw new DomainError(
+        "POLICY_DENIED",
+        "Choose a saved workflow from this run's immutable team snapshot",
+      );
+    if (
+      Object.keys(data.parameters).length !== template.inputs.length ||
+      template.inputs.some(
+        (input) => !Object.hasOwn(data.parameters, input.name),
+      )
+    )
+      throw new DomainError(
+        "INVALID_REFERENCE",
+        "Supply exactly the workflow's declared inputs",
+      );
+    for (const stage of template.stages) {
+      const profile = this.engine.scheduling.profile(run.id, stage.profileId);
+      if (
+        !run.teamSnapshot.preset.workerProfileIds.includes(profile.id) ||
+        profile.permission === "coordinator"
+      )
+        throw new DomainError(
+          "POLICY_DENIED",
+          "Workflow stages must use workers from the declared roster",
+        );
+      if (
+        stage.type === "parallel_agents" &&
+        stage.count > run.limits.maxParallelReadersPerWorkflow
+      )
+        throw new DomainError(
+          "BUDGET_EXCEEDED",
+          "Parallel stage exceeds this run's workflow reader bound",
+        );
+    }
+    // The owner may queue children beyond the budget as visible held intents;
+    // the Lead may only start a workflow whose every child launch still fits.
+    const launches = template.stages.reduce((sum, s) => sum + s.count, 0);
+    const remaining =
+      run.limits.maxTotalWorkerLaunchesPerRun -
+      this.engine.scheduling.committedLaunches(run.id);
+    if (actor.role !== "owner" && launches > remaining)
+      throw new DomainError(
+        "BUDGET_EXCEEDED",
+        `Workflow needs ${launches} worker launches; ${Math.max(0, remaining)} remain in this run's budget`,
+      );
+    return { run, template };
+  }
+
+  // A Supervised Lead's invocation: validated like a start, then left to the
+  // owner. No workflow, task or dispatch exists until the owner starts it.
+  propose(actor: Actor, input: unknown, key: string) {
+    const data = startWorkflowSchema.parse(input);
+    const { store } = this.engine;
+    return mutate(
+      store.db,
+      key,
+      "proposeWorkflow",
+      data,
+      workflowProposalSchema,
+      () => {
+        const { run, template } = this.resolve(actor, data);
+        const request = store.createHumanRequest(
+          {
+            runId: run.id,
+            sessionId: actor.role === "owner" ? null : actor.sessionId,
+            affectedTaskIds: [],
+            type: "manual_check",
+            urgency: "normal",
+            reason: `The Lead proposes running saved workflow "${template.name}" v${template.version} (${template.id}) with validated parameters:\n${JSON.stringify(data.parameters, null, 2)}`,
+            suggestedAction:
+              "To approve, start this workflow with these parameters from the run's Workflows panel, then resolve this request. Nothing runs until you start it.",
+            blocking: false,
+          },
+          `${key}:request`,
+        );
+        store.recordEvent(
+          {
+            runId: run.id,
+            type: "workflow.proposed",
+            correlationId: key,
+            payload: {
+              templateId: template.id,
+              version: template.version,
+              parameters: data.parameters,
+              humanRequestId: request.id,
+            },
+          },
+          `${key}:event`,
+        );
+        return {
+          outcome: "awaiting_owner_approval" as const,
+          templateId: template.id,
+          humanRequestId: request.id,
+        };
+      },
+    );
+  }
+
+  start(input: unknown, key: string, actor: Actor = { role: "owner" }) {
     const data = startWorkflowSchema.parse(input);
     const { store } = this.engine;
     return mutate(
@@ -45,57 +159,7 @@ export class Workflows {
       data,
       workflowRunSchema,
       () => {
-        const run = authorize(
-          store,
-          { role: "owner" },
-          data.runId,
-          "assign_task",
-        );
-        if (run.status !== "active")
-          throw new DomainError("CONFLICT", "Workflow needs an active run");
-        const template = run.teamSnapshot?.workflows.find(
-          (template) => template.id === data.templateId,
-        );
-        if (
-          !template ||
-          !run.teamSnapshot?.preset.workflowTemplateIds.includes(template.id)
-        )
-          throw new DomainError(
-            "POLICY_DENIED",
-            "Choose a saved workflow from this run's immutable team snapshot",
-          );
-        if (
-          Object.keys(data.parameters).length !== template.inputs.length ||
-          template.inputs.some(
-            (input) => !Object.hasOwn(data.parameters, input.name),
-          )
-        )
-          throw new DomainError(
-            "INVALID_REFERENCE",
-            "Supply exactly the workflow's declared inputs",
-          );
-        for (const stage of template.stages) {
-          const profile = this.engine.scheduling.profile(
-            run.id,
-            stage.profileId,
-          );
-          if (
-            !run.teamSnapshot.preset.workerProfileIds.includes(profile.id) ||
-            profile.permission === "coordinator"
-          )
-            throw new DomainError(
-              "POLICY_DENIED",
-              "Workflow stages must use workers from the declared roster",
-            );
-          if (
-            stage.type === "parallel_agents" &&
-            stage.count > run.limits.maxParallelReadersPerWorkflow
-          )
-            throw new DomainError(
-              "BUDGET_EXCEEDED",
-              "Parallel stage exceeds this run's workflow reader bound",
-            );
-        }
+        const { run, template } = this.resolve(actor, data);
         const id = randomUUID();
         const now = new Date().toISOString();
         // Stage prerequisites consume reports, not DONE-only Git integration gates.
@@ -142,6 +206,7 @@ export class Workflows {
               workflowId: id,
               templateId: template.id,
               version: template.version,
+              invokedBy: actor.role,
             },
           },
           `${key}:event`,
@@ -455,10 +520,24 @@ export class Workflows {
         previous.status !== workflow.status
       ) {
         workflow.updatedAt = new Date().toISOString();
-        saveWorkflowRun(
-          store,
-          workflow,
-          `workflow:${workflow.id}:state:${randomUUID()}`,
+        const key = `workflow:${workflow.id}:state:${randomUUID()}`;
+        mutate(
+          store.db,
+          key,
+          "reconcileWorkflow",
+          { workflowId: workflow.id, status: workflow.status },
+          workflowRunSchema,
+          () => {
+            const saved = saveWorkflowRun(store, workflow, `${key}:save`);
+            // Settled workflows are never reconciled again: one Lead wake-up.
+            if (settled(saved.status))
+              notifyWorkflowSettled(
+                this.engine,
+                saved,
+                `workflow:${saved.id}:settled`,
+              );
+            return saved;
+          },
         );
       }
     }
