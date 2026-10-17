@@ -469,6 +469,8 @@ When worker says "install X" or "I need permission":
 
 Use harness-native permission request APIs when available and map them to the same inbox; do not bypass native safeguards silently.
 
+Confirmed auth failures, rate limiting and exhausted credits use this same blocker flow, preserving evidence and an actionable owner next step. Distinguish unknown/unavailable usage from confirmed exhaustion; never infer a balance or reset time. Keep deterministic hard budgets independent; do not add credential management or automatic resumption.
+
 ### 9.2 Escalation policy
 
 - Informational finding: record issue, optionally add backlog task.
@@ -481,6 +483,8 @@ Use harness-native permission request APIs when available and map them to the sa
 - **Pause scheduling:** stop new dispatches; running workers continue to safe completion unless separately paused/cancelled.
 - **Stop run:** cancel active sessions in the selected run, halt dispatch, preserve worktrees, artifacts, and database state.
 - **Emergency stop:** best-effort termination of app-managed agent process groups and dispatch, plus prominent warning that external descendants and already-performed filesystem changes may remain. It must not kill unrelated user's manual Codex/Pi/etc sessions.
+
+Persist pending-stop, failed and uncertain outcomes and history independently of navigation, view closure and app restart, reusing the stop journal. Inspecting or closing a view does not stop execution; only supported process/session evidence confirms termination.
 
 A paused/suspended task can be resumed only by an explicit transition that rechecks its dependencies, resource limits, worktree and session status.
 
@@ -496,6 +500,7 @@ A paused/suspended task can be resumed only by an explicit transition that reche
 - Native process crash or unexpectedly terminated app server.
 - Orchestrator itself restarted while workers were active.
 - Worktree conflict, Git command failure, dirty integration destination.
+- Missing, inaccessible or replaced worktree; neither a missing folder nor same-path existence proves process termination or checkout identity.
 - User cancellation vs unexpected interruption.
 
 ### 10.2 Durable execution rules
@@ -504,6 +509,7 @@ A paused/suspended task can be resumed only by an explicit transition that reche
 - Append structured event with causal IDs; persist native session/thread ID as soon as returned.
 - Processes are supervised and their exit codes recorded. "No streamed tokens" is never sufficient to classify a crash.
 - On restart, reconcile local process state, native session IDs, task attempts, and worktree Git state. Expose ambiguous attempts as `RECOVERY_REQUIRED`/`RETRY_DECISION` rather than automatically rerunning commands that might have succeeded.
+- For missing/inaccessible/replaced worktrees, preserve task/attempt, native-session and process evidence plus the path and reason. Block unsafe submissions until an explicit recovery decision validates repository/worktree identity. Recheck observes current facts only; it never resubmits work, automatically relinks or deletes a checkout.
 - Every spawn/submit/integration operation carries an idempotency key so retries cannot accidentally create duplicate tasks or apply a change twice.
 - Prefer native session resume when the same unfinished task and state support it; otherwise create a fresh attempt from existing task/commit/report evidence, but only after a safe recovery decision.
 - Always preserve unfinished or conflicted worktrees until user-authorized cleanup.
