@@ -33,6 +33,7 @@ import { RunControls } from "./run-controls.tsx";
 import { EmergencyStop, StopHistory } from "./stop-panel.tsx";
 import { TaskCard } from "./task-card.tsx";
 import { TeamsPanel } from "./teams-panel.tsx";
+import { WorkflowPanel } from "./workflow-panel.tsx";
 import "./style.css";
 
 // Conversation events are few but must never be evicted by token traffic.
@@ -170,6 +171,53 @@ function App() {
     ).values(),
   ].sort((a, b) => a.sequence - b.sequence);
   const runEvents = merged.slice(-200);
+  const sessionFor = (taskId: string) =>
+    runSessions.findLast(
+      (session) =>
+        runAttempts.find((attempt) => attempt.id === session.attemptId)
+          ?.taskId === taskId,
+    );
+  const card = (task: Task, run: Run) => (
+    <TaskCard
+      key={task.id}
+      task={task}
+      prerequisites={runTasks.filter((item) =>
+        task.dependencyIds.includes(item.id),
+      )}
+      revision={tasks.find((item) => item.id === task.latestRevisionTaskId)}
+      run={run}
+      session={sessionFor(task.id)}
+      sessions={runSessions.filter(
+        (session) =>
+          runAttempts.find((attempt) => attempt.id === session.attemptId)
+            ?.taskId === task.id,
+      )}
+      dispatch={dispatches.find((d) => d.taskId === task.id)}
+      attempt={runAttempts.findLast((a) => a.taskId === task.id)}
+      evidence={runEvents.findLast(
+        (e) => e.taskId === task.id && e.type === "worktree.captured",
+      )}
+      integrationEvent={
+        merged.findLast(
+          (e) => e.taskId === task.id && e.type.startsWith("integration."),
+        )?.sequence
+      }
+      reviewEvent={
+        merged.findLast(
+          (e) =>
+            e.runId === run.id &&
+            (e.type === "review.saved" ||
+              e.type === "integration_candidate.created"),
+        )?.sequence
+      }
+      candidate={merged.findLast(
+        (e) =>
+          e.taskId === (task.latestRevisionTaskId ?? task.id) &&
+          e.type === "candidate.captured",
+      )}
+      onError={setError}
+    />
+  );
   return (
     <main>
       <p className="eyebrow">LOCAL WORKSPACE · M4</p>
@@ -303,6 +351,19 @@ function App() {
                   events={merged.filter(conversation)}
                   onError={setError}
                 />
+                <WorkflowPanel
+                  key={`workflows:${selectedRun.id}`}
+                  run={selectedRun}
+                  tasks={runTasks}
+                  sessions={sessionFor}
+                  // Token deltas never change workflow state; skip refetching on them.
+                  refresh={
+                    merged.findLast((e) => !e.type.endsWith(".text_delta"))
+                      ?.sequence
+                  }
+                  renderTask={(task) => card(task, selectedRun)}
+                  onError={setError}
+                />
                 <h3>Task board</h3>
                 <div className="board">
                   {[
@@ -343,69 +404,10 @@ function App() {
                           .filter(
                             (task) =>
                               task.kind === "work" &&
+                              !task.workflowId &&
                               column.statuses.includes(task.status),
                           )
-                          .map((task) => (
-                            <TaskCard
-                              key={task.id}
-                              task={task}
-                              prerequisites={runTasks.filter((item) =>
-                                task.dependencyIds.includes(item.id),
-                              )}
-                              revision={tasks.find(
-                                (item) => item.id === task.latestRevisionTaskId,
-                              )}
-                              run={selectedRun}
-                              session={runSessions.findLast(
-                                (session) =>
-                                  runAttempts.find(
-                                    (attempt) =>
-                                      attempt.id === session.attemptId,
-                                  )?.taskId === task.id,
-                              )}
-                              sessions={runSessions.filter(
-                                (session) =>
-                                  runAttempts.find(
-                                    (attempt) =>
-                                      attempt.id === session.attemptId,
-                                  )?.taskId === task.id,
-                              )}
-                              dispatch={dispatches.find(
-                                (d) => d.taskId === task.id,
-                              )}
-                              attempt={runAttempts.findLast(
-                                (a) => a.taskId === task.id,
-                              )}
-                              evidence={runEvents.findLast(
-                                (e) =>
-                                  e.taskId === task.id &&
-                                  e.type === "worktree.captured",
-                              )}
-                              integrationEvent={
-                                merged.findLast(
-                                  (e) =>
-                                    e.taskId === task.id &&
-                                    e.type.startsWith("integration."),
-                                )?.sequence
-                              }
-                              reviewEvent={
-                                merged.findLast(
-                                  (e) =>
-                                    e.runId === selectedRun.id &&
-                                    (e.type === "review.saved" ||
-                                      e.type ===
-                                        "integration_candidate.created"),
-                                )?.sequence
-                              }
-                              candidate={merged.findLast(
-                                (e) =>
-                                  e.taskId ===
-                                    (task.latestRevisionTaskId ?? task.id) &&
-                                  e.type === "candidate.captured",
-                              )}
-                              onError={setError}
-                            />
-                          ))}
+                          .map((task) => card(task, selectedRun))}
                       </ul>
                     </div>
                   ))}

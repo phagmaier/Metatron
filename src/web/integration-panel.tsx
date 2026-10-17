@@ -16,7 +16,7 @@ import { ApplyPanel } from "./apply-panel.tsx";
 const short = (sha: string | null) => sha?.slice(0, 12) ?? "pending";
 
 // Loads a saved test log or diff only when the owner asks for it.
-function ArtifactText({
+export function ArtifactText({
   artifactId,
   label,
   onError,

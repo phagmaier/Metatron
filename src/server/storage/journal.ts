@@ -36,17 +36,15 @@ export function appendEvent(db: DatabaseSync, input: unknown) {
 
 export function queryEvents(db: DatabaseSync, input: unknown = {}) {
   const query = eventQuerySchema.parse(input);
-  const rows = query.runId
-    ? db
-        .prepare(
-          "SELECT * FROM events WHERE sequence > ? AND run_id = ? ORDER BY sequence LIMIT ?",
-        )
-        .all(query.after, query.runId, query.limit)
-    : db
-        .prepare(
-          "SELECT * FROM events WHERE sequence > ? ORDER BY sequence LIMIT ?",
-        )
-        .all(query.after, query.limit);
+  // Column names are fixed here; only validated IDs are bound as values.
+  const filters: [string, string][] = [];
+  if (query.runId) filters.push(["run_id", query.runId]);
+  if (query.taskId) filters.push(["task_id", query.taskId]);
+  const rows = db
+    .prepare(
+      `SELECT * FROM events WHERE sequence > ?${filters.map(([column]) => ` AND ${column} = ?`).join("")} ORDER BY sequence LIMIT ?`,
+    )
+    .all(query.after, ...filters.map(([, value]) => value), query.limit);
   return rows.map((row) =>
     eventSchema.parse({
       id: row.id,

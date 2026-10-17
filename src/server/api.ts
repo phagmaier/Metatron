@@ -27,6 +27,7 @@ import { DomainError } from "../shared/domain/states.ts";
 import { applyPlanSchema } from "../shared/integration.ts";
 import { dispatchSchema } from "../shared/orchestration.ts";
 import { teamsResponseSchema } from "../shared/teams.ts";
+import { workflowsResponseSchema } from "../shared/workflows.ts";
 import { capabilitiesSchema } from "./adapters/contract.ts";
 import { inspectRepository } from "./git/inspect.ts";
 import type { Engine } from "./orchestration/engine.ts";
@@ -56,6 +57,8 @@ import {
   listWorkflows,
   updateTeam,
 } from "./storage/teams.ts";
+import { workflowEvidence } from "./storage/workflow-evidence.ts";
+import { listWorkflowRuns } from "./storage/workflows.ts";
 
 const maxArtifactText = 512 * 1024;
 // Only paths the engine recorded are read; a missing file is reported, not hidden.
@@ -223,6 +226,18 @@ export function createApi(store: Store, engine: Engine) {
               z.strictObject({}).parse(query);
               result = capabilitiesSchema.parse(await engine.codex.discover());
               break;
+            case "/api/workflows": {
+              const parsed = z.strictObject({ runId: idSchema }).parse(query);
+              result = workflowsResponseSchema.parse({
+                workflows: listWorkflowRuns(store, parsed.runId).map(
+                  (workflow) => ({
+                    workflow,
+                    children: workflowEvidence(store, workflow.id).children,
+                  }),
+                ),
+              });
+              break;
+            }
             case "/api/worktrees":
               z.strictObject({}).parse(query);
               result = engine.worktrees.list();

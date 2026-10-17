@@ -1,0 +1,42 @@
+{
+  "execution": "FAKE playback only; disposable SQLite + Git fixture; production build; no native harness/provider turn",
+  "browser": "Playwright (cached package) driving installed /usr/bin/chromium with a throwaway profile",
+  "scenario": "Explore Subsystem v1, 4 readers (reader 3 forced to FAKE failure) + 1 synthesizer",
+  "workflowItems": 1,
+  "flatBoardCardsForWorkflowChildren": 0,
+  "summary": "Explore Subsystem · v1 partial · 5 agents · 4 reported · 1 failed · 0 running",
+  "childAgents": 5,
+  "failedChild": {
+    "headerWarning": "Failed: Deliberately simulated worker failure",
+    "reportButtons": 0,
+    "attemptDiagnostics": [
+      "attempt.diagnostic: Deliberately simulated worker failure"
+    ],
+    "logEventCount": 22,
+    "logIncludes": [
+      "#63 fake.process_state",
+      "#67 fake.session_error",
+      "#81 fake.turn_completed",
+      "#85 attempt.diagnostic"
+    ],
+    "cancelControlPresent": true
+  },
+  "synthesisProvenance": [
+    "Explore Subsystem · readers 1/4 · completed · report 6e2b25c1-e09c-482a-982b-ce1aec30dfbe",
+    "Explore Subsystem · readers 2/4 · completed · report 3131eb16-a79a-4e80-9faa-753f253aeffc",
+    "Explore Subsystem · readers 3/4 · failed · failed: Deliberately simulated worker failure · no report (failure retained, nothing invented)",
+    "Explore Subsystem · readers 4/4 · completed · report 94df25b2-e7a8-4c81-903f-29cfa99018ef"
+  ],
+  "synthesisReportExcerpt": "FAKE report for Explore Subsystem · synthesis: scripted simulation of Consolidate the available reader reports into one concise subsystem exploration for the Le",
+  "afterReload": {
+    "workflowItems": 1,
+    "summary": "Explore Subsystem · v1 partial · 5 agents · 4 reported · 1 failed · 0 running"
+  },
+  "mobile390HorizontalOverflow": false,
+  "attemptsBeforeAndAfterBrowsing": [
+    5,
+    5
+  ],
+  "ownerCheckout": "clean; fixtures removed",
+  "consoleErrors": "one pre-existing 404 for the browser's automatic /favicon.ico request (no favicon is declared); no failed page/API responses, no page errors"
+}

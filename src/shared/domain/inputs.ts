@@ -173,4 +173,5 @@ export const eventQuerySchema = z.strictObject({
   after: z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0),
   limit: z.coerce.number().int().min(1).max(500).default(100),
   runId: idSchema.optional(),
+  taskId: idSchema.optional(),
 });

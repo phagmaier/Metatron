@@ -347,3 +347,20 @@ label.check input {
   border: 1px solid #d5ddd6;
   border-radius: 6px;
 }
+.workflows,
+.stages {
+  padding: 0;
+  list-style: none;
+}
+.workflow {
+  margin-bottom: 12px;
+  padding: 0 14px;
+  background: #f3f5f0;
+  border: 1px solid #8aa99a;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.stages > li {
+  border-top: 1px solid #d5ddd6;
+  padding: 10px 0;
+}

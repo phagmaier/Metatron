@@ -144,7 +144,7 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 - [x] Add reusable `Explore Subsystem` template: N complementary readers (entry points, data flow, dependencies, tests) then one synthesizer.
 - [x] Ensure each workflow child consumes normal scheduling slots and attempt/launch budget; queued children don't vanish when over cap.
 - [x] Persist per-reader evidence and synthesis references, including explicit partial failures, rather than discarding originals.
-- [ ] Render workflow as one expandable item with child stages/agents, logs, and reports.
+- [x] Render workflow as one expandable item with child stages/agents, logs, and reports.
 - [ ] Let owner run workflow manually and Lead invoke only a saved template with validated parameters.
 - [ ] Add simple `Review Implementation` workflow preset; optional multi-reader variant only if it stays within beta scope.
 - [ ] Exercise workflow with FakeAdapter and at least one real read-only harness; verify fan-out cap and partial reader failure.

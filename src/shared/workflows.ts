@@ -1,6 +1,9 @@
 import { z } from "zod";
 import {
+  artifactSchema,
+  attemptSchema,
   idSchema,
+  taskSchema,
   timestampSchema,
   workflowTemplateSchema,
 } from "./domain/entities.ts";
@@ -78,3 +81,41 @@ export const workflowHandoffSchema = z.strictObject({
   sources: z.array(workflowSourceSchema).max(4096),
 });
 export type WorkflowHandoff = z.infer<typeof workflowHandoffSchema>;
+
+const evidenceEventSchema = z.strictObject({
+  eventId: idSchema,
+  type: z.string(),
+  payload: z.record(z.string(), z.json()),
+});
+// One grouped read model per workflow: its saved state plus every child's
+// canonical attempts, artifacts and provenance, so the GUI never reconstructs it.
+export const workflowsResponseSchema = z.strictObject({
+  workflows: z.array(
+    z.strictObject({
+      workflow: workflowRunSchema,
+      children: z.array(
+        z.strictObject({
+          stageId: z.string(),
+          task: taskSchema,
+          outcome: z.strictObject({
+            status: z.enum(["waiting", "blocked", "completed", "failed"]),
+            diagnostic: z.string().nullable(),
+          }),
+          handoff: workflowHandoffSchema.nullable(),
+          taskArtifacts: z.array(artifactSchema),
+          attempts: z.array(
+            z.strictObject({
+              attempt: attemptSchema,
+              artifacts: z.array(artifactSchema),
+              resultEvent: evidenceEventSchema.nullable(),
+              diagnostics: z.array(evidenceEventSchema),
+            }),
+          ),
+        }),
+      ),
+    }),
+  ),
+});
+export type WorkflowView = z.infer<
+  typeof workflowsResponseSchema
+>["workflows"][number];
