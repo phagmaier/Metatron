@@ -1,0 +1,13 @@
+{
+  "codexVersion": "0.163.0",
+  "modelTurnMade": false,
+  "installedSchemaChecks": [
+    "item/commandExecution/requestApproval",
+    "item/fileChange/requestApproval",
+    "execCommandApproval",
+    "applyPatchApproval",
+    "item/permissions/requestApproval",
+    "mcpServer/elicitation/request"
+  ],
+  "limitations": "Targeted exported-schema checks; no live server-initiated approval or provider inference was induced."
+}

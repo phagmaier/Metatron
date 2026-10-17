@@ -1,0 +1,55 @@
+M6 item 6 final checks; pinned toolchain via mise
+
+Baseline: mise x -- pnpm test — PASS 195/195 (before item 6 changes).
+Final: mise x -- pnpm test — PASS 203/203; see m6-worker-message-tests.txt.
+After the final Lead digest deduplication: mise x -- pnpm typecheck and mise x -- pnpm lint — PASS (132 files, no fixes).
+Minimal demonstration: owner HTTP steering/follow-up test passed; browser queued/delivered/unsupported controls and restart passed with protocol fixtures. No cost-bearing live model turn.
+
+$ mise x -- pnpm typecheck
+$ tsc --noEmit
+exit=0
+
+$ mise x -- pnpm lint
+Checked 132 files in 336ms. No fixes applied.
+$ biome check .
+exit=0
+
+$ mise x -- pnpm test:fixtures
+✔ fixture starts with a committed clean main branch and cleans up after verification (78.242288ms)
+Fixture verification failed; retained at /tmp/lao-git-fixture-hn2N4S
+✔ failed verification preserves the repository and uncommitted evidence (58.799862ms)
+Fixture verification failed; retained at /tmp/lao-git-fixture-gCd679
+✔ cleanup refuses a changed ownership marker (59.506622ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 409.213962
+$ node --test tests/git-fixture.test.ts
+exit=0
+
+$ mise x -- pnpm build
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 132 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/web/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/web/assets/index-CcLVK_rP.css    3.84 kB │ gzip:   1.26 kB
+dist/web/assets/index-C3tg4xPE.js   380.39 kB │ gzip: 112.98 kB
+
+✓ built in 361ms
+$ vite build
+exit=0
+
+$ mise x -- pnpm smoke
+Development launch, health, HTML and script: passed (http://127.0.0.1:43619)
+Production launch, health, HTML and script: passed (http://127.0.0.1:35621)
+$ node scripts/smoke.ts
+exit=0
+
+$ git diff --check
+exit=0

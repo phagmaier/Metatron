@@ -176,6 +176,11 @@ export function createApi(store: Store, engine: Engine) {
               z.strictObject({}).parse(query);
               result = engine.worktrees.list();
               break;
+            case "/api/worker-messages": {
+              const parsed = z.strictObject({ taskId: idSchema }).parse(query);
+              result = engine.workerMessages.list(parsed.taskId);
+              break;
+            }
             case "/api/dispatches":
               z.strictObject({}).parse(query);
               result = z.array(dispatchSchema).parse(engine.scheduling.list());
@@ -307,6 +312,8 @@ export function createApi(store: Store, engine: Engine) {
             "POST /api/runs/lead": (input, key) =>
               engine.startLeadRun(input, key),
             "POST /api/tasks": (input, key) => engine.createTask(input, key),
+            "POST /api/worker-messages": (input, key) =>
+              engine.workerMessages.send({ role: "owner" }, input, key),
             "PATCH /api/tasks": (input, key) => engine.updateTask(input, key),
             "PATCH /api/runs": (input, key) => engine.updateRun(input, key),
             "POST /api/runs/messages": (input, key) =>

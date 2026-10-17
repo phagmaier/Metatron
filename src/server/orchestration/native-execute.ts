@@ -117,6 +117,7 @@ export async function executeNativeTurn(
       `session:${attemptId}:busy`,
     );
     const active = managed;
+    engine.workerMessages.register(session.id, engine.pi, active);
     engine.nativeStops.set(task.id, async (reason) => {
       interrupted = true;
       try {
@@ -133,6 +134,8 @@ export async function executeNativeTurn(
       throw new Error("Owner cancelled/stopped during native startup");
     }
     for await (const event of engine.pi.prompt(active, prompt)) {
+      if (event.type === "owner_message_delivered")
+        engine.workerMessages.delivered(session.id, event.messageId);
       store.recordEvent(
         {
           runId: run.id,
@@ -224,6 +227,7 @@ export async function executeNativeTurn(
           "Pi shutdown failed; process/worktree require owner inspection";
       }
     } else changeState("exited", null);
+    engine.workerMessages.end(session.id);
     try {
       if (
         engine.worktrees

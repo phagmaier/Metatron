@@ -150,7 +150,8 @@ export class Scheduling {
         const previous = this.list().find((d) => d.taskId === task.id);
         if (
           previous?.state === "active" ||
-          (previous?.state === "released" && task.status !== "READY")
+          (previous?.state === "released" &&
+            !["READY", "WAITING_DEPENDENCY"].includes(task.status))
         )
           throw new DomainError("CONFLICT", "Task was already dispatched");
         // The launch budget never grows during a run, so queued work counts too:
@@ -185,10 +186,10 @@ export class Scheduling {
             },
             `${key}:queued`,
           );
-        if (task.status !== "QUEUED")
+        if (!["QUEUED", "WAITING_DEPENDENCY"].includes(task.status))
           throw new DomainError(
             "CONFLICT",
-            "Only ready or queued tasks can be assigned",
+            "Only ready, queued or dependency-waiting tasks can be assigned",
           );
         if (
           actor.role === "owner" &&
@@ -319,7 +320,11 @@ export class Scheduling {
     const { taskId, sequence } = dispatch;
     // Reject an obsolete queue copy before an idempotency replay can return its
     // old attempt and attach it to a later retry of the same task.
-    if (this.list().find((d) => d.taskId === taskId)?.sequence !== sequence)
+    const live = this.list().find((d) => d.taskId === taskId);
+    if (
+      live?.sequence !== sequence ||
+      !["queued", "active"].includes(live.state)
+    )
       return null;
     const key = `dispatch:${taskId}:${sequence}`;
     return mutate(

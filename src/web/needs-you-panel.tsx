@@ -33,7 +33,10 @@ function RequestCard({
 }) {
   const [response, setResponse] = useState("");
   const [busy, setBusy] = useState(false);
-  const actions = humanRequestActions(request.status);
+  const actions = humanRequestActions(
+    request.status,
+    Boolean(request.nativePermission),
+  );
   const session = sessions.find((item) => item.id === request.sessionId);
   const attempt = attempts.find((item) => item.id === session?.attemptId);
   const profile = run.teamSnapshot?.profiles.find(
@@ -90,9 +93,29 @@ function RequestCard({
       <p className="request-text">
         <strong>Suggested action:</strong> {request.suggestedAction}
       </p>
+      {request.nativePermission && (
+        <div className="warning">
+          <p>
+            Native permission denied by app policy. No permission was granted.
+            Acknowledging records your receipt; native delivery is not verified.
+          </p>
+        </div>
+      )}
       <details>
         <summary>Evidence and source</summary>
         <p className="path">Request {request.id}</p>
+        {request.nativePermission && (
+          <>
+            <p className="path">
+              {request.nativePermission.adapter} ·{" "}
+              {request.nativePermission.method}
+            </p>
+            <p className="path">
+              Native request fingerprint:{" "}
+              {request.nativePermission.requestFingerprint}
+            </p>
+          </>
+        )}
         <p>
           <strong>Affected tasks:</strong>
         </p>
@@ -149,11 +172,14 @@ function RequestCard({
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            if (!busy && response.trim()) void decide("answered");
+            if (!busy && response.trim())
+              void decide(request.nativePermission ? "completed" : "answered");
           }}
         >
           <label>
-            Owner response (required to respond; optional for other actions)
+            {request.nativePermission
+              ? "Optional acknowledgement note"
+              : "Owner response (required to respond; optional for other actions)"}
             <textarea
               value={response}
               disabled={busy}
@@ -252,10 +278,10 @@ export function NeedsYouPanel({
         </button>
       </div>
       <p className="note">
-        Decisions are saved here. Reply delivery, native permission replies and
-        safe continuation are not implemented yet; these controls do not resume
-        workers or grant native permissions. Marking completed records your
-        action; it does not verify that it worked.
+        Decisions are saved here. Native permission denials are notifications;
+        acknowledging them grants no access. Other replies and safe continuation
+        are not delivered to workers yet. Marking completed records your action;
+        it does not verify that it worked.
       </p>
       {error && (
         <p className="error" role="alert">

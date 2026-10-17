@@ -159,7 +159,7 @@ test("Chat/Plan, missing profiles and unmet dependencies cannot dispatch workers
       "waiting",
     );
     assert.equal(scheduler.reserve(dispatch), null);
-    assert.equal(f.store.getTask(dependent.id).status, "QUEUED");
+    assert.equal(f.store.getTask(dependent.id).status, "WAITING_DEPENDENCY");
   } finally {
     await f.close();
   }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nativePermissionDenialSchema } from "../native-permissions.ts";
 import {
   humanRequestStatusSchema,
   processStateSchema,
@@ -239,6 +240,24 @@ export const attemptSchema = z.strictObject({
   ]),
 });
 export type Attempt = z.infer<typeof attemptSchema>;
+export const workerMessageSchema = z.strictObject({
+  ...metadata,
+  runId: idSchema,
+  taskId: idSchema,
+  attemptId: idSchema,
+  sessionId: idSchema,
+  kind: z.enum(["steer", "follow_up"]),
+  text: textSchema.max(4000),
+  status: z.enum([
+    "sending",
+    "delivered",
+    "queued",
+    "unsupported",
+    "unconfirmed",
+  ]),
+  diagnostic: textSchema,
+});
+export type WorkerMessage = z.infer<typeof workerMessageSchema>;
 export const sessionSchema = z.strictObject({
   ...metadata,
   attemptId: idSchema,
@@ -249,6 +268,7 @@ export const sessionSchema = z.strictObject({
   contextPolicy: contextPolicySchema,
   exitCode: z.int().nullable(),
   recovery: z.enum(["none", "RECOVERY_REQUIRED"]),
+  ownerMessages: z.array(workerMessageSchema).default([]),
 });
 export type Session = z.infer<typeof sessionSchema>;
 
@@ -286,6 +306,7 @@ export const humanRequestSchema = z.strictObject({
   status: humanRequestStatusSchema,
   ownerResponse: textSchema.nullable(),
   resolvedAt: timestampSchema.nullable(),
+  nativePermission: nativePermissionDenialSchema.nullable().default(null),
 });
 export type HumanRequest = z.infer<typeof humanRequestSchema>;
 

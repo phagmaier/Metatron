@@ -7,6 +7,7 @@ import { git } from "../git/command.ts";
 import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
 import { leadDigest } from "./lead-run.ts";
+import { recordNativePermissionDenial } from "./native-permissions.ts";
 
 const rules = `You are the Lead of a Local Agent Orchestrator run. You coordinate; you never implement.
 Rules the engine enforces (not only this text):
@@ -191,7 +192,10 @@ export async function executeLeadTurn(
       `lead:${attemptId}:delivered`,
     );
     for await (const event of engine.codex.prompt(active, prompt)) {
-      record(`codex.${event.type}`, event, `codex:${attemptId}:${index++}`);
+      if (event.type === "approval_denied")
+        recordNativePermissionDenial(store, session.id, event.permission);
+      else
+        record(`codex.${event.type}`, event, `codex:${attemptId}:${index++}`);
       if (event.type === "text_delta")
         text = (text + event.text).slice(0, 16_000);
       if (event.type === "process_state") {

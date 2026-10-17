@@ -8,6 +8,7 @@ import {
   textSchema,
 } from "../../shared/domain/entities.ts";
 import { processStateSchema } from "../../shared/domain/states.ts";
+import { nativePermissionDenialSchema } from "../../shared/native-permissions.ts";
 
 export const capabilitiesSchema = z.strictObject({
   adapter: adapterKindSchema,
@@ -29,6 +30,14 @@ export const capabilitiesSchema = z.strictObject({
 });
 export type AdapterCapabilities = z.infer<typeof capabilitiesSchema>;
 export const sessionEventSchema = z.discriminatedUnion("type", [
+  z.strictObject({
+    type: z.literal("owner_message_delivered"),
+    messageId: idSchema,
+  }),
+  z.strictObject({
+    type: z.literal("approval_denied"),
+    permission: nativePermissionDenialSchema,
+  }),
   z.strictObject({
     type: z.literal("text_delta"),
     text: z.string().min(1).max(32_768),
@@ -94,6 +103,10 @@ export type ManagedSession = {
   input: StartSessionInput;
 };
 export type ApprovalDecision = "approve" | "deny";
+export type SteeringOptions = {
+  kind: "steer" | "follow_up";
+  messageId: string;
+};
 export interface HarnessAdapter {
   discover(): Promise<AdapterCapabilities>;
   startSession(input: StartSessionInput): Promise<ManagedSession>;
@@ -102,6 +115,7 @@ export interface HarnessAdapter {
   steer(
     session: ManagedSession,
     text: string,
+    options?: SteeringOptions,
   ): Promise<"sent" | "queued" | "unsupported">;
   cancel(session: ManagedSession): Promise<void>;
   respondToApproval(

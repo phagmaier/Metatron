@@ -1,0 +1,16 @@
+unsafe-native-acceptance: DETECTED
+✖ native Codex permission denials reach the owner inbox once per request without grants, secret payloads or a fabricated wait (1094.857172ms)
+ℹ fail 1
+✖ failing tests:
+✖ native Codex permission denials reach the owner inbox once per request without grants, secret payloads or a fabricated wait (1094.857172ms)
+inbox-wiring: DETECTED
+✖ native Codex permission denials reach the owner inbox once per request without grants, secret payloads or a fabricated wait (1034.616199ms)
+ℹ fail 1
+✖ failing tests:
+✖ native Codex permission denials reach the owner inbox once per request without grants, secret payloads or a fabricated wait (1034.616199ms)
+session-role-check: DETECTED
+✖ native denial evidence is session-bound, atomic, durable and idempotent; acknowledgement never resumes work (90.049359ms)
+ℹ fail 1
+✖ failing tests:
+✖ native denial evidence is session-bound, atomic, durable and idempotent; acknowledgement never resumes work (90.049359ms)
+Source files restored after each mutation.

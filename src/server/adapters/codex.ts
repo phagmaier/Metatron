@@ -4,6 +4,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
 import { DomainError } from "../../shared/domain/states.ts";
 import { CodexEvents } from "./codex-events.ts";
+import { denyCodexPermission } from "./codex-permissions.ts";
 import { type CodexNotification, CodexRpc } from "./codex-rpc.ts";
 import {
   type AdapterCapabilities,
@@ -12,6 +13,7 @@ import {
   type ResumeInput,
   type SessionEvent,
   type StartSessionInput,
+  sessionEventSchema,
   startSessionSchema,
 } from "./contract.ts";
 
@@ -196,6 +198,7 @@ export class CodexAdapter implements HarnessAdapter {
       supportsToolGateway: true,
       diagnostics: [
         "Codex app-server Lead: app-owned CODEX_HOME, read-only sandbox without network, approvals never granted, session-scoped MCP tools. Not an OS isolation boundary for reads.",
+        "Native permission requests are denied by policy and surfaced in Needs You; interactive permission grants are unsupported for the Lead.",
         "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled. Steering arrives with M6.",
       ],
     };
@@ -370,18 +373,10 @@ export class CodexAdapter implements HarnessAdapter {
     };
     const unsubscribe = current.rpc.subscribe(push);
     // approvalPolicy=never should prevent requests; any that arrive are denied.
-    current.rpc.handleRequests((method) => {
-      push({ method: "policy/declined", params: { method } });
-      if (
-        method === "item/commandExecution/requestApproval" ||
-        method === "item/fileChange/requestApproval"
-      )
-        return { result: { decision: "decline" } };
-      if (method === "execCommandApproval" || method === "applyPatchApproval")
-        return { result: { decision: "denied" } };
-      if (method === "mcpServer/elicitation/request")
-        return { result: { action: "decline" } };
-      return { error: { code: -32000, message: "Denied by app policy" } };
+    current.rpc.handleRequests((method, _params, id) => {
+      const denial = denyCodexPermission(method, id);
+      push({ method: "policy/declined", params: denial.event });
+      return denial.response;
     });
     const mapper = new CodexEvents(session.nativeSessionId);
     const deadline = setTimeout(() => {
@@ -411,13 +406,7 @@ export class CodexAdapter implements HarnessAdapter {
           continue;
         }
         if (record.method === "policy/declined") {
-          yield {
-            type: "approval_requested",
-            nativeRequestId: String(
-              z.object({ method: z.string() }).parse(record.params).method,
-            ),
-            details: "Declined by app policy; the Lead cannot gain permissions",
-          };
+          yield sessionEventSchema.parse(record.params);
           continue;
         }
         for (const event of mapper.consume(record)) {

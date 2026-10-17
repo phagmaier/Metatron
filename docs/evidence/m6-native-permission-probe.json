@@ -1,0 +1,11 @@
+{
+  "modelTurnMade": false,
+  "installed": true,
+  "supportsPermissionPrompts": false,
+  "diagnostics": [
+    "Codex app-server Lead: app-owned CODEX_HOME, read-only sandbox without network, approvals never granted, session-scoped MCP tools. Not an OS isolation boundary for reads.",
+    "Native permission requests are denied by policy and surfaced in Needs You; interactive permission grants are unsupported for the Lead.",
+    "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled. Steering arrives with M6.",
+    "App-owned Codex home requires owner login (expected for fresh probe)"
+  ]
+}

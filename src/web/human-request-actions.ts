@@ -8,8 +8,16 @@ const ownerActions = [
   { status: "deferred", label: "Defer" },
 ] as const;
 
-export function humanRequestActions(status: HumanRequest["status"]) {
-  return ownerActions.filter((action) =>
+const denialActions = [
+  { status: "completed", label: "Acknowledge denial" },
+  { status: "deferred", label: "Defer" },
+] as const;
+
+export function humanRequestActions(
+  status: HumanRequest["status"],
+  nativeDenial = false,
+) {
+  return (nativeDenial ? denialActions : ownerActions).filter((action) =>
     humanRequestTransitions[status].includes(action.status),
   );
 }

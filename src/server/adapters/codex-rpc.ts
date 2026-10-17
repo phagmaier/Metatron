@@ -16,6 +16,7 @@ export type CodexNotification = { method: string; params: unknown };
 export type ServerRequestHandler = (
   method: string,
   params: unknown,
+  id: string | number,
 ) => { result: unknown } | { error: { code: number; message: string } };
 
 // Codex app-server stdio: LF-delimited JSON-RPC 2.0 messages without the
@@ -102,7 +103,7 @@ export class CodexRpc {
     });
     if (this.diagnostics.length > 128) this.diagnostics.shift();
     if (message.method && message.id !== undefined) {
-      const answer = this.onRequest(message.method, message.params);
+      const answer = this.onRequest(message.method, message.params, message.id);
       this.write({ id: message.id, ...answer });
       return;
     }

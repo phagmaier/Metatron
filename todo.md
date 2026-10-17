@@ -118,9 +118,9 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 - [x] Implement HumanRequest storage, blocker linkage, urgency and backend transition logic.
 - [x] Add "Needs You" GUI with respond, decline, complete, defer controls and evidence/history.
 - [x] Implement worker `request_human_action` and `report_issue` tool handling; unrelated workers continue while one is blocked.
-- [ ] Add dependency-based WAITING handling: downstream waits; unrelated tasks do not stop.
-- [ ] Integrate native permission prompts into the inbox where harness supports them; never auto-approve an unsafe request.
-- [ ] Add direct owner steer/follow-up message to a worker, with `delivered`, `queued`, and `unsupported` UX states.
+- [x] Add dependency-based WAITING handling: downstream waits; unrelated tasks do not stop.
+- [x] Integrate native permission prompts into the inbox where harness supports them; never auto-approve an unsafe request. Current scope: **Codex denial notifications only; Pi native per-tool approval callbacks are unsupported. Owner-driven native approval and continuation remain unimplemented.** See [capability limits](docs/adr/2026-10-16-native-permission-denials.md).
+- [x] Add direct owner steer/follow-up message to a worker, with `delivered`, `queued`, and `unsupported` UX states.
 - [ ] Implement pause scheduling, stop selected run, and emergency stop of **app-owned processes only**.
 - [ ] Implement explicit interrupted/crashed/disconnected/recovery-required states and bounded retry choice.
 - [ ] Restart reconciliation: reopen database, match native sessions/process state and worktrees, do not repeat ambiguous mutating tools.

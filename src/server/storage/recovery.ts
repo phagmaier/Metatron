@@ -67,6 +67,9 @@ export function recoverInterrupted(
           "QUEUED",
           "RUNNING",
           "WAITING_HUMAN",
+          // Legacy waits may still own an unfinished attempt. Recover those
+          // before dependency reconciliation can restore queue eligibility.
+          "WAITING_DEPENDENCY",
           "INTEGRATING",
         ].includes(task.status)
           ? ["INTERRUPTED", "RETRY_DECISION"]

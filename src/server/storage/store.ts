@@ -30,6 +30,11 @@ import {
 } from "../../shared/domain/states.ts";
 import { openDatabase } from "./database.ts";
 import {
+  assertDependencyTransition,
+  reconcileDependencyWaits,
+  unmetDependencies,
+} from "./dependencies.ts";
+import {
   assertHumanWaitTransition,
   createHumanRequest,
   listTaskBlockers,
@@ -240,6 +245,7 @@ export class Store {
         throw new DomainError("CONFLICT", "Task status changed");
       assertTaskTransition(task.status, data.status);
       assertHumanWaitTransition(this, task, data.status);
+      assertDependencyTransition(this, task, data.status);
       const updated = taskSchema.parse({
         ...task,
         status: data.status,
@@ -253,7 +259,8 @@ export class Store {
         correlationId: key,
         payload: { from: task.status, to: data.status, reason: data.reason },
       });
-      return updated;
+      reconcileDependencyWaits(this, key, task.runId);
+      return this.getTask(task.id);
     });
   }
   updateTask(input: unknown, key: string) {
@@ -288,6 +295,14 @@ export class Store {
         throw new DomainError(
           "CONFLICT",
           "A human blocker prevents a new attempt",
+        );
+      if (
+        task.status === "WAITING_DEPENDENCY" ||
+        unmetDependencies(this, task).length
+      )
+        throw new DomainError(
+          "CONFLICT",
+          "Unfinished prerequisites prevent a new attempt",
         );
       if ((run.execution === "fake") !== (data.adapter === "fake"))
         throw new DomainError(
@@ -484,5 +499,6 @@ export class Store {
     recoverInterrupted(this.db, this);
     interruptIntegrations(this);
     reconcileCompletedRevisions(this);
+    reconcileDependencyWaits(this, "dependencies:recovery");
   }
 }

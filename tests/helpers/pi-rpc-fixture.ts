@@ -1,3 +1,4 @@
+import { appendFileSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
@@ -47,9 +48,28 @@ process.stdin.on("data", (chunk) => {
         provider: z.string().optional(),
         modelId: z.string().optional(),
         level: z.string().optional(),
+        message: z.string().optional(),
       })
       .parse(JSON.parse(buffer.slice(0, end)));
     buffer = buffer.slice(end + 1);
+    if (
+      ["clear_queue", "abort"].includes(command.type) &&
+      process.env.LAO_FIXTURE_CONTROL_LOG
+    )
+      appendFileSync(process.env.LAO_FIXTURE_CONTROL_LOG, `${command.type}\n`);
+    if (
+      command.type === "clear_queue" &&
+      process.env.LAO_FIXTURE_SCENARIO === "message-clear-fail"
+    ) {
+      emit({
+        id: command.id,
+        type: "response",
+        command: command.type,
+        success: false,
+        error: "fixture queue refusal",
+      });
+      continue;
+    }
     let data: unknown = {};
     switch (command.type) {
       case "get_available_models":
@@ -90,6 +110,36 @@ process.stdin.on("data", (chunk) => {
       case "prompt":
         data = { disposition: "started" };
         break;
+      case "steer":
+      case "follow_up":
+        if (process.env.LAO_FIXTURE_MESSAGE_LOG)
+          appendFileSync(
+            process.env.LAO_FIXTURE_MESSAGE_LOG,
+            `${JSON.stringify(command)}\n`,
+          );
+        if (process.env.LAO_FIXTURE_SCENARIO === "message-lost") {
+          process.exit(0);
+        }
+        data = { disposition: "queued" };
+        if (process.env.LAO_FIXTURE_SCENARIO === "message-early") {
+          emit({
+            type: "message_start",
+            message: { role: "user", content: command.message },
+          });
+          setTimeout(
+            () =>
+              emit({
+                id: command.id,
+                type: "response",
+                command: command.type,
+                success: true,
+                data,
+              }),
+            30,
+          );
+          continue;
+        }
+        break;
     }
     emit({
       id: command.id,
@@ -98,12 +148,47 @@ process.stdin.on("data", (chunk) => {
       success: true,
       data,
     });
+    if (["steer", "follow_up"].includes(command.type)) {
+      if (process.env.LAO_FIXTURE_SCENARIO === "message-deliver") {
+        // Unrelated user/assistant messages cannot acknowledge this operation.
+        emit({
+          type: "message_start",
+          message: { role: "user", content: "unrelated" },
+        });
+        emit({
+          type: "message_start",
+          message: { role: "assistant", content: command.message },
+        });
+        setTimeout(
+          () =>
+            emit({
+              type: "message_start",
+              message: {
+                role: "user",
+                content: [{ type: "text", text: command.message }],
+              },
+            }),
+          Number(process.env.LAO_FIXTURE_MESSAGE_DELAY ?? 100),
+        );
+      }
+      continue;
+    }
     if (command.type === "abort") {
       emit({ type: "agent_settled", aborted: true });
       continue;
     }
     if (command.type !== "prompt") continue;
     const scenario = process.env.LAO_FIXTURE_SCENARIO;
+    if (scenario?.startsWith("message-")) {
+      emit({
+        type: "message_update",
+        assistantMessageEvent: {
+          type: "text_delta",
+          delta: "Protocol fixture awaiting owner input",
+        },
+      });
+      continue;
+    }
     if (scenario === "hold") continue;
     if (scenario === "exit") {
       process.exit(0);

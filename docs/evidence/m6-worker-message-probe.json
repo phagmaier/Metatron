@@ -1,0 +1,14 @@
+{
+  "adapter": "Pi 1.3.0",
+  "modelTurnStarted": false,
+  "steer": {
+    "disposition": "queued"
+  },
+  "followUp": {
+    "disposition": "queued"
+  },
+  "pendingBeforeClear": 2,
+  "pendingAfterClear": 0,
+  "clearQueuePassed": true,
+  "appOwnedDirectory": "/tmp/lao-steer-probe-EsfDMk"
+}

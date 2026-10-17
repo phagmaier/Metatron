@@ -94,10 +94,13 @@ export async function executeFakeTurn(
   let completed = false;
   let output = "";
   engine.nativeStops.set(task.id, () => adapter.cancel(managed));
+  engine.workerMessages.register(session.id, adapter, managed);
   try {
     for await (const event of adapter.prompt(managed, task.objective)) {
       // Short simulated latency makes owner cancellation and streaming observable.
       await delay(120);
+      if (event.type === "owner_message_delivered")
+        engine.workerMessages.delivered(session.id, event.messageId);
       if (pendingWorkerHelp(store, attemptId)) {
         await adapter.cancel(managed);
         break;
@@ -273,6 +276,7 @@ export async function executeFakeTurn(
   } finally {
     engine.nativeStops.delete(task.id);
     await adapter.dispose(managed);
+    engine.workerMessages.end(session.id);
     if (pendingWorkerHelp(store, attemptId)) {
       const current = store.getSession(session.id);
       if (current.state === "busy")

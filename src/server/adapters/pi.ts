@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { idSchema, textSchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import {
   type AdapterCapabilities,
@@ -10,6 +11,7 @@ import {
   type ResumeInput,
   type SessionEvent,
   type StartSessionInput,
+  type SteeringOptions,
   startSessionSchema,
 } from "./contract.ts";
 import { PiEvents } from "./pi-events.ts";
@@ -26,7 +28,13 @@ const stateSchema = z.object({
   model: z.object({ id: z.string(), provider: z.string() }).optional(),
   thinkingLevel: z.string().optional(),
 });
-type Active = { rpc: PiRpc; managed: ManagedSession; busy: boolean };
+type Active = {
+  rpc: PiRpc;
+  managed: ManagedSession;
+  busy: boolean;
+  accepting: boolean;
+  messages: Map<string, string>;
+};
 export class PiAdapter implements HarnessAdapter {
   private readonly directory: string;
   private readonly spawnRpc: (
@@ -126,13 +134,13 @@ export class PiAdapter implements HarnessAdapter {
       authenticated: "unknown",
       models: [],
       supportsResume: false,
-      supportsLiveSteer: false,
+      supportsLiveSteer: true,
       supportsCancel: true,
       supportsPermissionPrompts: false,
       supportsToolGateway: true,
       diagnostics: [
         "App-owned Pi configuration; provider environment credentials or app-owned Pi login required. Catalog presence does not prove entitlement.",
-        "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Resume and steering are not exposed yet.",
+        "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Resume is not exposed. Steer/follow-up queue at native input boundaries; queue acceptance is not delivery.",
       ],
     };
     let rpc: PiRpc | undefined;
@@ -251,7 +259,13 @@ export class PiAdapter implements HarnessAdapter {
         input: data,
         ...(rpc.child.pid ? { processId: rpc.child.pid } : {}),
       };
-      this.sessions.set(managed.nativeSessionId, { rpc, managed, busy: false });
+      this.sessions.set(managed.nativeSessionId, {
+        rpc,
+        managed,
+        busy: false,
+        accepting: false,
+        messages: new Map(),
+      });
       return managed;
     } catch (error) {
       await rpc.close();
@@ -275,10 +289,17 @@ export class PiAdapter implements HarnessAdapter {
     if (current.busy)
       throw new DomainError("CONFLICT", "Pi already has an active prompt");
     current.busy = true;
+    current.accepting = true;
     const queue: RpcRecord[] = [];
     let wake: (() => void) | undefined;
     let overflow = false;
     const unsubscribe = current.rpc.subscribe((event) => {
+      if (
+        ["agent_settled", "transport_exit", "transport_error"].includes(
+          event.type,
+        )
+      )
+        current.accepting = false;
       if (queue.length >= 4096) {
         overflow = true;
         current.rpc.child.kill("SIGTERM");
@@ -316,6 +337,30 @@ export class PiAdapter implements HarnessAdapter {
           wake = undefined;
           continue;
         }
+        if (record.type === "message_start") {
+          const user = z
+            .object({
+              role: z.literal("user"),
+              content: z.union([
+                z.string(),
+                z.array(
+                  z.object({ type: z.literal("text"), text: z.string() }),
+                ),
+              ]),
+            })
+            .safeParse(record.message);
+          if (user.success) {
+            const content =
+              typeof user.data.content === "string"
+                ? user.data.content
+                : user.data.content.map((part) => part.text).join("");
+            const messageId = current.messages.get(content);
+            if (messageId) {
+              current.messages.delete(content);
+              yield { type: "owner_message_delivered", messageId };
+            }
+          }
+        }
         for (const event of mapper.consume(record)) yield event;
         if (
           ["agent_settled", "transport_exit", "transport_error"].includes(
@@ -328,13 +373,44 @@ export class PiAdapter implements HarnessAdapter {
       clearTimeout(deadline);
       unsubscribe();
       current.busy = false;
+      current.accepting = false;
     }
   }
   async cancel(session: ManagedSession) {
-    await this.active(session).rpc.request("abort", {}, 10_000);
+    const current = this.active(session);
+    current.accepting = false;
+    // Pi's abort may continue queued inputs. Clear them first so owner
+    // cancellation cannot start a queued follow-up; failure closes only this
+    // app-owned process instead of issuing an abort with unknown queue state.
+    try {
+      await current.rpc.request("clear_queue", {}, 10_000);
+      current.messages.clear();
+      await current.rpc.request("abort", {}, 10_000);
+    } catch (error) {
+      await current.rpc.close();
+      throw error;
+    }
   }
-  async steer(_session: ManagedSession, _text: string): Promise<"unsupported"> {
-    return "unsupported";
+  async steer(
+    session: ManagedSession,
+    text: string,
+    options?: SteeringOptions,
+  ) {
+    const current = this.active(session);
+    const parsed = textSchema.max(4000).parse(text);
+    if (!current.busy || !current.accepting) return "unsupported" as const;
+    const kind = z.enum(["steer", "follow_up"]).parse(options?.kind ?? "steer");
+    const id = options ? idSchema.parse(options.messageId) : null;
+    // A literal prefix prevents slash-command expansion and gives native
+    // user-message events an exact, per-operation correlation token.
+    const message = id ? `Owner ${kind} ${id}:\n${parsed}` : parsed;
+    if (id) current.messages.set(message, id);
+    const result = z
+      .object({ disposition: z.enum(["queued", "handled"]) })
+      .parse(await current.rpc.request(kind, { message }));
+    return result.disposition === "handled"
+      ? ("sent" as const)
+      : ("queued" as const);
   }
   async resume(_id: string, _input: ResumeInput): Promise<ManagedSession> {
     throw new DomainError(

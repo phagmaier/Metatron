@@ -278,7 +278,7 @@ function App() {
                   launches
                 </p>
                 <NeedsYouPanel
-                  key={selectedRun.id}
+                  key={`needs-you:${selectedRun.id}`}
                   run={selectedRun}
                   tasks={runTasks}
                   sessions={runSessions}
@@ -338,6 +338,9 @@ function App() {
                             <TaskCard
                               key={task.id}
                               task={task}
+                              prerequisites={runTasks.filter((item) =>
+                                task.dependencyIds.includes(item.id),
+                              )}
                               revision={tasks.find(
                                 (item) => item.id === task.latestRevisionTaskId,
                               )}

@@ -1,0 +1,18 @@
+prerequisite-review-is-not-DONE: DETECTED
+✖ FAKE dependency demo: independent execution finishes during a human wait; descendants launch only after DONE and never replay on restart (1229.607934ms)
+ℹ fail 1
+✖ failing tests:
+✖ FAKE dependency demo: independent execution finishes during a human wait; descendants launch only after DONE and never replay on restart (1229.607934ms)
+dependency-transition-admission: DETECTED
+✖ storage refuses dependency bypasses and preserves direct human waits, cancelled tasks and recovery decisions (19.115796ms)
+✖ an unfinished legacy dependency wait requires recovery before a fresh assignment can wait and launch (17.904427ms)
+ℹ fail 2
+✖ failing tests:
+✖ storage refuses dependency bypasses and preserves direct human waits, cancelled tasks and recovery decisions (19.115796ms)
+✖ an unfinished legacy dependency wait requires recovery before a fresh assignment can wait and launch (17.904427ms)
+unfinished-wait-recovery: DETECTED
+✖ an unfinished legacy dependency wait requires recovery before a fresh assignment can wait and launch (22.157627ms)
+ℹ fail 1
+✖ failing tests:
+✖ an unfinished legacy dependency wait requires recovery before a fresh assignment can wait and launch (22.157627ms)
+All source files restored after each mutation.

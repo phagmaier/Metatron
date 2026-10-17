@@ -1,0 +1,18 @@
+M6 item 4 only — dependency waits (2026-10-16)
+
+mise current: Node 26.7.0, pnpm 11.22.0 match .mise.toml.
+mise ls: installed pins present; harmless read-only purgatory-state warning.
+Baseline: mise x -- pnpm test — PASS 185/185.
+Focused: mise x -- node --test tests/dependency-waits.test.ts tests/dependency-engine.test.ts tests/scheduler.test.ts tests/domain.test.ts — PASS 17/17.
+Demo: tests/dependency-engine.test.ts — PASS, FAKE execution only, disposable Git/SQLite; independent work finishes during a human wait, review does not unlock dependencies, DONE unlocks only direct downstream, restart does not replay.
+Mutation checks — 3/3 DETECTED; see m6-dependency-waits-mutations.txt. Sources restored before final checks.
+mise x -- pnpm test — PASS 193/193; see m6-dependency-waits-tests.txt.
+mise x -- pnpm typecheck — PASS.
+mise x -- pnpm lint — PASS, 124 files, no fixes.
+mise x -- pnpm test:fixtures — PASS 3/3; intentional failed-verification fixtures retained as expected.
+mise x -- pnpm build — PASS.
+mise x -- pnpm smoke — PASS development and production launch/health/HTML/script.
+git diff --check — PASS.
+
+Live harness tests intentionally omitted (cost); no browser interaction tested.
+No new dependency, ADR, migration or spec/toolchain change. M6 and beta incomplete.

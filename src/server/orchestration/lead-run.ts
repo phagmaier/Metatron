@@ -241,6 +241,7 @@ export function ownerLeadMessage(
 }
 
 const digestTypes = [
+  "owner.worker_message",
   "owner.message",
   "lead.notification",
   "assignment.overridden",
@@ -266,6 +267,16 @@ export function leadDigest(engine: Engine, runId: string) {
     )
     .all(runId, cursor, ...digestTypes);
   const lines: string[] = [];
+  // Each owner input may emit sending/queued/delivered events. Include its
+  // latest state once so delivery bookkeeping does not multiply Lead context.
+  const ownerInputSequences = new Map<string, number>();
+  for (const row of rows) {
+    if (row.type !== "owner.worker_message") continue;
+    const payload = z
+      .record(z.string(), z.unknown())
+      .parse(JSON.parse(String(row.payload)));
+    ownerInputSequences.set(String(payload.id), Number(row.sequence));
+  }
   let upTo = cursor;
   for (const row of rows) {
     upTo = Number(row.sequence);
@@ -274,6 +285,14 @@ export function leadDigest(engine: Engine, runId: string) {
       .parse(JSON.parse(String(row.payload)));
     const task = row.taskId ? ` task ${String(row.taskId)}` : "";
     switch (row.type) {
+      case "owner.worker_message":
+        if (
+          ownerInputSequences.get(String(payload.id)) === Number(row.sequence)
+        )
+          lines.push(
+            `Owner ${String(payload.kind)}${task} (${String(payload.status)}): ${String(payload.text)}`,
+          );
+        break;
       case "owner.message":
         lines.push(`Owner message: ${String(payload.text)}`);
         break;

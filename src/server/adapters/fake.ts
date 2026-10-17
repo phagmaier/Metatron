@@ -10,6 +10,7 @@ import {
   type ResumeInput,
   type SessionEvent,
   type StartSessionInput,
+  type SteeringOptions,
   sessionEventSchema,
   startSessionSchema,
 } from "./contract.ts";
@@ -23,6 +24,7 @@ type Playback = {
   terminal: boolean;
   prompts: string[];
   steering: string[];
+  queuedMessages: SteeringOptions[];
   approval: {
     id: string;
     resolve: (decision: ApprovalDecision) => void;
@@ -97,6 +99,7 @@ export class FakeAdapter implements HarnessAdapter {
       terminal: false,
       prompts: [],
       steering: [],
+      queuedMessages: [],
       approval: null,
     });
     return structuredClone(session);
@@ -138,6 +141,18 @@ export class FakeAdapter implements HarnessAdapter {
       const events = this.turns[playback.turn++] ?? [];
       for (const event of events) {
         if (playback.cancelled) break;
+        const ready = playback.queuedMessages.filter(
+          (message) =>
+            message.kind === "steer" || event.type === "turn_completed",
+        );
+        playback.queuedMessages = playback.queuedMessages.filter(
+          (message) => !ready.includes(message),
+        );
+        for (const message of ready)
+          yield {
+            type: "owner_message_delivered",
+            messageId: message.messageId,
+          };
         if (event.type === "approval_requested") {
           let decide: ((decision: ApprovalDecision) => void) | undefined;
           const decision = new Promise<ApprovalDecision>((resolve) => {
@@ -189,15 +204,20 @@ export class FakeAdapter implements HarnessAdapter {
     playback.disconnected = false;
     return structuredClone(playback.session);
   }
-  async steer(session: ManagedSession, text: string) {
+  async steer(
+    session: ManagedSession,
+    text: string,
+    options?: SteeringOptions,
+  ) {
     const playback = this.lookup(session);
     textSchema.parse(text);
     if (playback.disconnected || playback.terminal || playback.cancelled)
       return "unsupported" as const;
     playback.steering.push(text);
-    return playback.active && !playback.approval
-      ? ("sent" as const)
-      : ("queued" as const);
+    const sent =
+      playback.active && !playback.approval && options?.kind !== "follow_up";
+    if (!sent && options) playback.queuedMessages.push(options);
+    return sent ? ("sent" as const) : ("queued" as const);
   }
   async cancel(session: ManagedSession) {
     const playback = this.lookup(session);

@@ -25,6 +25,40 @@ let gateway: { url: string; token: string; approved: boolean } | null = null;
 let threadId = "";
 let active: { id: string; done: boolean } | null = null;
 let rpc = 0;
+const serverRequests = new Map<
+  string | number,
+  (message: { result?: unknown; error?: unknown }) => void
+>();
+async function approval(id: string | number, method: string) {
+  const response = new Promise<{ result?: unknown; error?: unknown }>(
+    (resolve) => serverRequests.set(id, resolve),
+  );
+  emit({
+    id,
+    method,
+    params: {
+      threadId,
+      turnId: active?.id,
+      itemId: `item-${id}`,
+      command: "fixture-secret",
+      reason: "fixture-secret",
+      permissions: {
+        network: { enabled: true },
+        fileSystem: { write: ["/fixture-secret"] },
+      },
+    },
+  });
+  const timer = setTimeout(() => {
+    log({ approvalTimeout: method });
+    finish("failed");
+  }, 2000);
+  try {
+    return await response;
+  } finally {
+    clearTimeout(timer);
+    serverRequests.delete(id);
+  }
+}
 async function mcp(method: string, params: object = {}) {
   if (!gateway) throw new Error("No gateway configured");
   const response = await fetch(gateway.url, {
@@ -111,6 +145,25 @@ const rosterSchema = z.object({
 });
 async function lead(prompt: string) {
   if (scenario === "hold") return;
+  if (scenario === "permissions") {
+    const requests: [string | number, string][] = [
+      [901, "item/commandExecution/requestApproval"],
+      [901, "item/commandExecution/requestApproval"],
+      ["901", "item/commandExecution/requestApproval"],
+      [902, "item/fileChange/requestApproval"],
+      [903, "item/permissions/requestApproval"],
+      [904, "execCommandApproval"],
+      [905, "applyPatchApproval"],
+      [906, "mcpServer/elicitation/request"],
+      [907, "future/approval"],
+    ];
+    for (const [id, method] of requests) {
+      const answer = await approval(id, method);
+      log({ approval: method, ...answer });
+    }
+    say("Protocol fixture permissions denied; no tools executed.");
+    return finish("completed");
+  }
   if (scenario === "delegation_item") {
     notify("item/started", {
       threadId,
@@ -187,13 +240,21 @@ process.stdin.on("data", (chunk) => {
     const end = buffer.indexOf("\n");
     const message = z
       .object({
-        id: z.number().optional(),
+        id: z.union([z.number(), z.string()]).optional(),
         method: z.string().optional(),
         params: z.record(z.string(), z.unknown()).optional(),
+        result: z.unknown().optional(),
+        error: z.unknown().optional(),
       })
       .parse(JSON.parse(buffer.slice(0, end)));
     buffer = buffer.slice(end + 1);
-    if (message.id === undefined || !message.method) continue;
+    if (message.id === undefined) continue;
+    if (!message.method) {
+      serverRequests.get(message.id)?.(message);
+      continue;
+    }
+    if (typeof message.id !== "number")
+      throw new Error("Expected a numeric client request id");
     void handle(message.id, message.method, message.params ?? {}).catch(
       (error: unknown) =>
         emit({

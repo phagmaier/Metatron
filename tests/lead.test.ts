@@ -131,6 +131,92 @@ const leadSessions = (
     return task.runId === runId && task.kind === "lead";
   });
 
+test("native Codex permission denials reach the owner inbox once per request without grants, secret payloads or a fabricated wait", async () => {
+  const f = await leadFixture({ scenario: "permissions" });
+  try {
+    const run = await f.start("chat_plan");
+    await f.engine.idle();
+    const requests = f.store
+      .listHumanRequests()
+      .filter((r) => r.runId === run.id);
+    assert.equal(requests.length, 8);
+    assert.equal(
+      new Set(requests.map((r) => r.nativePermission?.requestFingerprint)).size,
+      8,
+    );
+    assert.ok(
+      requests.every(
+        (r) =>
+          r.type === "permission" &&
+          !r.blocking &&
+          r.status === "open" &&
+          r.nativePermission?.outcome === "denied_by_policy",
+      ),
+    );
+    assert.ok(
+      requests.every((r) => r.sessionId === leadSessions(f, run.id)[0]?.id),
+    );
+    assert.equal(f.store.listTasks(run.id).length, 1);
+    assert.equal(f.store.listTasks(run.id)[0]?.status, "AWAITING_REVIEW");
+    assert.equal(f.events(run.id, "native_permission.denied").length, 8);
+    assert.equal(
+      JSON.stringify([
+        requests,
+        f.store.events({ runId: run.id, limit: 500 }),
+      ]).includes("fixture-secret"),
+      false,
+    );
+    const replies = (await f.log()).filter((e) => e.approval);
+    assert.equal(replies.length, 9);
+    for (const reply of replies) {
+      if (reply.approval === "item/permissions/requestApproval")
+        assert.deepEqual(reply.result, { permissions: {}, scope: "turn" });
+      else if (reply.approval === "mcpServer/elicitation/request")
+        assert.deepEqual(reply.result, { action: "decline", content: null });
+      else if (reply.approval === "future/approval")
+        assert.equal((reply.error as { code: number }).code, -32000);
+      else if (
+        reply.approval === "execCommandApproval" ||
+        reply.approval === "applyPatchApproval"
+      )
+        assert.deepEqual(reply.result, {
+          decision: { denied: { rejection: "Denied by app policy" } },
+        });
+      else
+        assert.deepEqual(reply.result, {
+          decision: "decline",
+        });
+    }
+    const first = requests[0];
+    assert.ok(first);
+    const local = (await fetch(`${f.app.origin}/api/local-session`).then((r) =>
+      r.json(),
+    )) as { token: string };
+    const before = await f.log();
+    const result = await fetch(`${f.app.origin}/api/human-requests`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Local-Token": local.token,
+        "Idempotency-Key": "ack-native-denial",
+      },
+      body: JSON.stringify({
+        id: first.id,
+        expectedStatus: "open",
+        status: "completed",
+      }),
+    });
+    assert.equal(result.status, 200);
+    assert.equal(
+      f.store.getHumanRequest(first.id).nativePermission?.outcome,
+      "denied_by_policy",
+    );
+    assert.deepEqual(await f.log(), before);
+  } finally {
+    await f.close();
+  }
+});
+
 test("Codex Lead assigns a Pi worker, is woken with the structured report and resumes its own thread", async () => {
   const f = await leadFixture();
   try {

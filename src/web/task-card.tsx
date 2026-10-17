@@ -13,9 +13,11 @@ import { candidateSchema } from "../shared/worktrees.ts";
 import { readApi, writeApi } from "./api.ts";
 import { IntegrationPanel } from "./integration-panel.tsx";
 import { ReviewPanel, useReviewHistory } from "./review-panel.tsx";
+import { WorkerMessagePanel } from "./worker-message-panel.tsx";
 
 export function TaskCard({
   task,
+  prerequisites,
   run,
   session,
   dispatch,
@@ -28,6 +30,7 @@ export function TaskCard({
   onError,
 }: {
   task: Task;
+  prerequisites: Task[];
   run: Run;
   session: Session | undefined;
   dispatch: Dispatch | undefined;
@@ -101,6 +104,19 @@ export function TaskCard({
           ? ` · ${task.dependencyIds.length} prerequisites`
           : ""}
       </p>
+      {task.status === "WAITING_DEPENDENCY" && (
+        <div className="note">
+          Waiting for every prerequisite to be DONE. Unrelated tasks can
+          continue.
+          <ul>
+            {prerequisites.map((item) => (
+              <li key={item.id}>
+                {item.title} · {item.status}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {task.reviewCandidateId && (
         <p className="note">
           Read-only review of an immutable candidate commit. The reviewer does
@@ -181,6 +197,14 @@ export function TaskCard({
           )}
         </p>
       )}
+      {session && (
+        <WorkerMessagePanel
+          task={task}
+          run={run}
+          session={session}
+          onError={onError}
+        />
+      )}
       <div className="form-row">
         <label>
           Worker
@@ -215,7 +239,9 @@ export function TaskCard({
           disabled={
             busy ||
             run.status !== "active" ||
-            !["BACKLOG", "READY", "QUEUED"].includes(task.status) ||
+            !["BACKLOG", "READY", "QUEUED", "WAITING_DEPENDENCY"].includes(
+              task.status,
+            ) ||
             run.mode === "chat_plan" ||
             !profileId
           }
@@ -259,6 +285,7 @@ export function TaskCard({
               "BACKLOG",
               "READY",
               "QUEUED",
+              "WAITING_DEPENDENCY",
               "RUNNING",
               "AWAITING_REVIEW",
               "CHANGES_REQUESTED",

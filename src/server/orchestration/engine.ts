@@ -29,6 +29,7 @@ import { PiAdapter } from "../adapters/pi.ts";
 import { Gateway } from "../gateway/mcp.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
 import { Worktrees } from "../git/worktrees.ts";
+import { reconcileDependencyWaits } from "../storage/dependencies.ts";
 import { mutate } from "../storage/mutations.ts";
 import { implementationTask, revisionTaskIds } from "../storage/revisions.ts";
 import { Scheduling } from "../storage/scheduling.ts";
@@ -41,6 +42,7 @@ import { executeNativeTurn } from "./native-execute.ts";
 import { createNativeRun } from "./native-run.ts";
 import { runTool } from "./tools.ts";
 import { recoverWorkerHelp } from "./worker-help.ts";
+import { WorkerMessages } from "./worker-messages.ts";
 
 export class Engine {
   readonly store: Store;
@@ -53,6 +55,7 @@ export class Engine {
   readonly gatewayUrl: string | null;
   readonly worktrees: Worktrees;
   readonly integrations: Integrations;
+  readonly workerMessages: WorkerMessages;
   readonly nativeStops = new Map<
     string,
     (reason?: "human_request") => Promise<void>
@@ -76,6 +79,7 @@ export class Engine {
     this.worktrees = new Worktrees(store, directory);
     this.integrations = new Integrations(this);
     this.scheduling = new Scheduling(store, directory);
+    this.workerMessages = new WorkerMessages(this);
     recoverWorkerHelp(this);
     for (const role of fakeTeamSnapshot.roles)
       store.db
@@ -336,6 +340,7 @@ export class Engine {
     if (this.pumping || this.stopping) return;
     this.pumping = true;
     try {
+      reconcileDependencyWaits(this.store, "dependencies:scheduler");
       const queued = this.scheduling
         .list()
         .filter((d) => d.state === "queued")
@@ -346,6 +351,9 @@ export class Engine {
         );
       for (const dispatch of queued) {
         if (this.stopping) break;
+        // Dependency waits remain budgeted in the queue but require no Git
+        // inspection or adapter activity until their prerequisites finish.
+        if (this.store.getTask(dispatch.taskId).status !== "QUEUED") continue;
         const run = this.store.getRun(dispatch.runId);
         if (
           run.status !== "active" ||

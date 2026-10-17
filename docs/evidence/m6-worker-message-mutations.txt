@@ -1,0 +1,126 @@
+M6 item 6 behavioral mutation checks (protocol fixtures only)
+DETECTED: owner-only gate (exit 1)
+✖ owner-only worker messages refuse foreign sessions, Chat/Plan, paused, stopping and unavailable workers without native calls (1144.801418ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1682.769718
+
+✖ failing tests:
+
+test at tests/worker-messages.test.ts:222:1
+✖ owner-only worker messages refuse foreign sessions, Chat/Plan, paused, stopping and unavailable workers without native calls (1144.801418ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/phagmaier/Code/metatron/tests/worker-messages.test.ts:229:7)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: { code: 'POLICY_DENIED' },
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+DETECTED: queue acceptance is not delivery (exit 1)
+✖ owner HTTP steering and follow-up stay queued until matching native delivery; replay never resends and Lead sees the override (1188.348368ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1735.203911
+
+✖ failing tests:
+
+test at tests/worker-messages.test.ts:150:1
+✖ owner HTTP steering and follow-up stay queued until matching native delivery; replay never resends and Lead sees the override (1188.348368ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'delivered'
+  - 'queued'
+  
+      at TestContext.<anonymous> (file:///home/phagmaier/Code/metatron/tests/worker-messages.test.ts:158:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'delivered',
+    expected: 'queued',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+DETECTED: idempotent native submission (exit 1)
+✖ concurrent replay submits once, queued messages become unconfirmed on session end, and journal failure prevents submission (1107.175863ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1623.473378
+
+✖ failing tests:
+
+test at tests/worker-messages.test.ts:325:1
+✖ concurrent replay submits once, queued messages become unconfirmed on session end, and journal failure prevents submission (1107.175863ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///home/phagmaier/Code/metatron/tests/worker-messages.test.ts:346:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+DETECTED: native queue clearing before cancellation (exit 1)
+✖ concurrent replay submits once, queued messages become unconfirmed on session end, and journal failure prevents submission (1131.964287ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1658.14558
+
+✖ failing tests:
+
+test at tests/worker-messages.test.ts:325:1
+✖ concurrent replay submits once, queued messages become unconfirmed on session end, and journal failure prevents submission (1131.964287ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  -   'clear_queue',
+      'abort'
+    ]
+  
+      at TestContext.<anonymous> (file:///home/phagmaier/Code/metatron/tests/worker-messages.test.ts:349:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'abort' ],
+    expected: [ 'clear_queue', 'abort' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+

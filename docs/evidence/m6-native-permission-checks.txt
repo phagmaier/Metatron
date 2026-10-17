@@ -1,0 +1,25 @@
+M6 item 5 only — native permission notices (2026-10-16)
+
+Pinned runtime: mise current — Node 26.7.0 / pnpm 11.22.0.
+Installed versions: codex 0.163.0, pi 1.3.0, claude 2.1.301, opencode v2.0.29.
+OpenCode default version probe could not open its personal log under the read-only sandbox. A fresh /tmp XDG data/config/cache/state probe succeeded; no global config changed.
+mise x -- codex app-server generate-json-schema --out <fresh /tmp directory> — PASS.
+Targeted exported-schema smoke against the adapter's actual results — PASS 6 response shapes; m6-native-permission-schema.json. Legacy ReviewDecision is a tagged denied object with a rejection string, not the previous string reply.
+Fresh app-owned CodexAdapter.discover() — PASS installed/initialized, no model turn, no login performed; m6-native-permission-probe.json. Grants explicitly unsupported for the coordinator Lead.
+
+Baseline mise x -- pnpm test — PASS 193/193.
+Initial full test — 194/195; the newly added source-role fixture introduced a second attempt, so its restart-count expectation was corrected.
+mise x -- node --test tests/native-permissions.test.ts — PASS 1/1 after correction.
+mise x -- node --test --test-name-pattern='native Codex permission' tests/lead.test.ts — PASS 1/1 after installed legacy-schema correction. Deterministic subprocess demo only, no provider calls.
+Three targeted mutations (unsafe native accept, omitted inbox wiring, omitted source-role gate) — DETECTED; m6-native-permission-mutations.txt. Sources restored.
+Final mise x -- pnpm test — PASS 195/195; m6-native-permission-tests.txt.
+mise x -- pnpm typecheck — PASS.
+mise x -- pnpm lint — PASS, 128 files, no fixes.
+mise x -- pnpm test:fixtures — PASS 3/3 (intentional failure fixtures retained as expected).
+mise x -- pnpm build — PASS.
+mise x -- pnpm smoke — PASS development and production launch/health/HTML/script.
+git diff --check — PASS.
+
+Live cost-bearing approval turns intentionally omitted. No browser interaction tested.
+Native grants remain unsupported by the current Codex Lead/Pi adapter policies; Claude/OpenCode callbacks await their M8 adapters.
+M6 and beta remain incomplete.
