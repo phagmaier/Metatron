@@ -7,6 +7,7 @@ import {
   workerTools,
 } from "../../shared/orchestration.ts";
 import type { Store } from "../storage/store.ts";
+import { pendingWorkerHelp } from "./worker-help.ts";
 
 const planningTools: readonly ToolName[] = [
   ...leadReadTools,
@@ -38,6 +39,7 @@ const runningOnly: readonly ToolName[] = [
   "submit_result",
   "report_progress",
   "report_issue",
+  "request_human_action",
 ];
 
 export function authorize(
@@ -89,6 +91,17 @@ export function authorize(
       throw new DomainError(
         "POLICY_DENIED",
         "Worker reports require the current running attempt",
+      );
+    if (
+      actor.role === "worker" &&
+      !["read_assignment", "request_human_action", "report_issue"].includes(
+        operation,
+      ) &&
+      pendingWorkerHelp(store, attempt.id)
+    )
+      throw new DomainError(
+        "POLICY_DENIED",
+        "Worker is stopping for owner help; further reports/results are refused",
       );
   }
   if (

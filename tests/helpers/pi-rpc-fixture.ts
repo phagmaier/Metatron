@@ -131,6 +131,31 @@ process.stdin.on("data", (chunk) => {
     const writer = process.env.LAO_PI_PERMISSION === "workspace_write";
     void (async () => {
       const assignment = await gateway("read_assignment", {});
+      if (scenario?.startsWith("help-") || scenario?.startsWith("issue-")) {
+        if (writer)
+          await writeFile(
+            join(process.cwd(), "help-scratch.txt"),
+            "Unfinished fixture work; preserve me\n",
+          );
+        const result = scenario.startsWith("help-")
+          ? await gateway("request_human_action", {
+              type: "environment",
+              reason: "Fixture dependency needs owner setup",
+              suggestedAction:
+                "Inspect the retained fixture and record a decision",
+              blocking: scenario !== "help-nonblocking",
+            })
+          : await gateway("report_issue", {
+              summary: "Fixture finding",
+              details: "Inspect fixture evidence",
+              urgency: scenario === "issue-urgent" ? "urgent" : "normal",
+              blocking: scenario === "issue-blocking",
+            });
+        if (result?.isError)
+          throw new Error("Fixture worker signal was rejected");
+        if (scenario !== "help-nonblocking" && scenario !== "issue-info")
+          return;
+      }
       const revising =
         assignment &&
         z

@@ -1,0 +1,30 @@
+✔ gateway authenticates each session, lists role-scoped tools and revokes tokens (226.249037ms)
+✔ worker tokens cannot schedule, impersonate the Lead or target another task; the Lead cannot submit results (111.386811ms)
+✔ Chat/Plan lists no dispatch tools and denies a direct dispatch call; a mode change applies before the next call (60.711066ms)
+✔ Supervised Lead assignment becomes a proposal; the owner's different choice is pinned and recorded as an override (41.939001ms)
+✔ a Lead review request needs a captured candidate and a read-only profile, and workers cannot request one (86.965092ms)
+✔ review sessions receive and enforce their own result schema; ordinary workers cannot submit recommendations (110.525917ms)
+✔ a Supervised Lead review request waits for the owner, who cannot hand it to a writer (44.136222ms)
+✔ Lead launch and revision budgets fail with structured BUDGET_EXCEEDED errors (97.554431ms)
+✔ an urgent worker issue wakes the Lead in a separately queued turn (60.524135ms)
+✔ worker human actions are session-scoped, idempotent and honest about unsupported stopping (145.069689ms)
+✔ a worker issue journal failure rolls back help intent and Lead notification before any stop (66.175083ms)
+✔ Supervised revisions preserve the implementer pin and wait for an owner without widening permissions (68.113708ms)
+✔ an exhausted worker launch budget rolls back the whole revision request (66.384045ms)
+✔ Lead escalations and questions become non-blocking owner requests scoped to the run and session (40.275181ms)
+✔ help-blocking: stopped worker waits with retained evidence while independent readers and queued writers finish (2373.234929ms)
+✔ issue-blocking: stopped worker waits with retained evidence while independent readers and queued writers finish (2129.415297ms)
+✔ issue-urgent: stopped worker waits with retained evidence while independent readers and queued writers finish (2099.612ms)
+✔ help-nonblocking: owner help or informational finding leaves native execution running to completion (1070.044371ms)
+✔ issue-info: owner help or informational finding leaves native execution running to completion (1067.280534ms)
+✔ restart during a durable help intent creates one recovery diagnostic without replaying the stop or worker (171.497101ms)
+✔ owner cancellation during a fake worker's help stop keeps it cancelled and preserves its request (832.135529ms)
+✔ a help finalization journal failure rolls back the wait and remains a recovery decision without replay (1093.245064ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11392.592236

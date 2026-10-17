@@ -166,18 +166,24 @@ export function requestLeadTurn(
 export function notifyLead(
   engine: Engine,
   taskId: string,
-  kind: "completed" | "failed" | "cancelled" | "urgent_issue" | "issue",
+  kind:
+    | "completed"
+    | "failed"
+    | "cancelled"
+    | "urgent_issue"
+    | "issue"
+    | "human_request",
   text: string,
   key: string,
 ) {
   const task = engine.store.getTask(taskId);
   const run = engine.store.getRun(task.runId);
-  if (task.kind !== "work" || !hasNativeLead(run)) return;
+  if (task.kind !== "work" || !hasNativeLead(run)) return false;
   const summary = `${kind}: ${task.title} (${task.id}) — ${text}`.slice(
     0,
     2000,
   );
-  mutate(
+  return mutate(
     engine.store.db,
     key,
     "notifyLead",
@@ -194,9 +200,13 @@ export function notifyLead(
         },
         `${key}:event`,
       );
-      if (["completed", "failed", "urgent_issue"].includes(kind))
-        requestLeadTurn(engine, run.id, "automatic", summary, `${key}:turn`);
-      return true;
+      if (
+        ["completed", "failed", "urgent_issue", "human_request"].includes(kind)
+      )
+        return Boolean(
+          requestLeadTurn(engine, run.id, "automatic", summary, `${key}:turn`),
+        );
+      return false;
     },
   );
 }

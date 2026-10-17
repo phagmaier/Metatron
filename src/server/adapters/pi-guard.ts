@@ -29,6 +29,7 @@ const gatewayTools = [
   "report_progress",
   "submit_result",
   "report_issue",
+  "request_human_action",
 ].map((name) => `mcp__lao__${name}`);
 
 export async function checkPiTool(
@@ -100,7 +101,7 @@ export default function installGuard(pi: GuardAPI) {
       headers: { Authorization: `Bearer ${token}` },
       exposure: "direct",
       description:
-        "Local Agent Orchestrator worker tools: assignment, progress, structured result and issues",
+        "Local Agent Orchestrator worker tools: assignment, progress, structured result, issues and owner help",
       timeout: 60,
     });
     pi.registerCommand("lao_gateway", {

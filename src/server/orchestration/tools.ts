@@ -16,10 +16,10 @@ import { listIntegrationCandidates } from "../storage/candidates.ts";
 import { listReviews } from "../storage/reviews.ts";
 import { implementationTask, revisionTaskIds } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
-import { notifyLead } from "./lead-run.ts";
 import { authorize } from "./policy.ts";
 import { requestReview, reviewInstructions } from "./review.ts";
 import { requestRevision } from "./revision.ts";
+import { workerHelp } from "./worker-help.ts";
 
 const summary = (task: Task) => ({
   taskId: task.id,
@@ -283,7 +283,7 @@ export function runTool(
             data.name === "escalate_issue"
               ? "Review the Lead's escalation"
               : "Answer the Lead's question in a run message",
-          // Blocking suspension of affected tasks is M6 scope; record honestly.
+          // A Lead escalation cannot interrupt arbitrary worker assignments.
           blocking: false,
         },
         key,
@@ -374,32 +374,8 @@ export function runTool(
         key,
       );
     }
-    case "report_issue": {
-      const urgent = ["high", "urgent"].includes(data.urgency);
-      const event = store.recordEvent(
-        {
-          runId,
-          taskId: data.taskId,
-          attemptId,
-          sessionId,
-          type: "worker.issue",
-          correlationId: key,
-          payload: {
-            summary: data.summary,
-            details: data.details,
-            urgency: data.urgency,
-          },
-        },
-        key,
-      );
-      notifyLead(
-        engine,
-        data.taskId,
-        urgent ? "urgent_issue" : "issue",
-        data.summary,
-        `${key}:notify`,
-      );
-      return { recorded: event.id, leadWoken: urgent };
-    }
+    case "report_issue":
+    case "request_human_action":
+      return workerHelp(engine, data, sessionId, attemptId, key);
   }
 }

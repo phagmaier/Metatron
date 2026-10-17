@@ -116,8 +116,8 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 ## M6 - Human requests, steering, stop, and recovery [spec §9, 10]
 
 - [x] Implement HumanRequest storage, blocker linkage, urgency and backend transition logic.
-- [ ] Add "Needs You" GUI with respond, decline, complete, defer controls and evidence/history.
-- [ ] Implement worker `request_human_action` and `report_issue` tool handling; unrelated workers continue while one is blocked.
+- [x] Add "Needs You" GUI with respond, decline, complete, defer controls and evidence/history.
+- [x] Implement worker `request_human_action` and `report_issue` tool handling; unrelated workers continue while one is blocked.
 - [ ] Add dependency-based WAITING handling: downstream waits; unrelated tasks do not stop.
 - [ ] Integrate native permission prompts into the inbox where harness supports them; never auto-approve an unsafe request.
 - [ ] Add direct owner steer/follow-up message to a worker, with `delivered`, `queued`, and `unsupported` UX states.

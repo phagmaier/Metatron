@@ -16,6 +16,7 @@ import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 import { reviewPacket } from "./review.ts";
 import { revisionPacket } from "./revision.ts";
+import { finishWorkerHelp, pendingWorkerHelp } from "./worker-help.ts";
 
 export async function executeNativeTurn(
   engine: Engine,
@@ -47,6 +48,7 @@ export async function executeNativeTurn(
   let diagnostic = "Native attempt did not complete";
   let index = 0;
   let interrupted = false;
+  let stopped = false;
   const changeState = (
     state: "busy" | "idle" | "exited" | "crashed",
     exitCode?: number | null,
@@ -115,9 +117,16 @@ export async function executeNativeTurn(
       `session:${attemptId}:busy`,
     );
     const active = managed;
-    engine.nativeStops.set(task.id, async () => {
+    engine.nativeStops.set(task.id, async (reason) => {
       interrupted = true;
-      await engine.pi.cancel(active);
+      try {
+        await engine.pi.cancel(active);
+      } finally {
+        // Pi has cancellation, not suspension. A help request ends only this
+        // owned process, bounded by the existing TERM/KILL shutdown deadlines.
+        if (reason === "human_request" && engine.pi instanceof PiAdapter)
+          await engine.pi.exit(active);
+      }
     });
     if (engine.isStopping() || store.getTask(task.id).status === "CANCELLED") {
       interrupted = true;
@@ -142,10 +151,11 @@ export async function executeNativeTurn(
         event.type === "process_state" &&
         ["crashed", "exited", "disconnected"].includes(event.state)
       ) {
-        changeState(
-          event.state === "exited" ? "exited" : "crashed",
-          event.exitCode,
-        );
+        if (!pendingWorkerHelp(store, attemptId))
+          changeState(
+            event.state === "exited" ? "exited" : "crashed",
+            event.exitCode,
+          );
         interrupted = true;
         diagnostic =
           "Pi exited without authoritative completion; no automatic retry";
@@ -200,6 +210,7 @@ export async function executeNativeTurn(
             `process-exit:${attemptId}`,
           );
         await engine.pi.dispose(managed);
+        stopped = true;
         if (!interrupted && exit && (exit.code !== 0 || exit.signal)) {
           terminal = "failed";
           interrupted = true;
@@ -253,6 +264,14 @@ export async function executeNativeTurn(
     }
     engine.worktrees.retain(attemptId);
   }
+  if (
+    finishWorkerHelp(
+      engine,
+      attemptId,
+      stopped && store.getSession(session.id).state === "exited",
+    )
+  )
+    return;
   if (
     terminal !== "completed" ||
     interrupted ||

@@ -1,9 +1,4 @@
-import type {
-  Event,
-  HumanRequest,
-  Run,
-  Task,
-} from "../shared/domain/entities.ts";
+import type { Event, Run, Task } from "../shared/domain/entities.ts";
 import { hasNativeLead } from "../shared/native.ts";
 import { writeApi } from "./api.ts";
 
@@ -11,13 +6,11 @@ export function LeadPanel({
   run,
   tasks,
   events,
-  requests,
   onError,
 }: {
   run: Run;
   tasks: Task[];
   events: Event[];
-  requests: HumanRequest[];
   onError: (error: string) => void;
 }) {
   const nativeLead = hasNativeLead(run);
@@ -76,37 +69,6 @@ export function LeadPanel({
             </li>
           ))}
       </ol>
-      {requests.length > 0 && (
-        <>
-          <h3>Needs you</h3>
-          <ul className="records">
-            {requests.map((r) => (
-              <li key={r.id}>
-                <div>
-                  <strong>
-                    {r.type === "clarification"
-                      ? "Lead question"
-                      : r.type === "manual_check"
-                        ? "Owner review"
-                        : "Lead escalation"}
-                  </strong>
-                  <p>{r.reason}</p>
-                </div>
-                <div>
-                  <code>{r.status}</code>
-                  <p className="note">
-                    {r.urgency} · {r.suggestedAction}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <p className="note">
-            Reply with a Lead message. Answer/decline controls and blocking
-            suspension arrive in M6.
-          </p>
-        </>
-      )}
     </>
   );
 }

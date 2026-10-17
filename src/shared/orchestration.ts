@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   absolutePathSchema,
   defaultLimits,
+  humanRequestSchema,
   idSchema,
   limitsSchema,
   modeSchema,
@@ -130,6 +131,17 @@ export const toolSchema = z.discriminatedUnion("name", [
     summary: shortText(500),
     details: shortText(8000),
     urgency: urgencySchema.default("normal"),
+    blocking: z.boolean().default(false),
+    suggestedAction: shortText(2000).optional(),
+  }),
+  z.strictObject({
+    name: z.literal("request_human_action"),
+    taskId: idSchema,
+    type: humanRequestSchema.shape.type,
+    urgency: urgencySchema.default("normal"),
+    reason: shortText(8000),
+    suggestedAction: shortText(2000),
+    blocking: z.boolean().default(true),
   }),
 ]);
 export type ToolInput = z.infer<typeof toolSchema>;
@@ -146,6 +158,7 @@ export const workerTools = [
   "report_progress",
   "submit_result",
   "report_issue",
+  "request_human_action",
 ] as const satisfies readonly ToolName[];
 export const dispatchSchema = z.strictObject({
   sequence: z.int().positive(),

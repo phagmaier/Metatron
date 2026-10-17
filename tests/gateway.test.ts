@@ -624,6 +624,156 @@ test("an urgent worker issue wakes the Lead in a separately queued turn", async 
   }
 });
 
+test("worker human actions are session-scoped, idempotent and honest about unsupported stopping", async () => {
+  const f = await gatewayFixture("autonomous_bounded");
+  try {
+    const { token, task } = f.worker("help");
+    const args = {
+      type: "clarification",
+      reason: "Choose a fixture target",
+      suggestedAction: "Answer in the inbox",
+      blocking: false,
+    };
+    const first = await f.tool(token, "request_human_action", args);
+    assert.equal(first.isError, false);
+    const actorSession = f.store
+      .listSessions()
+      .find((s) => f.store.getAttempt(s.attemptId).taskId === task.id);
+    assert.ok(actorSession);
+    const direct = { name: "request_human_action", taskId: task.id, ...args };
+    f.engine.tool(
+      { role: "worker", sessionId: actorSession.id },
+      f.run.id,
+      direct,
+      "help-command",
+    );
+    assert.throws(
+      () =>
+        f.engine.tool(
+          { role: "worker", sessionId: actorSession.id },
+          f.run.id,
+          { ...direct, reason: "Changed input" },
+          "help-command",
+        ),
+      { code: "CONFLICT" },
+    );
+    const request = first.structuredContent.result.request;
+    assert.deepEqual(request.affectedTaskIds, [task.id]);
+    assert.equal(
+      f.store.getAttempt(f.store.getSession(request.sessionId).attemptId)
+        .taskId,
+      task.id,
+    );
+    const before = f.store.events({ limit: 500 });
+    const replay = await f.tool(token, "request_human_action", args);
+    assert.deepEqual(replay.structuredContent, first.structuredContent);
+    assert.deepEqual(
+      f.store
+        .events({ limit: 500 })
+        .filter((e) => !e.type.startsWith("gateway.")),
+      before.filter((e) => !e.type.startsWith("gateway.")),
+    );
+    for (const patch of [
+      { taskId: f.worker("other").task.id },
+      { sessionId: request.sessionId },
+      { blocking: "yes" },
+    ]) {
+      const denied = await f.tool(token, "request_human_action", {
+        ...args,
+        ...patch,
+      });
+      assert.equal(denied.structuredContent.error.code, "INVALID_INPUT");
+    }
+    assert.equal(
+      (await f.tool(f.lead, "request_human_action", args)).structuredContent
+        .error.code,
+      "POLICY_DENIED",
+    );
+    const informational = await f.tool(token, "report_issue", {
+      summary: "Fixture observation",
+      details: "No action needed",
+    });
+    assert.equal(informational.structuredContent.result.request, null);
+    assert.equal(informational.structuredContent.result.leadWoken, false);
+    assert.equal(f.store.listHumanRequests().length, 1);
+    const unsupported = await f.tool(token, "request_human_action", {
+      ...args,
+      blocking: true,
+    });
+    assert.equal(unsupported.structuredContent.result.stop, "unsupported");
+    assert.equal(unsupported.structuredContent.result.request.blocking, false);
+    assert.equal(f.store.getTask(task.id).status, "RUNNING");
+    f.engine.cancel(task.id, "cancel-help");
+    assert.equal(
+      (await f.tool(token, "request_human_action", args)).structuredContent
+        .error.code,
+      "POLICY_DENIED",
+    );
+  } finally {
+    await f.close();
+  }
+});
+
+test("a worker issue journal failure rolls back help intent and Lead notification before any stop", async () => {
+  const f = await gatewayFixture("autonomous_bounded");
+  try {
+    const { token, task } = f.worker("help-rollback");
+    let stops = 0;
+    f.engine.nativeStops.set(task.id, async () => {
+      stops++;
+    });
+    f.store.db.exec(`CREATE TRIGGER fail_help_notification BEFORE INSERT ON events
+      WHEN NEW.type='lead.notification' BEGIN SELECT RAISE(ABORT,'fixture'); END;`);
+    const result = await f.tool(token, "report_issue", {
+      summary: "Fixture blocker",
+      details: "Needs inspection",
+      blocking: true,
+    });
+    assert.equal(result.structuredContent.error.code, "STORAGE");
+    assert.equal(stops, 0);
+    assert.equal(f.store.db.isTransaction, false);
+    assert.equal(f.store.getTask(task.id).status, "RUNNING");
+    assert.deepEqual(f.store.listHumanRequests(), []);
+    assert.ok(
+      !f.store
+        .events({ limit: 500 })
+        .some((e) =>
+          [
+            "worker.help_requested",
+            "worker.issue",
+            "lead.notification",
+          ].includes(e.type),
+        ),
+    );
+    f.store.db.exec("DROP TRIGGER fail_help_notification");
+    const retry = await f.tool(token, "report_issue", {
+      summary: "Fixture blocker",
+      details: "Needs inspection",
+      blocking: true,
+    });
+    assert.equal(retry.isError, false);
+    assert.equal(stops, 1);
+    const replay = await f.tool(token, "report_issue", {
+      summary: "Fixture blocker",
+      details: "Needs inspection",
+      blocking: true,
+    });
+    assert.equal(replay.isError, false);
+    assert.equal(stops, 1);
+    assert.equal(
+      (
+        await f.tool(token, "submit_result", {
+          outcome: "completed",
+          summary: "Too late",
+        })
+      ).structuredContent.error.code,
+      "POLICY_DENIED",
+    );
+  } finally {
+    await f.close();
+  }
+});
+
 test("Supervised revisions preserve the implementer pin and wait for an owner without widening permissions", async () => {
   const f = await gatewayFixture("supervised");
   try {

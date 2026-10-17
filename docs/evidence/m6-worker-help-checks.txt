@@ -1,0 +1,39 @@
+M6 item 3 — worker help and issues — 2026-10-16
+
+Environment: mise pins Node 26.7.0 / pnpm 11.22.0; Pi version probe reports 1.3.0.
+Prior uncommitted M6 item 2 work preserved. No dependency, migration, toolchain or spec changes.
+No live harness/provider calls; all execution uses FakeAdapter or disposable Pi RPC subprocess fixtures.
+
+Baseline: mise x -- pnpm test
+PASS: 175 tests, 0 failed/skipped.
+
+Focused: mise x -- node --test tests/worker-help.test.ts tests/gateway.test.ts
+PASS: 22 tests, 0 failed/skipped. Full focused output: m6-worker-help-tests.txt.
+Tests include three stop/blocking scenarios with independent readers and queued writers, retained unfinished files, owner deferral/reply without continuation, restart retention, nonblocking requests/info issues, authority/scope checks, idempotency, transaction fault injection, pending-intent recovery and FakeAdapter cancellation precedence.
+
+Command: mise x -- pnpm test
+PASS: 185 tests, 0 failed/skipped. Session output: /tmp/metatron-m6-worker-help-test.log.
+Command: mise x -- pnpm typecheck
+PASS: tsc --noEmit.
+Command: mise x -- pnpm lint
+PASS: biome check .; 121 files; no fixes applied.
+Command: mise x -- pnpm test:fixtures
+PASS: 3/3. Intentional failed-verification/ownership fixtures retain disposable repositories by design.
+Command: mise x -- pnpm build
+PASS: Vite production build, 130 modules transformed.
+Command: mise x -- pnpm smoke
+PASS: development and production launch, health, HTML and entry scripts on loopback.
+Command: git diff --check
+PASS: no whitespace errors.
+Command: mise x -- pi --version
+PASS: 1.3.0; no login, personal configuration or active native sessions modified.
+
+Browser demonstration: mise x -- node /tmp/metatron-m6-worker-help-demo.mjs
+PASS: authenticated worker MCP request → durable intent → confirmed fake stop → Needs You blocker; independent worker reaches AWAITING_REVIEW.
+PASS: system Chromium CDP displays source profile/session/task evidence and separate waiting/completed worker state, explicitly labeled FAKE.
+PASS: owner completion and application restart preserve the request, task states, events and attempt count without resume/dispatch. Disposable owner checkout clean.
+Only console diagnostic: missing favicon 404; no JavaScript exceptions.
+See m6-worker-help-demo.json and m6-worker-help-{inbox,board,history}.png.
+
+Initial checks: formatter found new-file formatting differences; typecheck/lint caught an idempotency assertion block inserted in the wrong test. Moved it to the worker-help test, formatted only changed files, and reran successfully.
+Limitations: Pi uses cancellation/bounded shutdown, not native suspension. No native permission approval/reply delivery, steering, automatic continuation or dependency WAITING propagation added. ADR: ../adr/2026-10-16-worker-help-stops.md.

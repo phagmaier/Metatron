@@ -12,7 +12,7 @@ import {
 import type { Engine } from "../orchestration/engine.ts";
 import { toolsFor } from "../orchestration/policy.ts";
 
-export const TOOL_SCHEMA_VERSION = "lao-tools/2";
+export const TOOL_SCHEMA_VERSION = "lao-tools/3";
 type Binding = {
   role: "lead" | "worker";
   sessionId: string;
@@ -48,7 +48,9 @@ const descriptions: Record<ToolName, string> = {
   submit_result:
     "Submit your final structured result once, using this assignment's schema. Reviewer recommendations remain provisional until native completion and clean Git checks; they never approve integration.",
   report_issue:
-    "Report a problem; high/urgent issues wake the Lead. Grants no extra authority.",
+    "Record a finding. blocking=true or high/urgent urgency requests a stop of only your worker and an owner inbox request; high/urgent and blocking findings wake the Lead. No permission or continuation is granted.",
+  request_human_action:
+    "Ask the owner for an action or answer. Blocking requests durably request a stop of your worker; waiting is recorded only after shutdown is confirmed. Session identity and worktree are retained. No automatic resume or native permission approval.",
 };
 const variants = new Map(
   toolSchema.options.map((option) => [option.shape.name.value, option]),

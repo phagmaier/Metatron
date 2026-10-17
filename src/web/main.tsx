@@ -24,6 +24,7 @@ import { hasNativeLead } from "../shared/native.ts";
 import { type Dispatch, dispatchSchema } from "../shared/orchestration.ts";
 import { readApi } from "./api.ts";
 import { LeadPanel } from "./lead-panel.tsx";
+import { NeedsYouPanel } from "./needs-you-panel.tsx";
 import { ProjectForms } from "./project-forms.tsx";
 import { RunControls } from "./run-controls.tsx";
 import { TaskCard } from "./task-card.tsx";
@@ -276,11 +277,19 @@ function App() {
                   / {selectedRun.limits.maxTotalWorkerLaunchesPerRun} worker
                   launches
                 </p>
+                <NeedsYouPanel
+                  key={selectedRun.id}
+                  run={selectedRun}
+                  tasks={runTasks}
+                  sessions={runSessions}
+                  attempts={runAttempts}
+                  requests={requests}
+                  onRequestsChange={setRequests}
+                />
                 <LeadPanel
                   run={selectedRun}
                   tasks={runTasks}
                   events={merged.filter(conversation)}
-                  requests={requests.filter((r) => r.runId === selectedRun.id)}
                   onError={setError}
                 />
                 <h3>Task board</h3>

@@ -8,6 +8,7 @@ import { FakeAdapter } from "../adapters/fake.ts";
 import { mutate } from "../storage/mutations.ts";
 import { reconcileRevision } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
+import { finishWorkerHelp, pendingWorkerHelp } from "./worker-help.ts";
 
 const proposalSchema = z.strictObject({
   title: z.string().min(1).max(200),
@@ -92,10 +93,15 @@ export async function executeFakeTurn(
   let cause: string | null = null;
   let completed = false;
   let output = "";
+  engine.nativeStops.set(task.id, () => adapter.cancel(managed));
   try {
     for await (const event of adapter.prompt(managed, task.objective)) {
       // Short simulated latency makes owner cancellation and streaming observable.
       await delay(120);
+      if (pendingWorkerHelp(store, attemptId)) {
+        await adapter.cancel(managed);
+        break;
+      }
       if (store.getTask(task.id).status === "CANCELLED") {
         await adapter.cancel(managed);
         engine.fail(task.id, attemptId, "Owner cancelled", true);
@@ -257,7 +263,7 @@ export async function executeFakeTurn(
       );
       completed = true;
     }
-    if (!completed)
+    if (!completed && !pendingWorkerHelp(store, attemptId))
       engine.fail(
         task.id,
         attemptId,
@@ -265,6 +271,30 @@ export async function executeFakeTurn(
         true,
       );
   } finally {
+    engine.nativeStops.delete(task.id);
     await adapter.dispose(managed);
+    if (pendingWorkerHelp(store, attemptId)) {
+      const current = store.getSession(session.id);
+      if (current.state === "busy")
+        store.updateSession(
+          { id: session.id, expectedState: "busy", state: "stopping" },
+          `session:${attemptId}:help-stopping`,
+        );
+      if (store.getSession(session.id).state === "stopping")
+        store.updateSession(
+          {
+            id: session.id,
+            expectedState: "stopping",
+            state: "exited",
+            exitCode: 0,
+          },
+          `session:${attemptId}:help-exited`,
+        );
+      finishWorkerHelp(
+        engine,
+        attemptId,
+        store.getSession(session.id).state === "exited",
+      );
+    }
   }
 }

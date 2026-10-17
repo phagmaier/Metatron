@@ -1,0 +1,78 @@
+{
+  "execution": "FakeAdapter only; no live native harness/provider calls. Disposable Git/SQLite and system Chromium CDP.",
+  "command": "mise x -- node /tmp/metatron-m6-worker-help-demo.mjs",
+  "checks": [
+    "Worker gateway request creates an owner blocker after stop; independent fake worker finishes",
+    "Chromium shows authenticated source evidence and WAITING_HUMAN beside independent AWAITING_REVIEW work, explicitly labeled FAKE",
+    "Owner completion and app restart retain the decision without dispatch, resume or duplicated events/attempts"
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "toolReply": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"recorded\":null,\"request\":null,\"stopRequested\":true,\"stop\":\"requested\",\"intentId\":\"319ff5c0-0f6d-48e6-b24d-7fe393317336\",\"leadWoken\":false}"
+        }
+      ],
+      "structuredContent": {
+        "result": {
+          "recorded": null,
+          "request": null,
+          "stopRequested": true,
+          "stop": "requested",
+          "intentId": "319ff5c0-0f6d-48e6-b24d-7fe393317336",
+          "leadWoken": false
+        }
+      },
+      "isError": false
+    }
+  },
+  "tasks": [
+    {
+      "id": "baf5ea5c-8b58-4db4-9464-3696466f390a",
+      "title": "FAKE Lead · planning",
+      "status": "AWAITING_REVIEW"
+    },
+    {
+      "id": "510d200d-78c9-462c-80a4-85340a854c5f",
+      "title": "FAKE worker needing owner setup",
+      "status": "WAITING_HUMAN"
+    },
+    {
+      "id": "191b4bbe-4328-4198-b07a-1e1e740de392",
+      "title": "FAKE independent worker",
+      "status": "AWAITING_REVIEW"
+    },
+    {
+      "id": "99443d08-97c3-4bed-9bc2-0ba5e9649679",
+      "title": "FAKE · scoped worker task",
+      "status": "BACKLOG"
+    }
+  ],
+  "requests": [
+    {
+      "id": "538730f2-b90e-4a89-8c9a-104dd5da7353",
+      "createdAt": "2026-10-17T00:01:35.048Z",
+      "updatedAt": "2026-10-17T00:01:36.801Z",
+      "runId": "104597c4-60b8-405b-8469-f6abe4103400",
+      "sessionId": "9a9045c2-29eb-48e0-9f2f-7268e865e33a",
+      "affectedTaskIds": [
+        "510d200d-78c9-462c-80a4-85340a854c5f"
+      ],
+      "type": "environment",
+      "urgency": "normal",
+      "reason": "FAKE worker needs owner setup; no package installation was attempted.",
+      "suggestedAction": "Inspect the disposable fixture and record the setup decision.",
+      "blocking": true,
+      "status": "completed",
+      "ownerResponse": "Fixture decision recorded; verify before explicit continuation.",
+      "resolvedAt": "2026-10-17T00:01:36.801Z"
+    }
+  ],
+  "attemptCount": 3
+}

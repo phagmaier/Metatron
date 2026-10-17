@@ -286,3 +286,29 @@ pre {
   max-height: 420px;
   overflow: auto;
 }
+.needs-you {
+  margin: 24px 0;
+  padding: 16px;
+  background: #f3f5f0;
+  border: 1px solid #8aa99a;
+  border-radius: 8px;
+}
+.request-list {
+  list-style: none;
+  padding: 0;
+}
+.request-card {
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #d5ddd6;
+  border-radius: 6px;
+  background: white;
+  overflow-wrap: anywhere;
+}
+.request-card h4 {
+  margin: 0;
+  text-transform: capitalize;
+}
+.request-text {
+  white-space: pre-wrap;
+}

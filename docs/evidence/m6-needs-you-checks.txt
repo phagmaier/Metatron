@@ -1,0 +1,41 @@
+M6 item 2 — Needs You inbox — 2026-10-16
+
+Environment: clean initial working tree; mise pins Node 26.7.0 / pnpm 11.22.0.
+No dependencies, migrations, spec or toolchain changes. No live harness calls.
+
+Baseline command: mise x -- pnpm test
+PASS: 173 tests; 0 failed/skipped.
+
+Focused command: mise x -- node --test tests/human-request-actions.test.ts tests/human-request-api.test.ts
+PASS: 3 tests; allowed inbox actions, protected API/restart, real web-client stale refusal with no automatic retry.
+
+Command: mise x -- pnpm test
+PASS: 175 tests; 0 failed/skipped; duration 21737 ms.
+Full output retained for this session: /tmp/metatron-m6-inbox-test.log.
+
+Command: mise x -- pnpm typecheck
+PASS: tsc --noEmit.
+Command: mise x -- pnpm lint
+PASS: biome check .; 119 files; no fixes applied.
+Command: mise x -- pnpm test:fixtures
+PASS: 3 tests. Expected failing-verification/ownership fixtures retain their temporary repos by design.
+Command: mise x -- pnpm build
+PASS: Vite production build; 130 modules transformed.
+Command: mise x -- pnpm smoke
+PASS: development and production launch, health, HTML and entry scripts over loopback.
+Command: git diff --check
+PASS: no whitespace errors.
+
+Browser command: mise x -- node /tmp/metatron-m6-inbox-demo.mjs
+PASS: 8 browser checks, system /usr/bin/chromium 152.0.7977.82 via CDP.
+Scratch runner starts a production server with a disposable SQLite/Git fixture and a separate temporary Chromium profile.
+Real Input mouse/text events drive Respond, Decline, Mark completed and Defer.
+Paused one browser PATCH; another owner deferred that request; the pending PATCH returned 409 and displayed an error with exactly one browser attempt.
+Restart retained three terminal decisions, their evidence and owner text, plus two deferred requests; no new attempts/events/session changes; owner Git checkout clean.
+Narrow layout: no horizontal inbox overflow at 390px.
+Console diagnostics: expected missing favicon 404 and deliberate stale PATCH 409; no JavaScript exceptions.
+See m6-needs-you-browser.json and m6-needs-you-*.png for recorded payloads, outcomes and reviewed screenshots.
+
+Initial checks: lint rejected a div region in favor of semantic section and found two formatting differences; corrected with targeted edits/formatter and rerun passed.
+Initial scratch browser runner passed all behavioral checks but rejected the deliberate 409 as an unexpected console error; corrected diagnostic classification, rerun passed.
+Live harness/provider tests: intentionally omitted (cost); fixture output is explicitly labeled FAKE.

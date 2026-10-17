@@ -1,0 +1,152 @@
+{
+  "execution": "FAKE/storage fixtures only; no live harness/provider calls",
+  "command": "mise x -- node /tmp/metatron-m6-inbox-demo.mjs",
+  "chromium": "Chromium 152.0.7977.82 Arch Linux",
+  "checks": [
+    "Run-scoped first-class inbox displays evidence, source worker/session, task links, urgency and blocking; blank Respond disabled",
+    "Respond sends free text, records answered, and exposes terminal history with no further actions",
+    "Decline records a terminal nonblocking request in history",
+    "Mark completed records the decision without resuming or verifying task execution",
+    "Defer stays unresolved, retains its blocking link and shows only remaining allowed actions",
+    "Concurrent stale expectedStatus is visibly refused and the browser sends no automatic retry",
+    "Restart retains three terminal decisions, text, dates, source evidence and two deferred requests, with no new events/attempts/session changes or owner checkout writes",
+    "Narrow inbox layout has no horizontal overflow"
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)"
+  ],
+  "browserPatches": [
+    {
+      "id": "ac0ebdc7-fbcc-4b4b-a861-39b47b9a0778",
+      "expectedStatus": "open",
+      "status": "answered",
+      "ownerResponse": "Use the disposable fixture target.\nVerify it before continuing."
+    },
+    {
+      "id": "b19c7dc9-0514-4a3a-9169-13ce5ca943b7",
+      "expectedStatus": "open",
+      "status": "declined"
+    },
+    {
+      "id": "796cdead-ace0-4ee7-9cda-cf0bbaafc9e9",
+      "expectedStatus": "open",
+      "status": "completed"
+    },
+    {
+      "id": "83e0c171-38fa-461a-ba78-0fe8c34339b5",
+      "expectedStatus": "open",
+      "status": "deferred"
+    },
+    {
+      "id": "a962b683-d855-4a77-9d16-40886a133294",
+      "expectedStatus": "open",
+      "status": "completed"
+    }
+  ],
+  "requests": [
+    {
+      "id": "ac0ebdc7-fbcc-4b4b-a861-39b47b9a0778",
+      "createdAt": "2026-10-16T23:47:53.896Z",
+      "updatedAt": "2026-10-16T23:47:55.044Z",
+      "runId": "43654f01-0b51-4904-aa2f-4bb7babf9e17",
+      "sessionId": "d30f31d1-01f6-4fb6-b24e-7061091cc749",
+      "affectedTaskIds": [
+        "5d101283-b3d0-48e5-9ebb-7604ed1cfe12"
+      ],
+      "type": "clarification",
+      "urgency": "normal",
+      "reason": "Which disposable target should the fixture use?",
+      "suggestedAction": "Record an owner decision for this fixture.",
+      "blocking": true,
+      "status": "answered",
+      "ownerResponse": "Use the disposable fixture target.\nVerify it before continuing.",
+      "resolvedAt": "2026-10-16T23:47:55.044Z"
+    },
+    {
+      "id": "b19c7dc9-0514-4a3a-9169-13ce5ca943b7",
+      "createdAt": "2026-10-16T23:47:53.901Z",
+      "updatedAt": "2026-10-16T23:47:55.122Z",
+      "runId": "43654f01-0b51-4904-aa2f-4bb7babf9e17",
+      "sessionId": "d30f31d1-01f6-4fb6-b24e-7061091cc749",
+      "affectedTaskIds": [
+        "5d101283-b3d0-48e5-9ebb-7604ed1cfe12"
+      ],
+      "type": "risky_operation",
+      "urgency": "normal",
+      "reason": "Review a proposed fixture-only risky operation.",
+      "suggestedAction": "Record an owner decision for this fixture.",
+      "blocking": false,
+      "status": "declined",
+      "ownerResponse": null,
+      "resolvedAt": "2026-10-16T23:47:55.122Z"
+    },
+    {
+      "id": "796cdead-ace0-4ee7-9cda-cf0bbaafc9e9",
+      "createdAt": "2026-10-16T23:47:53.903Z",
+      "updatedAt": "2026-10-16T23:47:55.188Z",
+      "runId": "43654f01-0b51-4904-aa2f-4bb7babf9e17",
+      "sessionId": "d30f31d1-01f6-4fb6-b24e-7061091cc749",
+      "affectedTaskIds": [
+        "5d101283-b3d0-48e5-9ebb-7604ed1cfe12"
+      ],
+      "type": "manual_check",
+      "urgency": "normal",
+      "reason": "Inspect the fixture verification evidence.",
+      "suggestedAction": "Record an owner decision for this fixture.",
+      "blocking": true,
+      "status": "completed",
+      "ownerResponse": null,
+      "resolvedAt": "2026-10-16T23:47:55.188Z"
+    },
+    {
+      "id": "83e0c171-38fa-461a-ba78-0fe8c34339b5",
+      "createdAt": "2026-10-16T23:47:53.904Z",
+      "updatedAt": "2026-10-16T23:47:55.255Z",
+      "runId": "43654f01-0b51-4904-aa2f-4bb7babf9e17",
+      "sessionId": "d30f31d1-01f6-4fb6-b24e-7061091cc749",
+      "affectedTaskIds": [
+        "5d101283-b3d0-48e5-9ebb-7604ed1cfe12"
+      ],
+      "type": "environment",
+      "urgency": "urgent",
+      "reason": "Check a missing fixture dependency later.",
+      "suggestedAction": "Record an owner decision for this fixture.",
+      "blocking": true,
+      "status": "deferred",
+      "ownerResponse": null,
+      "resolvedAt": null
+    },
+    {
+      "id": "a962b683-d855-4a77-9d16-40886a133294",
+      "createdAt": "2026-10-16T23:47:53.906Z",
+      "updatedAt": "2026-10-16T23:47:55.499Z",
+      "runId": "43654f01-0b51-4904-aa2f-4bb7babf9e17",
+      "sessionId": "d30f31d1-01f6-4fb6-b24e-7061091cc749",
+      "affectedTaskIds": [
+        "5d101283-b3d0-48e5-9ebb-7604ed1cfe12"
+      ],
+      "type": "permission",
+      "urgency": "normal",
+      "reason": "Demonstrate refusal of a concurrent stale decision.",
+      "suggestedAction": "Record an owner decision for this fixture.",
+      "blocking": true,
+      "status": "deferred",
+      "ownerResponse": "Another owner tab deferred this request.",
+      "resolvedAt": null
+    }
+  ],
+  "tasks": [
+    {
+      "id": "5d101283-b3d0-48e5-9ebb-7604ed1cfe12",
+      "title": "Check fixture dependency",
+      "status": "WAITING_HUMAN"
+    },
+    {
+      "id": "85d3e44d-d96f-4fcd-8634-ae6ff57592f9",
+      "title": "Unrelated fixture task",
+      "status": "BACKLOG"
+    }
+  ],
+  "attemptCount": 1
+}

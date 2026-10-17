@@ -40,6 +40,7 @@ import { createLeadRun, notifyLead, ownerLeadMessage } from "./lead-run.ts";
 import { executeNativeTurn } from "./native-execute.ts";
 import { createNativeRun } from "./native-run.ts";
 import { runTool } from "./tools.ts";
+import { recoverWorkerHelp } from "./worker-help.ts";
 
 export class Engine {
   readonly store: Store;
@@ -52,7 +53,10 @@ export class Engine {
   readonly gatewayUrl: string | null;
   readonly worktrees: Worktrees;
   readonly integrations: Integrations;
-  readonly nativeStops = new Map<string, () => Promise<void>>();
+  readonly nativeStops = new Map<
+    string,
+    (reason?: "human_request") => Promise<void>
+  >();
   private readonly running = new Map<string, Promise<void>>();
   private pumping = false;
   private stopping = false;
@@ -72,6 +76,7 @@ export class Engine {
     this.worktrees = new Worktrees(store, directory);
     this.integrations = new Integrations(this);
     this.scheduling = new Scheduling(store, directory);
+    recoverWorkerHelp(this);
     for (const role of fakeTeamSnapshot.roles)
       store.db
         .prepare("INSERT OR IGNORE INTO role_templates VALUES (?,?)")

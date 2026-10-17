@@ -138,7 +138,7 @@ export const humanRequestStatusSchema = z.enum([
   "declined",
 ]);
 type HumanRequestStatus = z.infer<typeof humanRequestStatusSchema>;
-const humanRequestTransitions: Record<
+export const humanRequestTransitions: Record<
   HumanRequestStatus,
   readonly HumanRequestStatus[]
 > = {

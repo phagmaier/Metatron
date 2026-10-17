@@ -5,6 +5,8 @@ import { z } from "zod";
 import { startApp } from "../src/server/app.ts";
 import { humanRequestsResponseSchema } from "../src/shared/api.ts";
 import { humanRequestSchema } from "../src/shared/domain/entities.ts";
+import { writeApi } from "../src/web/api.ts";
+import { humanRequestActions } from "../src/web/human-request-actions.ts";
 import { domainFixture } from "./helpers/domain-fixture.ts";
 
 test("owner HTTP requests validate authority and transitions, persist deferred blockers across restart, and never auto-resume on reply", async () => {
@@ -181,6 +183,116 @@ test("owner HTTP requests validate authority and transitions, persist deferred b
       ],
     );
   } finally {
+    await app.close();
+    await f.close();
+  }
+});
+
+test("inbox client decisions persist as terminal history and stale replies surface without retry", async (t) => {
+  const f = await domainFixture();
+  const options = {
+    development: false,
+    port: 0,
+    databasePath: join(f.directory, "state.sqlite"),
+  };
+  let app = await startApp(options);
+  const originalFetch = globalThis.fetch;
+  let patches = 0;
+  t.mock.method(
+    globalThis,
+    "fetch",
+    (input: string | URL | Request, init?: RequestInit) => {
+      if (init?.method === "PATCH") patches++;
+      return originalFetch(
+        typeof input === "string" ? new URL(input, app.origin) : input,
+        init,
+      );
+    },
+  );
+  const saved = [];
+  try {
+    for (const initialStatus of ["open", "deferred"] as const)
+      for (const action of humanRequestActions(initialStatus)) {
+        let request = humanRequestSchema.parse(
+          await writeApi("human-requests", {
+            runId: f.run.id,
+            affectedTaskIds: [f.task.id],
+            type: "manual_check",
+            urgency: "normal",
+            reason: "Check fixture evidence",
+            suggestedAction: "Record an owner decision",
+            blocking: true,
+          }),
+        );
+        if (initialStatus === "deferred")
+          request = humanRequestSchema.parse(
+            await writeApi(
+              "human-requests",
+              { id: request.id, expectedStatus: "open", status: "deferred" },
+              "PATCH",
+            ),
+          );
+        const response = humanRequestSchema.parse(
+          await writeApi(
+            "human-requests",
+            {
+              id: request.id,
+              expectedStatus: initialStatus,
+              status: action.status,
+              ownerResponse: "Owner checked the fixture evidence",
+            },
+            "PATCH",
+          ),
+        );
+        assert.equal(response.status, action.status);
+        assert.equal(
+          response.resolvedAt !== null,
+          action.status !== "deferred",
+        );
+        const before = f.store.events({ limit: 500 });
+        const count = patches;
+        await assert.rejects(
+          writeApi(
+            "human-requests",
+            {
+              id: request.id,
+              expectedStatus: initialStatus,
+              status: "declined",
+              ownerResponse: "Stale decision must not overwrite history",
+            },
+            "PATCH",
+          ),
+          /status changed; refresh before replying/,
+        );
+        assert.equal(patches, count + 1);
+        if (action.status !== "deferred")
+          await assert.rejects(
+            writeApi(
+              "human-requests",
+              {
+                id: request.id,
+                expectedStatus: action.status,
+                status: "open",
+              },
+              "PATCH",
+            ),
+            /cannot transition/,
+          );
+        assert.deepEqual(f.store.getHumanRequest(request.id), response);
+        assert.deepEqual(f.store.events({ limit: 500 }), before);
+        saved.push(response);
+      }
+    await app.close();
+    app = await startApp(options);
+    const history = humanRequestsResponseSchema.parse(
+      await (await fetch("/api/human-requests")).json(),
+    );
+    assert.deepEqual(history.humanRequests, saved);
+    assert.equal(f.store.getTask(f.task.id).status, "WAITING_HUMAN");
+    assert.equal(f.store.listAttempts().length, 0);
+    assert.equal(f.store.listSessions().length, 0);
+  } finally {
+    t.mock.restoreAll();
     await app.close();
     await f.close();
   }
