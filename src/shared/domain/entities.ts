@@ -250,12 +250,37 @@ export const recoveryCheckSchema = z.strictObject({
       "not_isolated",
     ]),
     reason: textSchema,
+    // Only for a verified checkout: uncommitted work the retry never reuses.
+    git: z
+      .strictObject({
+        headSha: textSchema,
+        startSha: textSchema,
+        changedPaths: z.int().nonnegative(),
+      })
+      .nullable()
+      .default(null),
   }),
   process: z.strictObject({
     processId: z.int().positive().nullable(),
     state: z.enum(["not_recorded", "not_running", "pid_present", "unknown"]),
     reason: textSchema,
   }),
+  // Older checks did not observe these: null means "not observed".
+  nativeSession: z
+    .strictObject({
+      id: textSchema.nullable(),
+      state: z.enum(["recorded", "not_recorded", "conflict"]),
+      reason: textSchema,
+    })
+    .nullable()
+    .default(null),
+  // Native tool calls journaled as started without a finish: they may have
+  // completed and are never replayed.
+  unfinishedTools: z
+    .array(z.strictObject({ toolId: textSchema, summary: textSchema }))
+    .max(20)
+    .nullable()
+    .default(null),
 });
 export type RecoveryCheck = z.infer<typeof recoveryCheckSchema>;
 export const attemptRecoverySchema = z.strictObject({
@@ -332,6 +357,8 @@ export const sessionSchema = z.strictObject({
   adapter: adapterKindSchema,
   nativeSessionId: textSchema.nullable(),
   processId: z.int().positive().nullable(),
+  // Boot ID and kernel start time, so a reused PID is not taken for the worker.
+  processIdentity: textSchema.nullable().default(null),
   state: processStateSchema,
   contextPolicy: contextPolicySchema,
   exitCode: z.int().nullable(),

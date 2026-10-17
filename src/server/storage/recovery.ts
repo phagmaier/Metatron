@@ -38,8 +38,8 @@ export function recoverInterrupted(
   db: DatabaseSync,
   store: Pick<Store, "listAttempts" | "listSessions" | "getTask">,
 ) {
-  // Reopening never replays prompts or mutating operations. M6 will reconcile
-  // native children; until then unfinished attempts require a human decision.
+  // Reopening never replays prompts or mutating operations. Unfinished
+  // attempts require a human decision; reconcileRestart then observes them.
   for (const attempt of store.listAttempts()) {
     if (!["created", "running"].includes(attempt.status)) continue;
     const key = `recovery:${attempt.id}`;
@@ -58,7 +58,7 @@ export function recoverInterrupted(
           recovery: {
             cause: "recovery_required",
             reason:
-              "The app restarted while this attempt was unfinished; its process, native session and worktree were not observed",
+              "The app restarted while this attempt was unfinished. Nothing was resumed or replayed; tools it started may have completed.",
             recordedAt: now,
             checks: [],
             decision: null,

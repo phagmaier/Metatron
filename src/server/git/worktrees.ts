@@ -234,12 +234,14 @@ export class Worktrees {
         path: null,
         state: "not_isolated",
         reason: "This attempt used no app-owned worktree",
+        git: null,
       };
     const manifest = this.list().find((w) => w.attemptId === attempt.id);
     const result = (
       state: RecoveryCheck["worktree"]["state"],
       reason: string,
-    ) => ({ path, state, reason });
+      gitState: RecoveryCheck["worktree"]["git"] = null,
+    ) => ({ path, state, reason, git: gitState });
     try {
       const stat = await lstat(path);
       if (!manifest)
@@ -325,9 +327,42 @@ export class Worktrees {
           ? "Worktree creation was interrupted before its directory identity was recorded"
           : "This worktree was recorded before directory identity was saved; same-path replacement cannot be ruled out",
       );
+    let status: string[];
+    try {
+      // GIT_OPTIONAL_LOCKS=0 (see git()) keeps status from refreshing the index.
+      status = (
+        await git(path, [
+          "status",
+          "--porcelain=v1",
+          "-z",
+          "--untracked-files=all",
+          "--ignore-submodules=none",
+        ])
+      ).split("\0");
+    } catch (error) {
+      if (!(error instanceof GitError)) throw error;
+      return result(
+        "inaccessible",
+        `Git cannot read this checkout: ${error.message}`,
+      );
+    }
+    let changedPaths = 0;
+    for (let i = 0; i < status.length; i++) {
+      const record = status[i];
+      if (!record) continue;
+      changedPaths++;
+      if (/[RC]/.test(record.slice(0, 2))) i++;
+    }
     return result(
       "verified",
       "Ownership marker, Git repository, branch and directory identity match the recorded worktree",
+      {
+        headSha: actual.baseSha,
+        startSha:
+          this.startingCandidate(attempt.id)?.candidateSha ??
+          manifest.repository.baseSha,
+        changedPaths,
+      },
     );
   }
   retain(attemptId: string) {

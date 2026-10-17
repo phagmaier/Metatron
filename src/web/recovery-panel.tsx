@@ -18,6 +18,8 @@ const causeLabel: Record<RecoveryCause, string> = {
   failed: "Failed",
 };
 
+const short = (sha: string) => sha.slice(0, 12);
+
 function Fact({
   label,
   state,
@@ -96,8 +98,35 @@ export function RecoveryPanel({
           <ul>
             <Fact label="Repository" {...latest.repository} />
             <Fact label="Worktree" {...latest.worktree} />
+            {latest.worktree.git && (
+              <li>
+                Worktree Git: HEAD{" "}
+                <code>{short(latest.worktree.git.headSha)}</code> (started at{" "}
+                <code>{short(latest.worktree.git.startSha)}</code>) ·{" "}
+                {latest.worktree.git.changedPaths} uncommitted path(s), kept in
+                the prior checkout
+              </li>
+            )}
             <Fact label="Process" {...latest.process} />
+            {latest.nativeSession && (
+              <Fact label="Native session" {...latest.nativeSession} />
+            )}
           </ul>
+          {latest.unfinishedTools && latest.unfinishedTools.length > 0 && (
+            <div>
+              <p className="warning">
+                Native tool calls started without a recorded finish. They may
+                have completed and are never replayed:
+              </p>
+              <ul>
+                {latest.unfinishedTools.map((tool) => (
+                  <li key={tool.toolId}>
+                    <code>{tool.summary}</code> · {tool.toolId}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       ) : (
         <p className="note">

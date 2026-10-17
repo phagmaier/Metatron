@@ -337,5 +337,6 @@ label.check {
 }
 label.check input {
   width: auto;
+  flex-shrink: 0;
   margin-top: 2px;
 }

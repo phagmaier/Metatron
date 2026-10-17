@@ -18,7 +18,7 @@ import { createReview } from "../storage/reviews.ts";
 import { reconcileRevision } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
-import { observeRecovery } from "./recovery-decisions.ts";
+import { observeRecovery, processIdentity } from "./recovery-observe.ts";
 import { reviewPacket } from "./review.ts";
 import { revisionPacket } from "./revision.ts";
 import { stopPending } from "./stops.ts";
@@ -122,7 +122,12 @@ export async function executeNativeTurn(
         expectedState: "starting",
         state: "busy",
         nativeSessionId: managed.nativeSessionId,
-        ...(managed.processId ? { processId: managed.processId } : {}),
+        ...(managed.processId
+          ? {
+              processId: managed.processId,
+              processIdentity: await processIdentity(managed.processId),
+            }
+          : {}),
       },
       `session:${attemptId}:busy`,
     );

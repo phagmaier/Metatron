@@ -1,11 +1,9 @@
 import { randomUUID } from "node:crypto";
 import type { z } from "zod";
 import {
-  type Attempt,
   type AttemptRecovery,
   type RecoveryCheck,
   recoveryCheckSchema,
-  type Session,
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import { dispatchSchema } from "../../shared/orchestration.ts";
@@ -14,118 +12,11 @@ import {
   recoveryDecisionSchema,
   unverifiedFacts,
 } from "../../shared/recovery.ts";
-import { GitError } from "../git/command.ts";
-import { inspectRepository } from "../git/inspect.ts";
 import { mutate } from "../storage/mutations.ts";
 import { saveAttemptRecovery } from "../storage/recovery.ts";
 import type { Store } from "../storage/store.ts";
 import type { Engine } from "./engine.ts";
-
-async function observeRepository(
-  store: Store,
-  attempt: Attempt,
-): Promise<RecoveryCheck["repository"]> {
-  const run = store.getRun(store.getTask(attempt.taskId).runId);
-  const recorded = run.repository;
-  if (!recorded)
-    return {
-      state: "unavailable",
-      reason: "This run recorded no repository identity",
-    };
-  try {
-    const current = await inspectRepository(
-      store.getProject(run.projectId).repositoryPath,
-    );
-    if (
-      current.root !== recorded.root ||
-      current.commonDirectory !== recorded.commonDirectory
-    )
-      return {
-        state: "changed",
-        reason:
-          "The repository root or Git directory differs from this run's recorded identity",
-      };
-    if (current.baseSha !== recorded.baseSha)
-      return {
-        state: "changed",
-        reason: `HEAD moved from ${recorded.baseSha} to ${current.baseSha}; this run's attempts start only from its recorded base`,
-      };
-    return {
-      state: "verified",
-      reason: current.clean
-        ? "Root, Git directory and HEAD match this run"
-        : "Root, Git directory and HEAD match this run; uncommitted changes make dispatch wait until the checkout is clean",
-    };
-  } catch (error) {
-    if (!(error instanceof GitError)) throw error;
-    return { state: "unavailable", reason: error.message };
-  }
-}
-
-function observeProcess(
-  session: Session | undefined,
-): RecoveryCheck["process"] {
-  const processId = session?.processId ?? null;
-  if (!processId)
-    return {
-      processId,
-      state: "not_recorded",
-      reason:
-        session?.adapter === "fake"
-          ? "FAKE playback has no OS process"
-          : "No process ID was recorded for this attempt",
-    };
-  try {
-    // Signal 0 only tests whether the PID exists; nothing is delivered.
-    process.kill(processId, 0);
-    return {
-      processId,
-      state: "pid_present",
-      reason:
-        "A process with this PID exists. It may be the surviving worker or an unrelated process that reused the PID.",
-    };
-  } catch (error) {
-    const code =
-      error instanceof Error && "code" in error ? String(error.code) : null;
-    if (code === "ESRCH")
-      return {
-        processId,
-        state: "not_running",
-        reason:
-          "No process with this PID exists now; descendants it started are not tracked",
-      };
-    if (code === "EPERM")
-      return {
-        processId,
-        state: "pid_present",
-        reason:
-          "A process with this PID exists but belongs to another user; it is not this app's child",
-      };
-    return {
-      processId,
-      state: "unknown",
-      reason: `Process lookup failed (${code ?? "unknown error"})`,
-    };
-  }
-}
-
-// Reads the filesystem, Git and the process table; writes nothing anywhere.
-export async function observeRecovery(
-  engine: Engine,
-  attemptId: string,
-): Promise<RecoveryCheck> {
-  const { store } = engine;
-  const attempt = store.getAttempt(attemptId);
-  return recoveryCheckSchema.parse({
-    id: randomUUID(),
-    observedAt: new Date().toISOString(),
-    repository: await observeRepository(store, attempt),
-    worktree: await engine.worktrees.observe(attempt),
-    process: observeProcess(
-      store.listSessions().find((s) => s.attemptId === attempt.id),
-    ),
-  });
-}
+import { observeRecovery } from "./recovery-observe.ts";
 
 function recoverable(store: Store, taskId: string) {
   const task = store.getTask(taskId);
@@ -178,6 +69,48 @@ function stored<T>(
   });
 }
 
+function saveCheck(
+  store: Store,
+  key: string,
+  operation: string,
+  taskId: string,
+  attemptId: string,
+  check: RecoveryCheck,
+) {
+  return mutate(
+    store.db,
+    key,
+    operation,
+    { taskId },
+    recoveryCheckSchema,
+    () => {
+      const current = recoverable(store, taskId);
+      if (current.attempt.id !== attemptId)
+        throw new DomainError("CONFLICT", "Recovery state changed; recheck");
+      saveAttemptRecovery(
+        store.db,
+        current.attempt,
+        withCheck(current.recovery, check),
+      );
+      store.recordEvent(
+        {
+          runId: current.task.runId,
+          taskId,
+          attemptId,
+          type:
+            operation === "reconcileRestart"
+              ? "recovery.reconciled"
+              : "recovery.rechecked",
+          correlationId: key,
+          payload: check,
+        },
+        `${key}:event`,
+      );
+      return check;
+    },
+  );
+}
+
 export async function recheckRecovery(
   engine: Engine,
   input: unknown,
@@ -195,35 +128,61 @@ export async function recheckRecovery(
   if (replayed) return replayed;
   const { attempt } = recoverable(store, data.taskId);
   const check = await observeRecovery(engine, attempt.id);
-  return mutate(
-    store.db,
+  return saveCheck(
+    store,
     key,
     "recheckRecovery",
-    data,
-    recoveryCheckSchema,
-    () => {
-      const current = recoverable(store, data.taskId);
-      if (current.attempt.id !== attempt.id)
-        throw new DomainError("CONFLICT", "Recovery state changed; recheck");
-      saveAttemptRecovery(
-        store.db,
-        current.attempt,
-        withCheck(current.recovery, check),
+    data.taskId,
+    attempt.id,
+    check,
+  );
+}
+
+// Restart reconciliation: each pending retry decision not yet observed gets
+// one observation of its repository, checkout, process, native session and
+// unfinished tools. Every attempt restart found unfinished qualifies; one
+// already observed keeps its facts, and any decision observes again anyway.
+// The previous app's children are not owned here, so nothing is reattached,
+// prompted, resumed, re-signalled, relinked or deleted, and the ambiguous
+// attempt stays in RETRY_DECISION until the owner decides.
+export async function reconcileRestart(engine: Engine) {
+  const { store } = engine;
+  for (const task of store.listTasks()) {
+    if (task.kind !== "work" || task.status !== "RETRY_DECISION") continue;
+    try {
+      const { attempt, recovery } = recoverable(store, task.id);
+      if (recovery.checks.length) continue;
+      const check = await observeRecovery(engine, attempt.id);
+      saveCheck(
+        store,
+        `restart:${check.id}`,
+        "reconcileRestart",
+        task.id,
+        attempt.id,
+        check,
       );
+    } catch (error) {
+      // The decision barrier stands and the owner can recheck from the card;
+      // one unobservable attempt must not keep the app from starting.
       store.recordEvent(
         {
-          runId: current.task.runId,
-          taskId: current.task.id,
-          attemptId: attempt.id,
-          type: "recovery.rechecked",
-          correlationId: key,
-          payload: check,
+          runId: task.runId,
+          taskId: task.id,
+          type: "recovery.reconcile_failed",
+          correlationId: `restart:${task.id}`,
+          payload: {
+            error:
+              error instanceof DomainError
+                ? `${error.code}: ${error.message}`
+                : error instanceof Error
+                  ? error.name
+                  : "Unknown error",
+          },
         },
-        `${key}:event`,
+        `restart:${randomUUID()}:failed`,
       );
-      return check;
-    },
-  );
+    }
+  }
 }
 
 const facts = (check: RecoveryCheck) =>

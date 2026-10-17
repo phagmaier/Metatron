@@ -108,6 +108,7 @@ export const updateSessionSchema = z.strictObject({
   state: processStateSchema,
   nativeSessionId: textSchema.optional(),
   processId: z.int().positive().nullable().optional(),
+  processIdentity: textSchema.nullable().optional(),
   exitCode: z.int().nullable().optional(),
 });
 export const createHumanRequestSchema = z

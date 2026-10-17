@@ -8,6 +8,7 @@ import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
 import { leadDigest } from "./lead-run.ts";
 import { recordNativePermissionDenial } from "./native-permissions.ts";
+import { processIdentity } from "./recovery-observe.ts";
 import { stopPending } from "./stops.ts";
 
 const rules = `You are the Lead of a Local Agent Orchestrator run. You coordinate; you never implement.
@@ -152,7 +153,12 @@ export async function executeLeadTurn(
         expectedState: "starting",
         state: "busy",
         nativeSessionId: managed.nativeSessionId,
-        ...(managed.processId ? { processId: managed.processId } : {}),
+        ...(managed.processId
+          ? {
+              processId: managed.processId,
+              processIdentity: await processIdentity(managed.processId),
+            }
+          : {}),
       },
       `session:${attemptId}:busy`,
     );

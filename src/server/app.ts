@@ -7,6 +7,7 @@ import { healthSchema } from "../shared/health.ts";
 import type { HarnessAdapter } from "./adapters/contract.ts";
 import { createApi } from "./api.ts";
 import { Engine } from "./orchestration/engine.ts";
+import { reconcileRestart } from "./orchestration/recovery-decisions.ts";
 import { appLocations } from "./storage/database.ts";
 import { Store } from "./storage/store.ts";
 
@@ -158,6 +159,8 @@ export async function startApp(options: {
       ...(options.adapters?.codex ? { codex: options.adapters.codex } : {}),
       gatewayUrl: `${origin}/mcp`,
     });
+    // Observation only, before any owner action can reach a recovered task.
+    await reconcileRestart(engine);
     api = createApi(store, engine);
   } catch (error) {
     await engine?.close();
