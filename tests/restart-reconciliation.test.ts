@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { readFile, rm, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  mkdir,
+  readFile,
+  rename,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
 import type {
@@ -12,7 +19,10 @@ import type {
 import { FakeAdapter } from "../src/server/adapters/fake.ts";
 import { startApp } from "../src/server/app.ts";
 import { Engine } from "../src/server/orchestration/engine.ts";
-import { decideRecovery } from "../src/server/orchestration/recovery-decisions.ts";
+import {
+  decideRecovery,
+  recheckRecovery,
+} from "../src/server/orchestration/recovery-decisions.ts";
 import {
   observeRecovery,
   processIdentity,
@@ -172,67 +182,136 @@ async function crashed(
   };
 }
 
-test("restart observes a surviving worker whose worktree folder vanished, without resubmitting, signalling or deleting anything", async () => {
-  const c = await crashed();
-  try {
-    await rm(c.tree.path, { recursive: true });
-    const gitBefore = await c.f.repo.git("worktree", "list", "--porcelain");
-    const engine = await c.restart();
-    const { store } = engine;
-    assert.equal(store.getTask(c.taskId).status, "RETRY_DECISION");
-    const recovery = store.getAttempt(c.attemptId).recovery;
-    assert.equal(recovery?.cause, "recovery_required");
-    assert.equal(recovery?.checks.length, 1);
-    const [check] = recovery?.checks ?? [];
-    // A missing folder does not prove the worker stopped.
-    assert.deepEqual(
-      [check?.worktree.state, check?.worktree.path, check?.worktree.git],
-      ["missing", c.tree.path, null],
-    );
-    assert.deepEqual(
-      [check?.process.state, check?.process.processId],
-      ["pid_present", c.worker.pid],
-    );
-    assert.match(check?.process.reason ?? "", /still running/);
-    assert.deepEqual(
-      [check?.nativeSession?.id, check?.nativeSession?.state],
-      ["native-unfinished", "recorded"],
-    );
-    assert.deepEqual(check?.unfinishedTools, [
-      { toolId: "call-edit", summary: "edit" },
-    ]);
+for (const state of ["missing", "inaccessible", "replaced"] as const)
+  test(`restart observes a surviving worker with ${state} worktree state; recheck cannot resubmit, signal, relink or delete`, async () => {
+    const c = await crashed();
+    try {
+      await writeFile(
+        join(c.tree.path, "unfinished.txt"),
+        "Retain survivor work\n",
+      );
+      const savedPath = `${c.tree.path}-preserved`;
+      if (state === "inaccessible") await chmod(c.tree.path, 0);
+      else {
+        // Retain the original directory, including unfinished user work.
+        await rename(c.tree.path, savedPath);
+        if (state === "replaced") await mkdir(c.tree.path);
+      }
+      const gitBefore = await c.f.repo.git("worktree", "list", "--porcelain");
+      const engine = await c.restart();
+      const { store } = engine;
+      assert.equal(store.getTask(c.taskId).status, "RETRY_DECISION");
+      const recovery = store.getAttempt(c.attemptId).recovery;
+      assert.equal(recovery?.cause, "recovery_required");
+      assert.equal(recovery?.checks.length, 1);
+      const [check] = recovery?.checks ?? [];
+      // A missing folder does not prove the worker stopped.
+      assert.deepEqual(
+        [check?.worktree.state, check?.worktree.path, check?.worktree.git],
+        [state, c.tree.path, null],
+      );
+      assert.deepEqual(
+        [check?.process.state, check?.process.processId],
+        ["pid_present", c.worker.pid],
+      );
+      assert.match(check?.process.reason ?? "", /still running/);
+      assert.deepEqual(
+        [check?.nativeSession?.id, check?.nativeSession?.state],
+        ["native-unfinished", "recorded"],
+      );
+      assert.deepEqual(check?.unfinishedTools, [
+        { toolId: "call-edit", summary: "edit" },
+      ]);
 
-    await engine.pump();
-    assert.deepEqual(c.harness.calls, []);
-    assert.equal(store.listAttempts().length, 1);
-    assert.equal(store.listSessions().length, 1);
-    assert.ok(alive(c.worker.pid));
-    assert.equal(
-      await c.f.repo.git("worktree", "list", "--porcelain"),
-      gitBefore,
-    );
-    const types = c.newEventTypes(engine);
-    assert.equal(types.filter((t) => t === "recovery.reconciled").length, 1);
-    assert.deepEqual(
-      types.filter((t) => /^(pi|codex|worker|stop|worktree|session)\./.test(t)),
-      [],
-    );
-    await assert.rejects(
-      decideRecovery(
-        engine,
-        { taskId: c.taskId, checkId: check?.id, profileId: c.profileId },
-        "retry",
-      ),
-      (error: unknown) =>
-        error instanceof DomainError &&
-        /accept the unverified prior worktree missing and process pid present/.test(
-          error.message,
+      await engine.pump();
+      assert.deepEqual(c.harness.calls, []);
+      assert.equal(store.listAttempts().length, 1);
+      assert.equal(store.listSessions().length, 1);
+      assert.ok(alive(c.worker.pid));
+      assert.equal(
+        await c.f.repo.git("worktree", "list", "--porcelain"),
+        gitBefore,
+      );
+      const types = c.newEventTypes(engine);
+      assert.equal(types.filter((t) => t === "recovery.reconciled").length, 1);
+      assert.deepEqual(
+        types.filter((t) =>
+          /^(pi|codex|worker|stop|worktree|session)\./.test(t),
         ),
-    );
-  } finally {
-    await c.close();
-  }
-});
+        [],
+      );
+      const beforeRecheck = {
+        attempts: store
+          .listAttempts()
+          .map(({ recovery: _, updatedAt: __, ...a }) => a),
+        sessions: store.listSessions(),
+        task: store.getTask(c.taskId),
+        dispatches: engine.scheduling.list(),
+        worktrees: engine.worktrees.list(),
+      };
+      const rechecked = await recheckRecovery(
+        engine,
+        { taskId: c.taskId },
+        "recheck",
+      );
+      assert.equal(rechecked.worktree.state, state);
+      assert.equal(rechecked.process.state, "pid_present");
+      assert.deepEqual(
+        {
+          attempts: store
+            .listAttempts()
+            .map(({ recovery: _, updatedAt: __, ...a }) => a),
+          sessions: store.listSessions(),
+          task: store.getTask(c.taskId),
+          dispatches: engine.scheduling.list(),
+          worktrees: engine.worktrees.list(),
+        },
+        beforeRecheck,
+      );
+      await assert.rejects(engine.worktrees.capture(c.attemptId));
+      await assert.rejects(
+        decideRecovery(
+          engine,
+          { taskId: c.taskId, checkId: rechecked.id, profileId: c.profileId },
+          "retry",
+        ),
+        (error: unknown) =>
+          error instanceof DomainError &&
+          new RegExp(
+            `accept the unverified prior worktree ${state} and process pid present`,
+          ).test(error.message),
+      );
+      const observed = store.getAttempt(c.attemptId).recovery;
+      const restarted = await c.restart();
+      await restarted.pump();
+      assert.deepEqual(
+        restarted.store.getAttempt(c.attemptId).recovery,
+        observed,
+      );
+      assert.equal(restarted.store.listAttempts().length, 1);
+      assert.equal(restarted.store.getTask(c.taskId).status, "RETRY_DECISION");
+      assert.equal(
+        await c.f.repo.git("worktree", "list", "--porcelain"),
+        gitBefore,
+      );
+      assert.deepEqual(c.harness.calls, []);
+      assert.ok(alive(c.worker.pid));
+      if (state === "inaccessible") await chmod(c.tree.path, 0o700);
+      assert.equal(
+        await readFile(
+          join(
+            state === "inaccessible" ? c.tree.path : savedPath,
+            "unfinished.txt",
+          ),
+          "utf8",
+        ),
+        "Retain survivor work\n",
+      );
+    } finally {
+      if (state === "inaccessible") await chmod(c.tree.path, 0o700);
+      await c.close();
+    }
+  });
 
 test("restart does not mistake a reused PID for the worker or a same-path checkout for the original", async () => {
   // The recorded worker had another boot/start identity: this live PID was reused.

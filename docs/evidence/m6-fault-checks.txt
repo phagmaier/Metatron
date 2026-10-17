@@ -1,0 +1,79 @@
+Baseline: mise x -- pnpm test — PASS (250/250)
+ℹ tests 250
+ℹ suites 0
+ℹ pass 250
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 31075.44088
+
+Focused: mise x -- node --test tests/runtime-faults.test.ts tests/restart-reconciliation.test.ts tests/stops.test.ts tests/fake-adapter.test.ts tests/worker-help.test.ts tests/provider-failures.test.ts — PASS (47/47)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 47
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7744.347045
+
+mise x -- pnpm typecheck — PASS
+$ tsc --noEmit
+
+mise x -- pnpm lint — PASS
+$ biome check .
+Checked 148 files in 568ms. No fixes applied.
+
+mise x -- pnpm test:fixtures — PASS
+$ node --test tests/git-fixture.test.ts
+✔ fixture starts with a committed clean main branch and cleans up after verification (223.091813ms)
+Fixture verification failed; retained at /tmp/lao-git-fixture-UsGf1z
+✔ failed verification preserves the repository and uncommitted evidence (104.198061ms)
+Fixture verification failed; retained at /tmp/lao-git-fixture-iIQgBi
+✔ cleanup refuses a changed ownership marker (68.719942ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 989.577725
+
+mise x -- pnpm build — PASS
+$ vite build
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 137 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/web/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/web/assets/index-DhpKzFQQ.css    4.17 kB │ gzip:   1.37 kB
+dist/web/assets/index-DRrcMmta.js   392.46 kB │ gzip: 116.40 kB
+
+✓ built in 960ms
+
+mise x -- pnpm smoke — PASS
+$ node scripts/smoke.ts
+Development launch, health, HTML and script: passed (http://127.0.0.1:33419)
+Production launch, health, HTML and script: passed (http://127.0.0.1:35359)
+
+Minimal demonstration: mise x -- node --test tests/runtime-faults.test.ts — PASS
+✔ a delayed FAKE tool stays busy without tokens while unrelated work finishes; pausing and inspecting never stops it (678.743277ms)
+✔ FAKE process crash retains unresolved Git changes across app restart; only an owner decision launches again (746.584878ms)
+✔ FAKE clean exit without completion retains unresolved Git changes across app restart; only an owner decision launches again (766.324533ms)
+✔ FAKE ambiguous disconnect retains unresolved Git changes across app restart; only an owner decision launches again (672.944414ms)
+✔ FAKE stream ending without completion retains unresolved Git changes across app restart; only an owner decision launches again (703.217484ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3980.003913
+
+git diff --check — PASS
+Production source unchanged after mutation restoration: git diff --exit-code -- src — PASS
+Live cost-bearing harness calls intentionally omitted; native checks remain M8 and visible outcomes remain M9.

@@ -513,6 +513,37 @@ for (const [mode, status, pattern] of [
           .events({ runId: f.run.id, limit: 500 })
           .some((e) => e.type === "stop.outcome"),
       );
+      await f.engine.close();
+      const saved = f.store.events({ limit: 500 });
+      const cancels = f.stub.cancels;
+      const app = await startApp({
+        development: false,
+        port: 0,
+        databasePath: join(f.data, "state.sqlite"),
+        adapters: { pi: f.stub },
+      });
+      try {
+        // Reopening views uses durable state; reads cannot imply another stop.
+        for (const path of ["sessions", "tasks", "runs", "sessions"]) {
+          const response = await fetch(`${app.origin}/api/${path}`);
+          assert.equal(response.status, 200);
+          if (path === "sessions")
+            assert.deepEqual(
+              sessionsResponseSchema
+                .parse(await response.json())
+                .sessions.flatMap((s) => s.stops),
+              [stop],
+            );
+          else await response.arrayBuffer();
+        }
+        await app.engine.idle();
+        assert.equal(f.stub.cancels, cancels);
+        assert.equal(app.engine.store.listAttempts().length, 1);
+        assert.equal(app.engine.store.getTask(f.task.id).status, "CANCELLED");
+        assert.deepEqual(app.engine.store.events({ limit: 500 }), saved);
+      } finally {
+        await app.close();
+      }
     } finally {
       await f.engine.close();
       f.store.close();

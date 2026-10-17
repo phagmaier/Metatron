@@ -8,6 +8,7 @@ import type {
   StartSessionInput,
 } from "../src/server/adapters/contract.ts";
 import { FakeAdapter } from "../src/server/adapters/fake.ts";
+import { startApp } from "../src/server/app.ts";
 import { Engine } from "../src/server/orchestration/engine.ts";
 import { finishProviderFailure } from "../src/server/orchestration/provider-failures.ts";
 import { Store } from "../src/server/storage/store.ts";
@@ -67,6 +68,14 @@ async function fixture(events: SessionEvent[], cap = 24) {
   const playback = new FailurePlayback([events]);
   let store = new Store(path);
   let engine = new Engine(store, directory, playback);
+  let app: Awaited<ReturnType<typeof startApp>> | null = null;
+  async function closeApp() {
+    if (app) await app.close();
+    else {
+      await engine.close();
+      store.close();
+    }
+  }
   const project = await engine.openProject(
     { name: "FAKE provider failures", repositoryPath: repo.directory },
     "project",
@@ -98,15 +107,18 @@ async function fixture(events: SessionEvent[], cap = 24) {
       return engine;
     },
     async restart() {
-      await engine.close();
-      store.close();
-      store = new Store(path);
-      store.recoverInterrupted();
-      engine = new Engine(store, directory, playback);
+      await closeApp();
+      app = await startApp({
+        development: false,
+        port: 0,
+        databasePath: path,
+        adapters: { pi: playback, codex: playback },
+      });
+      engine = app.engine;
+      store = engine.store;
     },
     async close() {
-      await engine.close();
-      store.close();
+      await closeApp();
       await repo.verify(async () =>
         assert.equal(await repo.git("status", "--porcelain"), ""),
       );

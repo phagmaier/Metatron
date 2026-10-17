@@ -1,0 +1,12 @@
+M6 item 12 mutation audit; temporary source changes restored after each case.
+DETECTED: approval auto-granted without owner; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+DETECTED: approval denial ignored; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+DETECTED: crash collapsed into generic interruption; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+DETECTED: clean process exit treated as task completion; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+DETECTED: unverified worktree assumed to prove process termination; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+DETECTED: recovery silently accepts unverified prior identity; exit=1; AssertionError [ERR_ASSERTION]: Missing expected rejection.
+DETECTED: stop history discarded on restart; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+DETECTED: pending stop confirmed by restart alone; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+DETECTED: unavailable usage invented as zero; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+DETECTED: legacy untyped auth code treated as confirmed evidence; exit=1; AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+10/10 detected; all source files restored to their original contents.

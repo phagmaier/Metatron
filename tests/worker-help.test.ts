@@ -176,6 +176,15 @@ for (const scenario of ["help-blocking", "issue-blocking", "issue-urgent"]) {
         "defer",
       );
       assert.equal(f.store.listTaskBlockers(blocked.id).length, 1);
+      await f.restart();
+      await f.engine.idle();
+      assert.equal(f.store.getTask(blocked.id).status, "WAITING_HUMAN");
+      assert.equal(f.store.getHumanRequest(request.id).status, "deferred");
+      assert.equal(f.store.listAttempts().length, 3);
+      assert.equal(
+        await readFile(join(attempt.worktreePath, "help-scratch.txt"), "utf8"),
+        "Unfinished fixture work; preserve me\n",
+      );
       f.store.updateHumanRequest(
         {
           id: request.id,
@@ -199,6 +208,41 @@ for (const scenario of ["help-blocking", "issue-blocking", "issue-urgent"]) {
       assert.deepEqual(f.store.listAttempts(), saved.attempts);
       assert.deepEqual(f.store.listSessions(), saved.sessions);
       assert.deepEqual(f.store.events({ limit: 500 }), saved.events);
+      if (scenario === "help-blocking") {
+        const input = {
+          taskId: blocked.id,
+          profileId: attempt.profileId,
+          contextPolicy: "fresh",
+        };
+        const queued = f.engine.scheduling.enqueue(
+          { role: "owner" },
+          input,
+          "continue",
+        );
+        await f.engine.idle();
+        assert.equal(f.store.getTask(blocked.id).status, "AWAITING_REVIEW");
+        assert.equal(f.store.listAttempts().length, 4);
+        const successor = f.store
+          .listAttempts()
+          .findLast((a) => a.taskId === blocked.id);
+        assert.ok(successor);
+        assert.notEqual(successor.worktreePath, attempt.worktreePath);
+        assert.equal(
+          await readFile(
+            join(attempt.worktreePath, "help-scratch.txt"),
+            "utf8",
+          ),
+          "Unfinished fixture work; preserve me\n",
+        );
+        assert.deepEqual(
+          f.engine.scheduling.enqueue({ role: "owner" }, input, "continue"),
+          queued,
+        );
+        await f.restart();
+        await f.engine.idle();
+        assert.equal(f.store.listAttempts().length, 4);
+        assert.equal(f.store.getTask(blocked.id).status, "AWAITING_REVIEW");
+      }
       assert.equal(await f.repo.git("status", "--porcelain"), "");
       passed = true;
     } finally {

@@ -98,6 +98,67 @@ test("cancellation unblocks a pending permission and yields interruption", async
     code: "CONFLICT",
   });
 });
+test("a delayed approval never completes on its own; an explicit denial cannot run the following tool", async () => {
+  const adapter = new FakeAdapter([
+    [
+      {
+        type: "approval_requested",
+        nativeRequestId: "delayed",
+        details: "FAKE permission only",
+      },
+      {
+        type: "tool_started",
+        toolId: "mutation",
+        summary: "Must not run after denial",
+      },
+      { type: "turn_completed", nativeStatus: "completed" },
+    ],
+  ]);
+  const session = await adapter.startSession(fakeSessionInput());
+  const iterator = adapter
+    .prompt(session, "Wait for the owner")
+    [Symbol.asyncIterator]();
+  await iterator.next();
+  await iterator.next();
+  assert.equal((await iterator.next()).value?.type, "approval_requested");
+  let advanced = false;
+  const pending = iterator.next().then((result) => {
+    advanced = true;
+    return result;
+  });
+  try {
+    // Unrelated work and owner messages do not grant this permission.
+    const other = new FakeAdapter();
+    const unrelated = await other.startSession(fakeSessionInput());
+    assert.equal(
+      (await collect(other.prompt(unrelated, "Continue independently"))).at(-1)
+        ?.type,
+      "turn_completed",
+    );
+    await other.dispose(unrelated);
+    assert.equal(
+      await adapter.steer(session, "Do not treat this as approval"),
+      "queued",
+    );
+    await assert.rejects(
+      adapter.respondToApproval(session, "stale", "approve"),
+      { code: "NOT_FOUND" },
+    );
+    assert.equal(advanced, false);
+    await adapter.respondToApproval(session, "delayed", "deny");
+    assert.deepEqual((await pending).value, {
+      type: "turn_completed",
+      nativeStatus: "interrupted",
+    });
+    assert.equal((await iterator.next()).done, true);
+    await assert.rejects(collect(adapter.prompt(session, "No resubmission")), {
+      code: "CONFLICT",
+    });
+  } finally {
+    await adapter.dispose(session);
+    await pending;
+  }
+});
 test("disconnect is ambiguous and resumes only against the original task and repository", async () => {
   const adapter = new FakeAdapter([
     [{ type: "process_state", state: "disconnected", exitCode: null }],
