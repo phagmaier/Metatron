@@ -258,6 +258,19 @@ export const workerMessageSchema = z.strictObject({
   diagnostic: textSchema,
 });
 export type WorkerMessage = z.infer<typeof workerMessageSchema>;
+// Owner stop intent for one session. Only process/session evidence settles it;
+// a closed view, a missing folder or silence never does.
+export const stopRecordSchema = z.strictObject({
+  id: idSchema,
+  scope: z.enum(["task", "run", "emergency"]),
+  requestedAt: timestampSchema,
+  processId: z.int().positive().nullable(),
+  status: z.enum(["pending", "confirmed", "failed", "uncertain"]),
+  resolvedAt: timestampSchema.nullable(),
+  evidence: textSchema.nullable(),
+  diagnostic: textSchema.nullable(),
+});
+export type StopRecord = z.infer<typeof stopRecordSchema>;
 export const sessionSchema = z.strictObject({
   ...metadata,
   attemptId: idSchema,
@@ -269,6 +282,7 @@ export const sessionSchema = z.strictObject({
   exitCode: z.int().nullable(),
   recovery: z.enum(["none", "RECOVERY_REQUIRED"]),
   ownerMessages: z.array(workerMessageSchema).default([]),
+  stops: z.array(stopRecordSchema).default([]),
 });
 export type Session = z.infer<typeof sessionSchema>;
 

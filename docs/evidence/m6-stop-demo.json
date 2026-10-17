@@ -1,0 +1,91 @@
+{
+  "dialogs": [
+    "Stop this run? Its active sessions are cancelled and dispatch halts permanently. Worktrees, artifacts and history are kept.",
+    "Stop this run? Its active sessions are cancelled and dispatch halts permanently. Worktrees, artifacts and history are kept.",
+    "Emergency stop pauses scheduling in every run and ends sessions this app started. Descendant processes and filesystem changes already made may remain. Continue?"
+  ],
+  "console": [],
+  "pause": {
+    "runStatus": "paused",
+    "sessionStates": [
+      "busy"
+    ],
+    "stops": []
+  },
+  "inspectOpen": true,
+  "inspectClose": {
+    "sessionStates": [
+      "busy"
+    ],
+    "stops": 0
+  },
+  "stopRun": {
+    "runStatus": "stopped",
+    "stops": [
+      {
+        "id": "d02335a3-eeb8-4764-b842-d06448e64738",
+        "scope": "run",
+        "requestedAt": "2026-10-17T03:33:25.038Z",
+        "processId": 517617,
+        "status": "confirmed",
+        "resolvedAt": "2026-10-17T03:33:25.174Z",
+        "evidence": "Owned pi process exit observed (exit code 0, signal none)",
+        "diagnostic": null
+      }
+    ]
+  },
+  "unrelated": {
+    "runStatus": "active",
+    "sessionStates": [
+      "busy"
+    ],
+    "stops": 0,
+    "shows": true
+  },
+  "afterNavigation": true,
+  "pendingAfterReload": true,
+  "restart": {
+    "stops": [
+      {
+        "id": "b49479ac-2c74-49bd-b752-6dacb54f179d",
+        "scope": "run",
+        "requestedAt": "2026-10-17T03:33:25.797Z",
+        "processId": 517685,
+        "status": "uncertain",
+        "resolvedAt": "2026-10-17T03:33:28.014Z",
+        "evidence": null,
+        "diagnostic": "The app restarted before termination evidence was recorded; the process may still be running. Inspect before any recovery decision."
+      }
+    ],
+    "recovery": [
+      [
+        "disconnected",
+        "RECOVERY_REQUIRED"
+      ]
+    ],
+    "priorPids": [
+      517685
+    ]
+  },
+  "emergency": {
+    "runStatus": "paused",
+    "stops": [
+      {
+        "id": "39ac86fd-bc88-46fa-b96e-1aad73b8ccf4",
+        "scope": "emergency",
+        "requestedAt": "2026-10-17T03:33:29.088Z",
+        "processId": 517812,
+        "status": "confirmed",
+        "resolvedAt": "2026-10-17T03:33:29.216Z",
+        "evidence": "Owned pi process exit observed (exit code 0, signal none)",
+        "diagnostic": null
+      }
+    ],
+    "taskStatuses": [
+      "RETRY_DECISION"
+    ],
+    "manualAlive": true
+  },
+  "narrowOverflow": false,
+  "result": "PASS"
+}

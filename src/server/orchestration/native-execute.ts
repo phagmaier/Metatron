@@ -16,6 +16,7 @@ import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 import { reviewPacket } from "./review.ts";
 import { revisionPacket } from "./revision.ts";
+import { stopPending } from "./stops.ts";
 import { finishWorkerHelp, pendingWorkerHelp } from "./worker-help.ts";
 
 export async function executeNativeTurn(
@@ -79,6 +80,7 @@ export async function executeNativeTurn(
     const freshRun = store.getRun(run.id);
     if (
       engine.isStopping() ||
+      stopPending(store, attemptId) ||
       freshRun.status !== "active" ||
       freshRun.mode === "chat_plan"
     ) {
@@ -120,6 +122,12 @@ export async function executeNativeTurn(
     engine.workerMessages.register(session.id, engine.pi, active);
     engine.nativeStops.set(task.id, async (reason) => {
       interrupted = true;
+      // Emergency skips cooperative abort and closes only this owned child,
+      // bounded by TERM/KILL deadlines. Its descendants are not tracked.
+      if (reason === "emergency" && engine.pi instanceof PiAdapter) {
+        await engine.pi.exit(active);
+        return;
+      }
       try {
         await engine.pi.cancel(active);
       } finally {
@@ -129,7 +137,11 @@ export async function executeNativeTurn(
           await engine.pi.exit(active);
       }
     });
-    if (engine.isStopping() || store.getTask(task.id).status === "CANCELLED") {
+    if (
+      engine.isStopping() ||
+      stopPending(store, attemptId) ||
+      store.getTask(task.id).status === "CANCELLED"
+    ) {
       interrupted = true;
       throw new Error("Owner cancelled/stopped during native startup");
     }

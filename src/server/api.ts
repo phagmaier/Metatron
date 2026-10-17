@@ -31,6 +31,7 @@ import { inspectRepository } from "./git/inspect.ts";
 import type { Engine } from "./orchestration/engine.ts";
 import { candidateDiff, requestReview } from "./orchestration/review.ts";
 import { requestRevision } from "./orchestration/revision.ts";
+import { emergencyStop, stopRun } from "./orchestration/stops.ts";
 import { reviewHistory } from "./storage/reviews.ts";
 import type { Store } from "./storage/store.ts";
 
@@ -316,6 +317,9 @@ export function createApi(store: Store, engine: Engine) {
               engine.workerMessages.send({ role: "owner" }, input, key),
             "PATCH /api/tasks": (input, key) => engine.updateTask(input, key),
             "PATCH /api/runs": (input, key) => engine.updateRun(input, key),
+            "POST /api/runs/stop": (input, key) => stopRun(engine, input, key),
+            "POST /api/emergency-stop": (input, key) =>
+              emergencyStop(engine, input, key),
             "POST /api/runs/messages": (input, key) =>
               engine.message(input, key),
             "POST /api/tasks/assign": (input, key) =>

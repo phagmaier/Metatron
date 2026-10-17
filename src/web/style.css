@@ -312,3 +312,14 @@ pre {
 .request-text {
   white-space: pre-wrap;
 }
+.emergency {
+  border-color: #d9a48a;
+}
+.emergency h2 {
+  margin: 0;
+}
+button.danger {
+  background: #9b3d13;
+  border-color: #9b3d13;
+  color: #fff;
+}

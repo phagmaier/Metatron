@@ -1,0 +1,9 @@
+# M6 item 7 targeted mutations (2026-10-16). Each mutation applied alone, `mise x -- node --test tests/stops.test.ts` run, source restored (cmp verified).
+M1 uncertain-as-confirmed: ℹ pass 6 ℹ fail 2  failing: ✖ a silent stop without process exit evidence is recorded as uncertain;✖ a stop still pending at an app crash is reconciled as uncertain afte
+M2 restart-no-reconcile: ℹ pass 7 ℹ fail 1  failing: ✖ a stop still pending at an app crash is reconciled as uncertain afte
+M3 run-stop-targets-all: ℹ pass 7 ℹ fail 1  failing: ✖ stop run cancels only its own live session, confirms exit from proce
+M4 no-post-launch-check: ℹ pass 7 ℹ fail 1  failing: ✖ an emergency stop during native startup is observed once the session
+M5 status-only-stop: ℹ pass 7 ℹ fail 1  failing: ✖ owner stop routes need the local token, a status-only stop is refuse
+M6 fake-ignores-stop: ℹ pass 7 ℹ fail 1  failing: ✖ emergency stop ends only app-owned sessions, pauses every active run
+M7 emergency-cooperative: ℹ pass 7 ℹ fail 1  failing: ✖ emergency stop ends only app-owned sessions, pauses every active run
+M8 codex-emergency-cooperative (tests/lead.test.ts): ℹ pass 0 ℹ fail 1  failing: ✖ emergency stop closes the owned Codex Lead process without a coopera

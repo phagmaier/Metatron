@@ -27,6 +27,7 @@ import { LeadPanel } from "./lead-panel.tsx";
 import { NeedsYouPanel } from "./needs-you-panel.tsx";
 import { ProjectForms } from "./project-forms.tsx";
 import { RunControls } from "./run-controls.tsx";
+import { EmergencyStop, StopHistory } from "./stop-panel.tsx";
 import { TaskCard } from "./task-card.tsx";
 import "./style.css";
 
@@ -181,6 +182,7 @@ function App() {
           {error}
         </p>
       )}
+      <EmergencyStop onError={setError} />
       <ProjectForms
         project={selectedProject}
         onProject={(id) => {
@@ -419,8 +421,15 @@ function App() {
                           {session.recovery !== "none" && (
                             <p className="warning">{session.recovery}</p>
                           )}
+                          {session.stops.some(
+                            (stop) => stop.status === "pending",
+                          ) && (
+                            <p className="warning">
+                              Stop pending · process may still be running
+                            </p>
+                          )}
                           <details>
-                            <summary>Session event detail</summary>
+                            <summary>Inspect session (view only)</summary>
                             <ol className="journal">
                               {runEvents
                                 .filter(
@@ -444,9 +453,16 @@ function App() {
                   </ul>
                 )}
                 <p className="note">
-                  Process state is separate from task status. Restarting never
-                  reruns ambiguous attempts.
+                  Process state is separate from task status. Inspecting or
+                  closing a session view never stops it; use Cancel task, Stop
+                  run or Emergency stop. Restarting never reruns ambiguous
+                  attempts.
                 </p>
+                <StopHistory
+                  sessions={runSessions}
+                  attempts={runAttempts}
+                  tasks={runTasks}
+                />
               </section>
               <section aria-labelledby="journal-title">
                 <h2 id="journal-title">Persisted event journal</h2>

@@ -8,6 +8,7 @@ import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
 import { leadDigest } from "./lead-run.ts";
 import { recordNativePermissionDenial } from "./native-permissions.ts";
+import { stopPending } from "./stops.ts";
 
 const rules = `You are the Lead of a Local Agent Orchestrator run. You coordinate; you never implement.
 Rules the engine enforces (not only this text):
@@ -119,7 +120,11 @@ export async function executeLeadTurn(
     before = await checkout(root);
     if (!engine.gatewayUrl || !role || profile.harness !== "codex")
       throw new Error("Native Lead requires the app server's tool gateway");
-    if (engine.isStopping() || store.getTask(task.id).status === "CANCELLED") {
+    if (
+      engine.isStopping() ||
+      stopPending(store, attemptId) ||
+      store.getTask(task.id).status === "CANCELLED"
+    ) {
       interrupted = true;
       throw new Error("Lead turn cancelled before launch");
     }
@@ -163,11 +168,17 @@ export async function executeLeadTurn(
       `lead:${attemptId}:configured`,
     );
     const active = managed;
-    engine.nativeStops.set(task.id, async () => {
+    engine.nativeStops.set(task.id, async (reason) => {
       interrupted = true;
-      await engine.codex.cancel(active);
+      if (reason === "emergency" && engine.codex instanceof CodexAdapter)
+        await engine.codex.exit(active);
+      else await engine.codex.cancel(active);
     });
-    if (engine.isStopping() || store.getTask(task.id).status === "CANCELLED") {
+    if (
+      engine.isStopping() ||
+      stopPending(store, attemptId) ||
+      store.getTask(task.id).status === "CANCELLED"
+    ) {
       interrupted = true;
       throw new Error("Lead turn cancelled during startup");
     }

@@ -1,0 +1,42 @@
+M6 item 7 final checks; pinned toolchain via mise (node 26.7.0, pnpm 11.22.0)
+
+Baseline: mise x -- pnpm test — PASS 203/203 (before item 7 changes).
+Final: mise x -- pnpm test — PASS 212/212; see m6-stop-tests.txt.
+Focused: mise x -- node --test tests/stops.test.ts — PASS 8/8; Codex Lead emergency test in tests/lead.test.ts PASS. Eight targeted mutations detected: m6-stop-mutations.txt.
+Browser: system Chromium 152 over CDP, isolated profile, disposable Git/SQLite, Pi protocol subprocesses (no model): m6-stop-demo.json. No cost-bearing live model turn.
+
+$ mise x -- pnpm typecheck
+$ tsc --noEmit
+exit=0
+
+$ mise x -- pnpm lint
+$ biome check .
+Checked 135 files in 70ms. No fixes applied.
+exit=0
+
+$ mise x -- pnpm test:fixtures
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 187.838583
+exit=0
+
+$ mise x -- pnpm build
+rendering chunks...
+computing gzip size...
+dist/web/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/web/assets/index-BTMaHuOV.css    3.96 kB │ gzip:   1.31 kB
+dist/web/assets/index-cMaZR0yK.js   384.46 kB │ gzip: 114.14 kB
+✓ built in 177ms
+exit=0
+
+$ mise x -- pnpm smoke
+$ node scripts/smoke.ts
+Development launch, health, HTML and script: passed (http://127.0.0.1:43633)
+Production launch, health, HTML and script: passed (http://127.0.0.1:40617)
+exit=0
+
+$ git diff --check
+exit=0

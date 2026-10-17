@@ -9,6 +9,7 @@ import { CodexRpc } from "../src/server/adapters/codex-rpc.ts";
 import { PiAdapter } from "../src/server/adapters/pi.ts";
 import { PiRpc } from "../src/server/adapters/pi-rpc.ts";
 import { startApp } from "../src/server/app.ts";
+import { emergencyStop } from "../src/server/orchestration/stops.ts";
 import { listIntegrationCandidates } from "../src/server/storage/candidates.ts";
 import type { Run } from "../src/shared/domain/entities.ts";
 import { createGitFixture } from "./helpers/git-fixture.ts";
@@ -425,6 +426,39 @@ test("owner stop interrupts a silent Lead turn and nothing is retried", async ()
     );
     assert.ok((await f.log()).some((l) => l.method === "turn/interrupt"));
     assert.equal(f.store.listTasks(run.id).length, 1);
+  } finally {
+    await f.close();
+  }
+});
+
+test("emergency stop closes the owned Codex Lead process without a cooperative interrupt and leaves a retry decision", async () => {
+  const f = await leadFixture({ scenario: "hold" });
+  try {
+    const run = await f.start("autonomous_bounded");
+    const lead = f.store.listTasks(run.id).find((t) => t.kind === "lead");
+    assert.ok(lead);
+    for (let i = 0; i < 300 && !f.engine.nativeStops.has(lead.id); i++)
+      await delay(10);
+    assert.ok(f.engine.nativeStops.has(lead.id));
+    emergencyStop(f.engine, {}, "emergency");
+    await f.engine.idle();
+    assert.equal(f.store.getRun(run.id).status, "paused");
+    assert.equal(f.store.getTask(lead.id).status, "RETRY_DECISION");
+    const attempt = f.store.listAttempts().find((a) => a.taskId === lead.id);
+    assert.equal(attempt?.status, "interrupted");
+    const stops = f.store
+      .listSessions()
+      .filter((s) => s.attemptId === attempt?.id)
+      .flatMap((s) => s.stops);
+    assert.equal(stops[0]?.status, "confirmed");
+    assert.match(stops[0]?.evidence ?? "", /Owned codex process exit observed/);
+    assert.equal(
+      (await f.log()).some((l) => l.method === "turn/interrupt"),
+      false,
+    );
+    const attempts = f.store.listAttempts().length;
+    await f.engine.pump();
+    assert.equal(f.store.listAttempts().length, attempts);
   } finally {
     await f.close();
   }

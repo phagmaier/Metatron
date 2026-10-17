@@ -67,11 +67,27 @@ export function RunControls({
           >
             {run.status === "paused" ? "Resume scheduling" : "Pause scheduling"}
           </button>
+          <button
+            type="button"
+            className="danger"
+            disabled={busy || ["stopped", "completed"].includes(run.status)}
+            onClick={() => {
+              if (
+                window.confirm(
+                  "Stop this run? Its active sessions are cancelled and dispatch halts permanently. Worktrees, artifacts and history are kept.",
+                )
+              )
+                void act(() => writeApi("runs/stop", { runId: run.id }));
+            }}
+          >
+            Stop run…
+          </button>
         </div>
       </div>
       <p className="note">
-        Pause holds queued work; active turns finish. Chat/Plan cannot dispatch
-        workers.
+        Pause holds queued work; active turns finish. Stop run cancels this
+        run's active sessions and permanently halts its dispatch; worktrees,
+        artifacts and history stay. Chat/Plan cannot dispatch workers.
       </p>
       {(run.execution === "fake" || hasNativeLead(run)) && (
         <form

@@ -40,6 +40,12 @@ import { executeLeadTurn } from "./lead-execute.ts";
 import { createLeadRun, notifyLead, ownerLeadMessage } from "./lead-run.ts";
 import { executeNativeTurn } from "./native-execute.ts";
 import { createNativeRun } from "./native-run.ts";
+import {
+  recordStops,
+  recoverStops,
+  settleStops,
+  signalStops,
+} from "./stops.ts";
 import { runTool } from "./tools.ts";
 import { recoverWorkerHelp } from "./worker-help.ts";
 import { WorkerMessages } from "./worker-messages.ts";
@@ -58,7 +64,7 @@ export class Engine {
   readonly workerMessages: WorkerMessages;
   readonly nativeStops = new Map<
     string,
-    (reason?: "human_request") => Promise<void>
+    (reason?: "human_request" | "emergency") => Promise<void>
   >();
   private readonly running = new Map<string, Promise<void>>();
   private pumping = false;
@@ -81,6 +87,7 @@ export class Engine {
     this.scheduling = new Scheduling(store, directory);
     this.workerMessages = new WorkerMessages(this);
     recoverWorkerHelp(this);
+    recoverStops(store);
     for (const role of fakeTeamSnapshot.roles)
       store.db
         .prepare("INSERT OR IGNORE INTO role_templates VALUES (?,?)")
@@ -257,13 +264,28 @@ export class Engine {
     return this.store.updateTask(updateTaskSchema.parse(input), key);
   }
   updateRun(input: unknown, key: string) {
-    return this.store.updateRun(updateRunSchema.parse(input), key);
+    const data = updateRunSchema.parse(input);
+    // A terminal label alone would leave live sessions running unnoticed.
+    if (data.status === "stopped" || data.status === "completed")
+      throw new DomainError(
+        "CONFLICT",
+        "Use Stop run; a status change alone does not cancel sessions",
+      );
+    return this.store.updateRun(data, key);
   }
   tool(actor: Actor, runId: string, input: unknown, key: string) {
     return runTool(this, actor, runId, input, key);
   }
   cancel(taskId: string, key: string) {
-    const cancelled = mutate(
+    const stops: string[] = [];
+    const task = this.cancelTask(taskId, key, stops);
+    for (const stopId of stops) signalStops(this, stopId);
+    return task;
+  }
+  // Pass stops = null when the caller already journaled stop intent for the
+  // task's sessions; otherwise collected stops are signalled after commit.
+  cancelTask(taskId: string, key: string, stops: string[] | null): Task {
+    return mutate(
       this.store.db,
       key,
       "cancelTask",
@@ -291,6 +313,10 @@ export class Engine {
           },
           `${key}:cancel`,
         );
+        if (stops) {
+          const stop = recordStops(this, "task", (_, id) => id === task.id);
+          if (stop.sessionIds.length) stops.push(stop.stopId);
+        }
         const dispatch = this.scheduling
           .list()
           .find((d) => d.taskId === task.id);
@@ -313,28 +339,10 @@ export class Engine {
             "INTERRUPTED",
           ].includes(revision.status)
         )
-          this.cancel(revision.id, `${key}:revision`);
+          this.cancelTask(revision.id, `${key}:revision`, stops);
         return task;
       },
     );
-    const stop = this.nativeStops.get(taskId);
-    if (stop)
-      void stop().catch(() =>
-        this.store.recordEvent(
-          {
-            runId: cancelled.runId,
-            taskId,
-            type: "cancel.diagnostic",
-            correlationId: key,
-            payload: {
-              diagnostic:
-                "Native abort did not acknowledge; bounded process shutdown/recovery required",
-            },
-          },
-          `${key}:abort-diagnostic`,
-        ),
-      );
-    return cancelled;
   }
   async pump() {
     if (this.pumping || this.stopping) return;
@@ -419,6 +427,7 @@ export class Engine {
             .finally(() => {
               this.scheduling.release(reserved);
               this.running.delete(dispatch.taskId);
+              settleStops(this.store, attemptId);
             })
             .catch((error: unknown) => {
               this.running.delete(dispatch.taskId);
