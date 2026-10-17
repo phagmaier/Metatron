@@ -161,15 +161,27 @@ test("a writer with no structured report still yields a persisted candidate for 
     await f.close();
   }
 });
-for (const scenario of ["exit", "auth"]) {
-  test(`native ${scenario} requires a retry decision and preserves worktree/history`, async () => {
+for (const scenario of ["exit", "auth", "rate-limit", "credits"]) {
+  test(`native ${scenario} preserves worktree/history and waits for an explicit owner decision`, async () => {
     const f = await fixture(scenario);
     try {
       const run = await f.engine.startNativeRun(f.input, "run");
       await f.engine.idle();
       const task = f.store.listTasks(run.id)[0];
       assert.ok(task);
-      assert.equal(task.status, "RETRY_DECISION");
+      assert.equal(
+        task.status,
+        scenario === "exit" ? "RETRY_DECISION" : "WAITING_HUMAN",
+      );
+      if (scenario !== "exit")
+        assert.equal(
+          f.store.listTaskBlockers(task.id)[0]?.providerFailure?.kind,
+          scenario === "auth"
+            ? "auth"
+            : scenario === "rate-limit"
+              ? "rate_limit"
+              : "credits_exhausted",
+        );
       assert.equal(f.store.listAttempts().length, 1);
       assert.equal(f.engine.worktrees.list()[0]?.state, "retained");
       assert.equal(

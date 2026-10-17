@@ -38,12 +38,27 @@ const tools = new Set([
 ]);
 const delegation = new Set(["collabAgentToolCall", "subAgentActivity"]);
 function classify(info: unknown) {
-  const text = JSON.stringify(info ?? "");
-  return /unauthorized/i.test(text)
-    ? "auth"
-    : /usageLimit|rateLimit|sessionBudget/i.test(text)
-      ? "quota"
-      : "native_error";
+  if (info === "unauthorized") return "auth";
+  if (info === "rateLimitExceeded") return "rate_limit";
+  // A plan/account usage limit does not establish an exhausted credit balance.
+  if (info === "usageLimitExceeded") return "usage_limit";
+  for (const variant of [
+    "httpConnectionFailed",
+    "responseStreamConnectionFailed",
+    "responseStreamDisconnected",
+    "responseTooManyFailedAttempts",
+  ]) {
+    const parsed = z
+      .object({
+        [variant]: z.object({ httpStatusCode: z.number().nullable() }),
+      })
+      .safeParse(info);
+    if (!parsed.success) continue;
+    const status = parsed.data[variant]?.httpStatusCode;
+    if (status === 401) return "auth";
+    if (status === 429) return "rate_limit";
+  }
+  return "native_error";
 }
 function describe(item: z.infer<typeof itemSchema>) {
   if (item.type === "mcpToolCall") return `mcp ${item.server}.${item.tool}`;
@@ -67,13 +82,22 @@ export class CodexEvents {
   }
   consume(event: CodexNotification): SessionEvent[] {
     const params = z
-      .object({ threadId: z.string().optional() })
+      .object({
+        threadId: z.string().optional(),
+        turnId: z.string().optional(),
+      })
       .loose()
       .safeParse(event.params);
     if (
       params.success &&
       params.data.threadId !== undefined &&
       params.data.threadId !== this.threadId
+    )
+      return [];
+    if (
+      params.success &&
+      params.data.turnId !== undefined &&
+      params.data.turnId !== this.turnId
     )
       return [];
     switch (event.method) {
@@ -142,6 +166,7 @@ export class CodexEvents {
           {
             type: "session_error",
             code,
+            ...(code !== "native_error" ? { providerFailureKind: code } : {}),
             recoverable: code !== "auth",
             message: `Codex reported ${code}; inspect app-owned Codex diagnostics`,
           },
@@ -152,13 +177,16 @@ export class CodexEvents {
         if (!parsed.success || parsed.data.turn.id !== this.turnId) return [];
         const status = parsed.data.turn.status;
         const out: SessionEvent[] = this.usage ? [this.usage] : [];
-        if (status === "failed" && parsed.data.turn.error)
+        if (status === "failed" && parsed.data.turn.error) {
+          const code = classify(parsed.data.turn.error.codexErrorInfo);
           out.push({
             type: "session_error",
-            code: classify(parsed.data.turn.error.codexErrorInfo),
+            code,
+            ...(code !== "native_error" ? { providerFailureKind: code } : {}),
             recoverable: true,
             message: "Codex turn failed; no automatic retry",
           });
+        }
         out.push({
           type: "turn_completed",
           nativeStatus:

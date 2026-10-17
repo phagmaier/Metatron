@@ -1,0 +1,31 @@
+$ tsc --noEmit
+$ biome check .
+Checked 147 files in 174ms. No fixes applied.
+$ node --test tests/git-fixture.test.ts
+✔ fixture starts with a committed clean main branch and cleans up after verification (73.458969ms)
+Fixture verification failed; retained at /tmp/lao-git-fixture-M9gHXs
+✔ failed verification preserves the repository and uncommitted evidence (45.460675ms)
+Fixture verification failed; retained at /tmp/lao-git-fixture-HWZqJG
+✔ cleanup refuses a changed ownership marker (39.04526ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 371.727694
+$ vite build
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 137 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/web/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/web/assets/index-DhpKzFQQ.css    4.17 kB │ gzip:   1.37 kB
+dist/web/assets/index-DRrcMmta.js   392.46 kB │ gzip: 116.40 kB
+
+✓ built in 278ms
+$ node scripts/smoke.ts
+Development launch, health, HTML and script: passed (http://127.0.0.1:37855)
+Production launch, health, HTML and script: passed (http://127.0.0.1:35637)

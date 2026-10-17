@@ -198,13 +198,18 @@ process.stdin.on("data", (chunk) => {
     if (scenario === "exit") {
       process.exit(0);
     }
-    if (scenario === "auth") {
+    if (["auth", "rate-limit", "credits"].includes(scenario ?? "")) {
       emit({
         type: "message_end",
         message: {
           role: "assistant",
           stopReason: "error",
-          errorMessage: "401 credential fixture-secret",
+          errorMessage:
+            scenario === "auth"
+              ? "401 credential fixture-secret"
+              : scenario === "rate-limit"
+                ? "429 Too Many Requests fixture-secret"
+                : "Insufficient credits fixture-secret",
         },
       });
       emit({ type: "agent_settled", aborted: false });

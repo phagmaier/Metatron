@@ -1,0 +1,85 @@
+{
+  "fixtureOnly": true,
+  "before": {
+    "tasks": [
+      {
+        "title": "Pi writer",
+        "status": "WAITING_HUMAN"
+      },
+      {
+        "title": "PROTOCOL FIXTURE · independent reader",
+        "status": "AWAITING_REVIEW"
+      }
+    ],
+    "requests": [
+      {
+        "id": "b08bfb88-18fa-4e78-a749-5a394a18b809",
+        "createdAt": "2026-10-17T06:27:39.394Z",
+        "updatedAt": "2026-10-17T06:27:39.394Z",
+        "runId": "a3a4c572-1219-4341-bb8d-82111da52813",
+        "sessionId": "32e844ea-fc0c-4ddf-9d06-852baae2d652",
+        "affectedTaskIds": [
+          "845cf293-edf9-4497-b60d-c2c76716ba37"
+        ],
+        "type": "environment",
+        "urgency": "high",
+        "reason": "pi: Credits exhausted. Confirmed by a native error event.",
+        "suggestedAction": "Check credits and billing with the provider and restore access there if appropriate. The app cannot read or change your balance. Inspect the retained attempt and worktree, resolve this request, then explicitly choose how to continue. A reply never resumes or retries work.",
+        "blocking": true,
+        "status": "open",
+        "ownerResponse": null,
+        "resolvedAt": null,
+        "nativePermission": null,
+        "providerFailure": {
+          "kind": "credits_exhausted",
+          "evidenceEventId": "7dd38b4a-eefd-43f5-81f0-199708dab7da",
+          "inputTokens": null,
+          "outputTokens": null
+        }
+      }
+    ],
+    "attempts": 2,
+    "nativeFixtureStarts": 2
+  },
+  "after": {
+    "tasks": [
+      {
+        "title": "Pi writer",
+        "status": "WAITING_HUMAN"
+      },
+      {
+        "title": "PROTOCOL FIXTURE · independent reader",
+        "status": "AWAITING_REVIEW"
+      }
+    ],
+    "requests": [
+      {
+        "id": "b08bfb88-18fa-4e78-a749-5a394a18b809",
+        "createdAt": "2026-10-17T06:27:39.394Z",
+        "updatedAt": "2026-10-17T06:29:25.021Z",
+        "runId": "a3a4c572-1219-4341-bb8d-82111da52813",
+        "sessionId": "32e844ea-fc0c-4ddf-9d06-852baae2d652",
+        "affectedTaskIds": [
+          "845cf293-edf9-4497-b60d-c2c76716ba37"
+        ],
+        "type": "environment",
+        "urgency": "high",
+        "reason": "pi: Credits exhausted. Confirmed by a native error event.",
+        "suggestedAction": "Check credits and billing with the provider and restore access there if appropriate. The app cannot read or change your balance. Inspect the retained attempt and worktree, resolve this request, then explicitly choose how to continue. A reply never resumes or retries work.",
+        "blocking": true,
+        "status": "completed",
+        "ownerResponse": null,
+        "resolvedAt": "2026-10-17T06:29:25.021Z",
+        "nativePermission": null,
+        "providerFailure": {
+          "kind": "credits_exhausted",
+          "evidenceEventId": "7dd38b4a-eefd-43f5-81f0-199708dab7da",
+          "inputTokens": null,
+          "outputTokens": null
+        }
+      }
+    ],
+    "attempts": 2,
+    "nativeFixtureStarts": 2
+  }
+}

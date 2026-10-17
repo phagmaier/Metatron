@@ -145,6 +145,26 @@ const rosterSchema = z.object({
 });
 async function lead(prompt: string) {
   if (scenario === "hold") return;
+  if (scenario.startsWith("provider-")) {
+    await delay(Number(process.env.LAO_CODEX_PROVIDER_DELAY ?? 0));
+    for (let i = 0; i < 2; i++)
+      notify("error", {
+        threadId,
+        turnId: active?.id,
+        willRetry: false,
+        error: {
+          codexErrorInfo:
+            scenario === "provider-auth"
+              ? "unauthorized"
+              : scenario === "provider-rate"
+                ? "rateLimitExceeded"
+                : "usageLimitExceeded",
+          message: "fixture-secret",
+        },
+      });
+    finish("failed");
+    return;
+  }
   if (scenario === "permissions") {
     const requests: [string | number, string][] = [
       [901, "item/commandExecution/requestApproval"],

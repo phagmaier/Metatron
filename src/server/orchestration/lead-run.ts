@@ -103,6 +103,38 @@ export function requestLeadTurn(
       const run = store.getRun(runId);
       if (!hasNativeLead(run) || ["stopped", "completed"].includes(run.status))
         return null;
+      const lastLead = store
+        .listTasks(runId)
+        .filter((task) => task.kind === "lead")
+        .at(-1);
+      const providerHold = lastLead
+        ? store
+            .listHumanRequests()
+            .findLast(
+              (request) =>
+                request.providerFailure &&
+                request.affectedTaskIds.includes(lastLead.id),
+            )
+        : null;
+      if (
+        lastLead &&
+        ["WAITING_HUMAN", "RETRY_DECISION"].includes(lastLead.status) &&
+        providerHold
+      ) {
+        // Worker notifications must not reopen a failed Lead's native thread.
+        if (trigger === "automatic") return null;
+        if (
+          providerHold.affectedTaskIds.some(
+            (id) =>
+              store.getTask(id).status === "RETRY_DECISION" ||
+              store.listTaskBlockers(id).length > 0,
+          )
+        )
+          throw new DomainError(
+            "CONFLICT",
+            "Resolve the Lead's provider blocker and any recovery decision before requesting another turn",
+          );
+      }
       const queued = store
         .listTasks(runId)
         .find(

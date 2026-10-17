@@ -19,6 +19,7 @@ import { reconcileRevision } from "../storage/revisions.ts";
 import { prepareContext } from "./context-policy.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
+import { finishProviderFailure } from "./provider-failures.ts";
 import { observeRecovery, processIdentity } from "./recovery-observe.ts";
 import { reviewPacket } from "./review.ts";
 import { revisionPacket } from "./revision.ts";
@@ -63,7 +64,7 @@ export async function executeNativeTurn(
     : null;
   let managed: ManagedSession | undefined;
   let output = "";
-  let terminal = "failed";
+  let terminal: "completed" | "failed" | "interrupted" | null = null;
   let diagnostic = "Native attempt did not complete";
   let index = 0;
   let interrupted = false;
@@ -306,6 +307,7 @@ export async function executeNativeTurn(
           (evidence.files.length || evidence.headSha !== start)
         ) {
           terminal = "failed";
+          lost = "recovery_required";
           diagnostic =
             "Git evidence requires owner inspection; no success inferred from model output";
         }
@@ -336,14 +338,25 @@ export async function executeNativeTurn(
     interrupted ||
     store.getTask(task.id).status === "CANCELLED"
   ) {
+    if (
+      terminal === "failed" &&
+      !interrupted &&
+      !lost &&
+      stopped &&
+      finishProviderFailure(engine, attemptId, true)
+    )
+      return;
     engine.fail(
       task.id,
       attemptId,
       diagnostic,
       lost ??
-        (interrupted || terminal === "interrupted" ? "interrupted" : "failed"),
+        (interrupted || terminal === "interrupted" || terminal === null
+          ? "interrupted"
+          : "failed"),
       check,
     );
+    finishProviderFailure(engine, attemptId, false);
     return;
   }
   const submitted = store.db

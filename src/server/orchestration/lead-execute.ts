@@ -8,6 +8,7 @@ import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
 import { leadDigest } from "./lead-run.ts";
 import { recordNativePermissionDenial } from "./native-permissions.ts";
+import { finishProviderFailure } from "./provider-failures.ts";
 import { processIdentity } from "./recovery-observe.ts";
 import { stopPending } from "./stops.ts";
 
@@ -106,9 +107,10 @@ export async function executeLeadTurn(
   let before: string | null = null;
   let managed: ManagedSession | undefined;
   let text = "";
-  let terminal = "failed";
+  let terminal: "completed" | "failed" | "interrupted" | null = null;
   let diagnostic = "Lead turn did not complete";
   let interrupted = false;
+  let stopped = false;
   let lost: RecoveryCause | null = null;
   let index = 0;
   const changeState = (
@@ -271,6 +273,13 @@ export async function executeLeadTurn(
             `process-exit:${attemptId}`,
           );
         await engine.codex.dispose(managed);
+        stopped = !exit || (exit.code === 0 && !exit.signal);
+        if (!stopped) {
+          terminal = "failed";
+          lost = "crashed";
+          diagnostic =
+            "Codex process did not shut down cleanly; retained for recovery";
+        }
       } catch {
         terminal = "failed";
         lost = "recovery_required";
@@ -280,6 +289,7 @@ export async function executeLeadTurn(
     try {
       if (before !== null && (await checkout(root)) !== before) {
         terminal = "failed";
+        lost = "recovery_required";
         diagnostic =
           "Owner checkout changed during a read-only Lead turn; run paused for inspection";
         record(
@@ -295,6 +305,7 @@ export async function executeLeadTurn(
       }
     } catch {
       terminal = "failed";
+      lost = "recovery_required";
       diagnostic = "Cannot verify the owner checkout after the Lead turn";
     }
   }
@@ -303,13 +314,24 @@ export async function executeLeadTurn(
     interrupted ||
     store.getTask(task.id).status === "CANCELLED"
   ) {
+    if (
+      terminal === "failed" &&
+      !interrupted &&
+      !lost &&
+      stopped &&
+      finishProviderFailure(engine, attemptId, true)
+    )
+      return;
     engine.fail(
       task.id,
       attemptId,
       diagnostic,
       lost ??
-        (interrupted || terminal === "interrupted" ? "interrupted" : "failed"),
+        (interrupted || terminal === "interrupted" || terminal === null
+          ? "interrupted"
+          : "failed"),
     );
+    finishProviderFailure(engine, attemptId, false);
     return;
   }
   mutate(

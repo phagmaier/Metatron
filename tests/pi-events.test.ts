@@ -37,7 +37,7 @@ test("Pi waits for agent_settled and the final assistant stop reason, never prom
         type: "usage",
         inputTokens: 2,
         outputTokens: 3,
-        source: "pi native assistant message",
+        source: "pi native assistant message (may be partial)",
       },
     ],
   );
@@ -45,10 +45,16 @@ test("Pi waits for agent_settled and the final assistant stop reason, never prom
     { type: "turn_completed", nativeStatus: "completed" },
   ]);
 });
-test("Pi maps auth/quota, aborts and unexplained exits without inventing task success or leaking native errors", () => {
+test("Pi classifies only explicit provider failures, without leaking native errors or inferring exhaustion from usage", () => {
   for (const [message, code] of [
     ["401 bad API key secret-token", "auth"],
-    ["429 credits exhausted secret-token", "quota"],
+    ["429 credits exhausted secret-token", "credits_exhausted"],
+    ["429 Too Many Requests secret-token", "rate_limit"],
+    ["insufficient_quota secret-token", "usage_limit"],
+    ["Credit balance unavailable secret-token", "native_error"],
+    ["Unable to read API key usage secret-token", "native_error"],
+    ["403 request forbidden secret-token", "native_error"],
+    ["Quota report unavailable secret-token", "native_error"],
   ]) {
     const mapper = new PiEvents();
     const events = mapper.consume({
@@ -67,6 +73,16 @@ test("Pi maps auth/quota, aborts and unexplained exits without inventing task su
       [{ type: "turn_completed", nativeStatus: "failed" }],
     );
   }
+});
+test("Pi aborts and unexplained exits never imply provider failure or task success", () => {
+  const aborted = new PiEvents().consume({
+    type: "message_end",
+    message: { role: "assistant", stopReason: "aborted", errorMessage: "401" },
+  });
+  assert.equal(
+    aborted[0]?.type === "session_error" && aborted[0].code,
+    "native_error",
+  );
   assert.deepEqual(
     new PiEvents().consume({ type: "agent_settled", aborted: true }),
     [{ type: "turn_completed", nativeStatus: "interrupted" }],

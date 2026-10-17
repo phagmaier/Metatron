@@ -118,7 +118,7 @@ test("Codex delegation items, final errors and exits never look like success", (
   });
   assert.deepEqual(
     failed.map((e) => (e.type === "session_error" ? e.code : e.type)),
-    ["quota", "turn_completed"],
+    ["usage_limit", "turn_completed"],
   );
   assert.deepEqual(
     mapper.consume({ method: "transport/exit", params: { code: 0 } }),
@@ -128,6 +128,44 @@ test("Codex delegation items, final errors and exits never look like success", (
     mapper.consume({ method: "future/notification", params: {} }),
     [],
   );
+});
+test("Codex uses exact native error variants and keeps usage limits distinct from exhausted credits", () => {
+  for (const [info, code] of [
+    ["unauthorized", "auth"],
+    ["rateLimitExceeded", "rate_limit"],
+    ["usageLimitExceeded", "usage_limit"],
+    ["sessionBudgetExceeded", "native_error"],
+    [{ httpConnectionFailed: { httpStatusCode: 401 } }, "auth"],
+    [{ responseStreamDisconnected: { httpStatusCode: 429 } }, "rate_limit"],
+    [{ httpConnectionFailed: { httpStatusCode: 403 } }, "native_error"],
+    [{ other: "unauthorized credits exhausted secret-token" }, "native_error"],
+  ] as const) {
+    const mapper = new CodexEvents(threadId);
+    mapper.start("turn-1");
+    assert.deepEqual(
+      mapper.consume({
+        method: "error",
+        params: {
+          threadId,
+          turnId: "other-turn",
+          willRetry: false,
+          error: { codexErrorInfo: info },
+        },
+      }),
+      [],
+    );
+    const [event] = mapper.consume({
+      method: "error",
+      params: {
+        threadId,
+        turnId: "turn-1",
+        willRetry: false,
+        error: { codexErrorInfo: info },
+      },
+    });
+    assert.equal(event?.type === "session_error" && event.code, code);
+    assert.ok(!JSON.stringify(event).includes("secret-token"));
+  }
 });
 test("RPC separates a Codex request rejection from a process exit without leaking native error text", async () => {
   const script = `let b='',n=0;process.stdin.on('data',c=>{b+=c;let i;while((i=b.indexOf('\\n'))>=0){const v=JSON.parse(b.slice(0,i));b=b.slice(i+1);if(++n>1)process.exit(3);process.stdout.write(JSON.stringify({id:v.id,error:{code:-32600,message:'fixture-secret'}})+'\\n')}});`;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ProviderFailureKind } from "../../shared/provider-failures.ts";
 import type { SessionEvent } from "./contract.ts";
 import type { RpcRecord } from "./pi-rpc.ts";
 
@@ -10,6 +11,35 @@ const assistantSchema = z.object({
     .object({ input: z.number().optional(), output: z.number().optional() })
     .optional(),
 });
+// Pi exposes provider errors as text, not structured status codes. Match only
+// explicit failure statements in an error message; missing usage is no evidence.
+function classify(error: string): ProviderFailureKind | "native_error" {
+  if (
+    /\b401\b|\bunauthorized\b|\b(?:invalid|incorrect|missing|no) api[ _-]?key\b|\bauthentication (?:failed|required)\b/i.test(
+      error,
+    )
+  )
+    return "auth";
+  if (
+    /\binsufficient[ _-]credits\b|\bcredits? (?:are |is )?(?:exhausted|depleted)\b|\bcredit balance (?:is )?(?:too low|insufficient|exhausted|zero)\b/i.test(
+      error,
+    )
+  )
+    return "credits_exhausted";
+  if (
+    /\binsufficient_quota\b|\b(?:usage limit|quota) (?:has been |is )?(?:exceeded|exhausted|reached)\b/i.test(
+      error,
+    )
+  )
+    return "usage_limit";
+  if (
+    /\b429\b|\btoo many requests\b|\brate[ _-]limit(?:[ _-]exceeded| (?:has been |is )?(?:exceeded|reached))\b/i.test(
+      error,
+    )
+  )
+    return "rate_limit";
+  return "native_error";
+}
 export class PiEvents {
   private stopReason: string | null = null;
   private failure = false;
@@ -39,24 +69,8 @@ export class PiEvents {
       // A later successful message can replace a transient failed response;
       // agent_settled, never agent_end, decides the session-level result.
       this.failure = ["error", "aborted"].includes(this.stopReason);
-      if (this.failure) {
-        const error = parsed.data.errorMessage ?? "";
-        const code = /auth|api.?key|401|403|credential/i.test(error)
-          ? "auth"
-          : /quota|credit|429|rate.?limit|balance/i.test(error)
-            ? "quota"
-            : "native_error";
-        return [
-          {
-            type: "session_error",
-            code,
-            recoverable: code !== "auth",
-            message: `Pi reported ${code}; inspect app-owned native session diagnostics`,
-          },
-        ];
-      }
       const usage = parsed.data.usage;
-      return usage
+      const usageEvents: SessionEvent[] = usage
         ? [
             {
               type: "usage",
@@ -66,10 +80,26 @@ export class PiEvents {
               ...(usage.output !== undefined
                 ? { outputTokens: usage.output }
                 : {}),
-              source: "pi native assistant message",
+              source: "pi native assistant message (may be partial)",
             },
           ]
         : [];
+      if (this.failure) {
+        const error = parsed.data.errorMessage ?? "";
+        const code =
+          this.stopReason === "error" ? classify(error) : "native_error";
+        return [
+          {
+            type: "session_error",
+            code,
+            ...(code !== "native_error" ? { providerFailureKind: code } : {}),
+            recoverable: code !== "auth",
+            message: `Pi reported ${code}; inspect app-owned native session diagnostics`,
+          },
+          ...usageEvents,
+        ];
+      }
+      return usageEvents;
     }
     if (
       record.type === "tool_execution_start" ||

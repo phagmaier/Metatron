@@ -9,6 +9,7 @@ import { CodexRpc } from "../src/server/adapters/codex-rpc.ts";
 import { PiAdapter } from "../src/server/adapters/pi.ts";
 import { PiRpc } from "../src/server/adapters/pi-rpc.ts";
 import { startApp } from "../src/server/app.ts";
+import { requestLeadTurn } from "../src/server/orchestration/lead-run.ts";
 import { emergencyStop } from "../src/server/orchestration/stops.ts";
 import { listIntegrationCandidates } from "../src/server/storage/candidates.ts";
 import type { Run } from "../src/shared/domain/entities.ts";
@@ -16,6 +17,107 @@ import { createGitFixture } from "./helpers/git-fixture.ts";
 
 const fixturePath = (name: string) =>
   fileURLToPath(new URL(`./helpers/${name}`, import.meta.url));
+
+for (const [scenario, kind] of [
+  ["provider-auth", "auth"],
+  ["provider-rate", "rate_limit"],
+  ["provider-usage", "usage_limit"],
+] as const) {
+  test(`Codex protocol ${scenario} blocks the Lead once; automatic wakeups cannot reopen it even after the owner resolves the request`, async () => {
+    const f = await leadFixture({
+      scenario,
+      codexEnv: { LAO_CODEX_PROVIDER_DELAY: "300" },
+    });
+    try {
+      const run = await f.start("autonomous_bounded");
+      let queuedId: string | undefined;
+      if (kind === "auth") {
+        for (let i = 0; i < 200 && f.engine.nativeStops.size === 0; i++) {
+          await f.engine.pump();
+          await delay(5);
+        }
+        assert.equal(f.engine.nativeStops.size, 1);
+        const queued = requestLeadTurn(
+          f.engine,
+          run.id,
+          "automatic",
+          "Already queued worker notification",
+          "prequeued",
+        );
+        assert.ok(queued);
+        queuedId = queued.id;
+      }
+      await f.engine.idle();
+      const [task] = f.store.listTasks(run.id);
+      assert.ok(task);
+      assert.equal(task.status, "WAITING_HUMAN");
+      if (queuedId)
+        assert.equal(f.store.getTask(queuedId).status, "WAITING_HUMAN");
+      const [request] = f.store.listTaskBlockers(task.id);
+      assert.ok(request?.providerFailure);
+      assert.equal(request.providerFailure.kind, kind);
+      assert.equal(request.providerFailure.inputTokens, 11);
+      assert.equal(f.store.listHumanRequests().length, 1);
+      assert.equal(
+        requestLeadTurn(
+          f.engine,
+          run.id,
+          "automatic",
+          "Worker finished",
+          "auto-before",
+        ),
+        null,
+      );
+      assert.throws(
+        () =>
+          requestLeadTurn(
+            f.engine,
+            run.id,
+            "owner",
+            "Try again",
+            "owner-before",
+          ),
+        /blocker/,
+      );
+      f.store.updateHumanRequest(
+        { id: request.id, expectedStatus: "open", status: "completed" },
+        "resolve",
+      );
+      assert.equal(
+        requestLeadTurn(
+          f.engine,
+          run.id,
+          "automatic",
+          "Another worker finished",
+          "auto-after",
+        ),
+        null,
+      );
+      await f.engine.idle();
+      assert.equal(f.store.listAttempts().length, 1);
+      assert.equal(
+        JSON.stringify(f.store.events({ runId: run.id, limit: 500 })).includes(
+          "fixture-secret",
+        ),
+        false,
+      );
+      assert.equal(f.engine.scheduling.committedLaunches(run.id), 0);
+      assert.ok(
+        requestLeadTurn(
+          f.engine,
+          run.id,
+          "owner",
+          "Explicit owner continuation",
+          "owner-after",
+        ),
+      );
+      await f.engine.idle();
+      assert.equal(f.store.listAttempts().length, 2);
+    } finally {
+      await f.close();
+    }
+  });
+}
 async function leadFixture(
   options: {
     scenario?: string;

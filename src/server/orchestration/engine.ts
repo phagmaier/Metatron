@@ -43,6 +43,7 @@ import { executeLeadTurn } from "./lead-execute.ts";
 import { createLeadRun, notifyLead, ownerLeadMessage } from "./lead-run.ts";
 import { executeNativeTurn } from "./native-execute.ts";
 import { createNativeRun } from "./native-run.ts";
+import { recoverProviderFailures } from "./provider-failures.ts";
 import {
   recordStops,
   recoverStops,
@@ -90,6 +91,7 @@ export class Engine {
     this.scheduling = new Scheduling(store, directory);
     this.workerMessages = new WorkerMessages(this);
     recoverWorkerHelp(this);
+    recoverProviderFailures(this);
     recoverStops(store);
     for (const role of fakeTeamSnapshot.roles)
       store.db

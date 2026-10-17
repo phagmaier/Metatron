@@ -9,6 +9,7 @@ import {
 } from "../../shared/domain/entities.ts";
 import { processStateSchema } from "../../shared/domain/states.ts";
 import { nativePermissionDenialSchema } from "../../shared/native-permissions.ts";
+import { providerFailureKindSchema } from "../../shared/provider-failures.ts";
 
 export const capabilitiesSchema = z.strictObject({
   adapter: adapterKindSchema,
@@ -64,6 +65,7 @@ export const sessionEventSchema = z.discriminatedUnion("type", [
   z.strictObject({
     type: z.literal("session_error"),
     code: textSchema,
+    providerFailureKind: providerFailureKindSchema.optional(),
     recoverable: z.boolean(),
     message: textSchema,
   }),

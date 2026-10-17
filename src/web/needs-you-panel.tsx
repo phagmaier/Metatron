@@ -8,6 +8,7 @@ import {
   type Session,
   type Task,
 } from "../shared/domain/entities.ts";
+import { providerFailureLabels } from "../shared/provider-failures.ts";
 import { readApi, writeApi } from "./api.ts";
 import { humanRequestActions } from "./human-request-actions.ts";
 
@@ -93,6 +94,24 @@ function RequestCard({
       <p className="request-text">
         <strong>Suggested action:</strong> {request.suggestedAction}
       </p>
+      {request.providerFailure && (
+        <div className="warning">
+          <p>{providerFailureLabels[request.providerFailure.kind]}</p>
+          <p>
+            Reported usage:{" "}
+            {request.providerFailure.inputTokens === null &&
+            request.providerFailure.outputTokens === null
+              ? "unavailable"
+              : `${request.providerFailure.inputTokens ?? "unknown"} input / ${request.providerFailure.outputTokens ?? "unknown"} output tokens (last native sample; may be partial)`}
+            . Provider balance and reset time: unknown. App hard budgets remain
+            in effect.
+          </p>
+          <p>
+            Resolving this request records your action. Continuing requires an
+            explicit owner decision.
+          </p>
+        </div>
+      )}
       {request.nativePermission && (
         <div className="warning">
           <p>
@@ -104,6 +123,11 @@ function RequestCard({
       <details>
         <summary>Evidence and source</summary>
         <p className="path">Request {request.id}</p>
+        {request.providerFailure && (
+          <p className="path">
+            Native error evidence: {request.providerFailure.evidenceEventId}
+          </p>
+        )}
         {request.nativePermission && (
           <>
             <p className="path">
