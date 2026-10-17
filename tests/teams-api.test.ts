@@ -152,7 +152,6 @@ test("owner saves a native team over HTTP, starts a Codex Lead run that dispatch
     const listed = teamsResponseSchema.parse(await read("team-presets"));
     assert.deepEqual(listed.teams.at(-1), team);
     assert.deepEqual(listed.demoTeamIds, [fakeTeamSnapshot.preset.id]);
-    assert.deepEqual(listed.workflows, []);
     assert.equal(app.engine.scheduling.list().length, 0);
 
     const start = {

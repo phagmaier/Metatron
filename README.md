@@ -71,7 +71,7 @@ Under **Projects and new runs**, open **Start a run from a saved team**, choose 
 
 ## Static workflow engine
 
-M7 item 4 provides backend services, not workflow authoring/invocation UI or a Lead tool. `createWorkflowTemplate(store, content, key)` saves a validated v1 recipe; `engine.workflows.start({runId, templateId, parameters}, key)` instantiates only a workflow already allowed in the run's immutable team snapshot. No arbitrary runtime graphs, nested calls or loops. Built-in workflow presets, grouped UI and owner/Lead invocation remain later M7 items.
+M7 provides backend services, not workflow authoring/invocation UI or a Lead tool. `createWorkflowTemplate(store, content, key)` saves a validated v1 recipe; `engine.workflows.start({runId, templateId, parameters}, key)` instantiates only a workflow already allowed in the run's immutable team snapshot. No arbitrary runtime graphs, nested calls or loops. `Explore Subsystem` is available as a saved preset; grouped workflow UI and owner/Lead invocation remain later M7 items.
 
 Recipes declare named runtime `inputs`, named `results: [{name, stageId}]`, and topologically ordered stages. Each stage declares `id`, `type` (`single_agent`, `parallel_agents`, `synthesize`), a roster worker's `profileId`, `instructions`, `inputs: [{name, source: "parameter" | "stage", ref}]`, expected `result` guidance, `dependsOn`, `count`, `partitions` and `partialFailure`. Parallel stages require one independent partition per child; other stages have count 1 and no partitions. Stage inputs can reference declared parameters or direct upstream dependencies. Synthesis must consume an upstream result. Runtime parameter names must match exactly.
 
@@ -81,6 +81,16 @@ Owner reassignment of a prepared, queued child still uses the normal roster, pin
 Bounds: 64 children per parallel stage, at most 128 children per recipe, and the run's `maxParallelReadersPerWorkflow` fan-out limit. Parameter values total at most 4,000 characters; each instruction/result/partition is at most 4,000. Handoffs retain task/artifact references and at most 2,000 characters per source excerpt inside the 32,768-character context limit; originals remain separate. Missing/unreadable source reports block the consumer. SQLite migration v8 adds durable workflow executions; stage inputs and child dispatches commit atomically. Replaying a start or reopening the app never duplicates completed attempts.
 
 Regression demo: `mise x -- node --test tests/workflows.test.ts`. A separate disposable runtime smoke exercised single → parallel → synthesis under a one-reader cap with four completed attempts and an unchanged owner checkout: [observed output](docs/evidence/m7-workflows-smoke.json). Only FAKE playback was exercised; real harness workflow verification remains M7's later gate.
+
+### Explore Subsystem
+
+Startup adds one saved **Explore Subsystem · v1** example using the fixed **Fake Reader** and **Fake Synthesizer** profiles. To reuse it, include both profiles and the workflow under a team's **Available workflows**, then save the team. This only configures access; it never starts exploration or changes existing teams/runs. The example executes FAKE playback, not a live harness.
+
+Backend callers can save the same recipe for their own read-only profiles through `createExploreSubsystemTemplate(store, {readerProfileId, synthesizerProfileId, readerCount}, key)` in `src/server/storage/workflows.ts`. `readerCount` is **1–4**, default **4**, chosen when saving the static template. Four readers separately cover entry points/architecture, state/data flow, dependencies, and tests/edge cases; smaller counts group all four areas without dropping coverage. Run fan-out limits still apply. No harness or model is hardcoded into the recipe.
+
+The runtime input is `{target: "path, subsystem or question"}`. Readers return concise findings with file:line evidence, confidence and gaps; one synthesizer receives their bounded reports and task/artifact references, preserves citations, reconciles disagreements and identifies missing evidence. The named `exploration` result points to synthesis. Confirmed reader failures yield an explicit partial workflow result; ambiguous recovery still blocks synthesis. Nothing approves integration or changes the native harness's permission guarantees.
+
+Verification: `mise x -- node --test tests/explore-subsystem.test.ts`. [Runtime evidence](docs/evidence/m7-explore-smoke.json) covers the four-reader success/partial paths and all 1–4 partition layouts; [team selection](docs/evidence/m7-explore-preset.png) and [reload readback](docs/evidence/m7-explore-browser.json) confirm reusable GUI configuration without worker launches. Live cost-bearing workflow turns remain the later M7 gate.
 
 ## M2 fake orchestration demonstration
 

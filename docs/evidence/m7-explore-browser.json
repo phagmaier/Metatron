@@ -1,0 +1,29 @@
+{
+  "workflowSelectionPersisted": true,
+  "attemptCountAfterSave": 12,
+  "team": {
+    "id": "ff838102-c9c6-40bf-b3ed-b4494a11c6b6",
+    "createdAt": "2026-10-17T10:56:26.977Z",
+    "updatedAt": "2026-10-17T10:56:26.977Z",
+    "version": 1,
+    "name": "Browser FAKE exploration",
+    "leadProfileId": "00000000-0000-4000-8000-000000000010",
+    "workerProfileIds": [
+      "00000000-0000-4000-8000-000000000013",
+      "00000000-0000-4000-8000-000000000014"
+    ],
+    "workflowTemplateIds": [
+      "00000000-0000-4000-8000-000000000200"
+    ],
+    "mode": "autonomous_bounded",
+    "limits": {
+      "maxConcurrentWriters": 2,
+      "maxConcurrentReadersReviewers": 4,
+      "maxConcurrentAgentsIncludingLead": 7,
+      "maxTotalWorkerLaunchesPerRun": 24,
+      "maxParallelReadersPerWorkflow": 4,
+      "maxRevisionCyclesPerTask": 2,
+      "maxAutomaticLeadWakeupsPerRun": 40
+    }
+  }
+}

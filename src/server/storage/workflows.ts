@@ -7,6 +7,10 @@ import {
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import { workflowContentSchema } from "../../shared/domain/workflow.ts";
+import {
+  exploreSubsystemConfigSchema,
+  exploreSubsystemContent,
+} from "../../shared/workflow-presets.ts";
 import { type WorkflowRun, workflowRunSchema } from "../../shared/workflows.ts";
 import { mutate } from "./mutations.ts";
 import { getProfile } from "./profiles.ts";
@@ -53,6 +57,35 @@ export function createWorkflowTemplate(
         `${key}:event`,
       );
       return template;
+    },
+  );
+}
+
+export function createExploreSubsystemTemplate(
+  store: Store,
+  input: unknown,
+  key: string,
+) {
+  const config = exploreSubsystemConfigSchema.parse(input);
+  return mutate(
+    store.db,
+    key,
+    "createExploreSubsystemTemplate",
+    config,
+    workflowTemplateSchema,
+    () => {
+      for (const id of [config.readerProfileId, config.synthesizerProfileId]) {
+        if (getProfile(store, { id }).permission !== "read_only")
+          throw new DomainError(
+            "POLICY_DENIED",
+            "Explore Subsystem requires read-only reader and synthesizer profiles",
+          );
+      }
+      return createWorkflowTemplate(
+        store,
+        exploreSubsystemContent(config),
+        `${key}:template`,
+      );
     },
   );
 }

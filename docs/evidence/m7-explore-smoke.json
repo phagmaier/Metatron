@@ -1,0 +1,136 @@
+{
+  "execution": "FAKE playback only; no provider contacted",
+  "template": "Explore Subsystem",
+  "partitionsByReaderCount": [
+    {
+      "readerCount": 1,
+      "partitions": [
+        [
+          "Entry points and architecture",
+          "State and data flow",
+          "Dependencies",
+          "Tests and edge cases"
+        ]
+      ]
+    },
+    {
+      "readerCount": 2,
+      "partitions": [
+        [
+          "Entry points and architecture",
+          "Dependencies"
+        ],
+        [
+          "State and data flow",
+          "Tests and edge cases"
+        ]
+      ]
+    },
+    {
+      "readerCount": 3,
+      "partitions": [
+        [
+          "Entry points and architecture",
+          "Tests and edge cases"
+        ],
+        [
+          "State and data flow"
+        ],
+        [
+          "Dependencies"
+        ]
+      ]
+    },
+    {
+      "readerCount": 4,
+      "partitions": [
+        [
+          "Entry points and architecture"
+        ],
+        [
+          "State and data flow"
+        ],
+        [
+          "Dependencies"
+        ],
+        [
+          "Tests and edge cases"
+        ]
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "scenario": "success",
+      "runId": "dbdb6644-d09b-42dd-8d99-836dfbcf5d11",
+      "workflowStatus": "completed",
+      "readerStates": [
+        "AWAITING_REVIEW",
+        "AWAITING_REVIEW",
+        "AWAITING_REVIEW",
+        "AWAITING_REVIEW"
+      ],
+      "attempts": 5,
+      "synthesisStatus": "AWAITING_REVIEW",
+      "sourceReferences": [
+        {
+          "taskId": "98fade80-001a-46c3-aea1-1fcdc905c918",
+          "status": "completed",
+          "artifactId": "eef6cec0-336a-486f-a807-c7992bede419"
+        },
+        {
+          "taskId": "97c1dca1-af20-44ba-b15e-c650c067630a",
+          "status": "completed",
+          "artifactId": "c97885db-be8d-43cb-ba7b-b8859bb454cc"
+        },
+        {
+          "taskId": "4e3395a5-f41b-44ae-a5c4-4a2bd620c251",
+          "status": "completed",
+          "artifactId": "ce520914-4c35-4e38-86ec-c63a8f2135c7"
+        },
+        {
+          "taskId": "48d4fbb7-4c32-49ba-b610-b1b33ee31e05",
+          "status": "completed",
+          "artifactId": "b2abdfbf-044f-4338-8463-a0a0ebacd2d2"
+        }
+      ]
+    },
+    {
+      "scenario": "partial",
+      "runId": "1c6725e3-761c-49a2-8d60-021077cabf90",
+      "workflowStatus": "partial",
+      "readerStates": [
+        "AWAITING_REVIEW",
+        "RETRY_DECISION",
+        "AWAITING_REVIEW",
+        "AWAITING_REVIEW"
+      ],
+      "attempts": 5,
+      "synthesisStatus": "AWAITING_REVIEW",
+      "sourceReferences": [
+        {
+          "taskId": "39c721ff-a162-4b51-a741-5f6f9cf59776",
+          "status": "completed",
+          "artifactId": "7504f045-2e08-4871-bce0-977ada1b7b5d"
+        },
+        {
+          "taskId": "510515af-7d69-4fec-84c3-5815f2a3db95",
+          "status": "failed",
+          "artifactId": null
+        },
+        {
+          "taskId": "ac72f7d7-8a63-4376-874c-d6e26e059ee6",
+          "status": "completed",
+          "artifactId": "018ff4da-1d20-4887-9273-4f3ce011c013"
+        },
+        {
+          "taskId": "a506ba83-55a3-4181-a15d-f99ce9787e06",
+          "status": "completed",
+          "artifactId": "6cb5f77d-0059-4f86-8af8-726e60d5998e"
+        }
+      ]
+    }
+  ],
+  "ownerCheckoutUnchanged": true,
+  "workflowInvocation": "Internal service; no HTTP/Lead invocation added"
+}

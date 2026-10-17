@@ -1,4 +1,9 @@
-import { defaultLimits, teamSnapshotSchema } from "./domain/entities.ts";
+import {
+  defaultLimits,
+  teamSnapshotSchema,
+  workflowTemplateSchema,
+} from "./domain/entities.ts";
+import { exploreSubsystemContent } from "./workflow-presets.ts";
 
 const identity = (number: number) => ({
   id: `00000000-0000-4000-8000-${String(number).padStart(12, "0")}`,
@@ -70,4 +75,14 @@ export const fakeTeamSnapshot = teamSnapshotSchema.parse({
     instructionOverride: null,
   })),
   workflows: [],
+});
+
+export const fakeExploreSubsystemTemplate = workflowTemplateSchema.parse({
+  ...identity(200),
+  version: 1,
+  ...exploreSubsystemContent({
+    readerProfileId: identity(13).id,
+    synthesizerProfileId: identity(14).id,
+    readerCount: 4,
+  }),
 });

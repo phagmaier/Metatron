@@ -24,7 +24,10 @@ import {
   ownerTaskSchema,
   startRunSchema,
 } from "../../shared/orchestration.ts";
-import { fakeTeamSnapshot } from "../../shared/presets.ts";
+import {
+  fakeExploreSubsystemTemplate,
+  fakeTeamSnapshot,
+} from "../../shared/presets.ts";
 import { CodexAdapter } from "../adapters/codex.ts";
 import type { HarnessAdapter } from "../adapters/contract.ts";
 import { PiAdapter } from "../adapters/pi.ts";
@@ -108,6 +111,12 @@ export class Engine {
       store.db
         .prepare("INSERT OR IGNORE INTO agent_profiles VALUES (?,?,?)")
         .run(profile.id, profile.roleId, JSON.stringify(profile));
+    store.db
+      .prepare("INSERT OR IGNORE INTO workflow_templates VALUES (?,?)")
+      .run(
+        fakeExploreSubsystemTemplate.id,
+        JSON.stringify(fakeExploreSubsystemTemplate),
+      );
     store.db
       .prepare("INSERT OR IGNORE INTO team_presets VALUES (?,?,?)")
       .run(
