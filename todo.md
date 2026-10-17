@@ -137,8 +137,8 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 
 ## M7 - Reusable roles, profiles, teams, and workflows [spec §2, 4, 7]
 
-- [ ] Build CRUD/import-export for RoleTemplates separate from model/harness choice.
-- [ ] Build CRUD for named AgentProfiles with chosen harness/model/reasoning/permission class; validate from capability discovery.
+- [x] Build CRUD/import-export for RoleTemplates separate from model/harness choice.
+- [x] Build CRUD for named AgentProfiles with chosen harness/model/reasoning/permission class; validate from capability discovery.
 - [ ] Build reusable TeamPresets: Lead profile, worker pool, mode, resource budgets, available workflows; save immutable snapshot for each run.
 - [ ] Implement static sequential stage and bounded parallel -> synthesis execution templates with declared inputs and results.
 - [ ] Add reusable `Explore Subsystem` template: N complementary readers (entry points, data flow, dependencies, tests) then one synthesizer.

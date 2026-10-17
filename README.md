@@ -45,6 +45,22 @@ All default checks use temporary databases and no model tokens. Tests cover task
 
 Git fixture tests retain their M0 safety checks: each fixture is created under the OS temporary directory with a local commit and isolated Git configuration; cleanup happens only after verification and ownership checks succeed. Failed fixtures are retained. No important repository is used as a fixture.
 
+## Role templates
+
+Expand **Role templates** to create, edit or delete reusable instructions and an expected output shape. Harness, model, reasoning and permission settings belong to AgentProfiles. Choose custom roles in **Agent profiles** after reloading profiles and roles. Editing a built-in role affects future fake, Pi and Codex Lead runs; saved runs keep their original snapshots.
+
+**Export role** downloads one versioned JSON document. Import that file or paste its JSON under **Import role JSON**, then choose **Import as new role**. Imports always create a new identity, even when the name already exists; they never replace saved guidance or configure a harness. Format version 1 contains only `format`, `formatVersion` and `role: {name, instructions, expectedOutput}`. Files are limited to 128 KiB; names to 160 characters, instructions to 12,000 and output guidance to 8,000. All fields are required.
+
+Stale saves/deletes are refused; use **Reload roles** before editing again. A role referenced by a saved profile cannot be deleted. Role mutations use the local API token, idempotency journal and app-owned SQLite database, with no managed repository writes. The automated restart/round-trip demo is `mise x -- node --test tests/roles.test.ts tests/roles-api.test.ts`; [desktop](docs/evidence/m7-roles-desktop.png) and [mobile](docs/evidence/m7-roles-mobile.png) screenshots show the editor and deletion refusal.
+
+## Agent profiles
+
+Expand **Agent profiles**, choose **New profile**, enter a name and saved role, then **Discover profile settings**. Select a discovered model, optional reasoning setting, supported permission and optional additional instructions, then **Create profile**. Discovery starts app-owned catalog processes without a model turn; saving checks discovery again on the server. No workers are dispatched. A null reasoning setting uses the harness default. Profiles are reusable configuration, not ongoing conversations. Names are limited to 160 characters and additional instructions to 4,000.
+
+Pi currently permits `read_only` and `workspace_write` file-tool workers; its catalog does not prove provider entitlement. Codex permits only `coordinator` (a read-only Lead) and requires app-owned login. Claude Code and OpenCode adapters remain unimplemented, with installation/authentication reported as unknown. Unsupported models, reasoning or permission choices are refused. These controls are not an OS sandbox. The built-in FAKE demo profiles are fixed, labeled playback configuration and cannot be edited or deleted.
+
+Select a saved native profile to edit/delete it. Stale versions are refused; **Reload profiles and roles** before trying again. Referenced team/workflow profiles cannot be deleted, and role references are kept consistent. Existing run snapshots retain their original settings even after library edits/deletes. Selecting saved native profiles for teams/runs remains **M7 item 3**; the existing native run forms still use their explicit settings. Minimal protocol-only demo: `mise x -- node --test tests/profiles.test.ts tests/profiles-api.test.ts`. [Desktop](docs/evidence/m7-profiles-desktop.png) and [mobile](docs/evidence/m7-profiles-mobile.png) captures use protocol fixtures with no provider calls.
+
 ## M2 fake orchestration demonstration
 
 Stop any app using this database before seeding, then run from the repo:

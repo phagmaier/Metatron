@@ -72,7 +72,7 @@ export async function executeFakeTurn(
     taskId: task.id,
     attemptId,
     cwd: dispatch.cwd,
-    roleInstructions: role.instructions,
+    roleInstructions: `${role.instructions}\n\nExpected output:\n${role.expectedOutput}`,
     model: "fake-deterministic",
     thinking: null,
     permission: profile.permission,

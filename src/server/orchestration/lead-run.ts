@@ -63,7 +63,7 @@ export async function createLeadRun(
         initialPrompt: data.initialPrompt,
         mode: data.mode,
         limits: data.limits,
-        teamSnapshot: leadTeam(data),
+        teamSnapshot: { ...leadTeam(data), roles: engine.presets().roles },
         repository,
         execution: "native",
       },

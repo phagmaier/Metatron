@@ -124,7 +124,7 @@ export async function executeNativeTurn(
       taskId: task.id,
       attemptId,
       cwd: dispatch.cwd,
-      roleInstructions: `${role.instructions}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.${token ? `\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. ${resultInstructions}` : ""}`,
+      roleInstructions: `${role.instructions}\n\nExpected output:\n${role.expectedOutput}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.${token ? `\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. ${resultInstructions}` : ""}`,
       model: profile.model,
       thinking: profile.thinking,
       permission: profile.permission,

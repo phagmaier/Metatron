@@ -26,7 +26,9 @@ import { readApi } from "./api.ts";
 import { SessionContext } from "./context-panel.tsx";
 import { LeadPanel } from "./lead-panel.tsx";
 import { NeedsYouPanel } from "./needs-you-panel.tsx";
+import { ProfilesPanel } from "./profiles-panel.tsx";
 import { ProjectForms } from "./project-forms.tsx";
+import { RolesPanel } from "./roles-panel.tsx";
 import { RunControls } from "./run-controls.tsx";
 import { EmergencyStop, StopHistory } from "./stop-panel.tsx";
 import { TaskCard } from "./task-card.tsx";
@@ -184,6 +186,8 @@ function App() {
         </p>
       )}
       <EmergencyStop onError={setError} />
+      <RolesPanel />
+      <ProfilesPanel />
       <ProjectForms
         project={selectedProject}
         onProject={(id) => {

@@ -12,6 +12,7 @@ import { git } from "../src/server/git/command.ts";
 import { Engine } from "../src/server/orchestration/engine.ts";
 import { requestReview } from "../src/server/orchestration/review.ts";
 import { listIntegrationCandidates } from "../src/server/storage/candidates.ts";
+import { updateRole } from "../src/server/storage/roles.ts";
 import { Store } from "../src/server/storage/store.ts";
 import { createGitFixture } from "./helpers/git-fixture.ts";
 
@@ -25,7 +26,9 @@ async function fixture(
   await prepare?.(repo);
   const data = await mkdtemp("/tmp/lao-native-engine-");
   const store = new Store(join(data, "state.sqlite"));
+  const launches: string[][] = [];
   const pi = new PiAdapter(data, (args, cwd, env) => {
+    launches.push(args);
     assert.ok(args.includes("--no-mcp"));
     assert.ok(args.includes("--no-context-files"));
     assert.ok(!args.includes("--continue"));
@@ -60,12 +63,60 @@ async function fixture(
     store,
     engine,
     input,
+    launches,
     async close() {
       await engine.close();
       store.close();
     },
   };
 }
+test("native worker uses saved role guidance and expected output from its immutable run snapshot", async () => {
+  const f = await fixture();
+  try {
+    const role = f.engine.presets().roles[1];
+    assert.ok(role);
+    const saved = updateRole(
+      f.store,
+      {
+        id: role.id,
+        version: role.version,
+        name: role.name,
+        instructions: "Saved implementation guidance",
+        expectedOutput: "Saved evidence shape",
+      },
+      "saved-role",
+    );
+    const run = await f.engine.startNativeRun(f.input, "role-run");
+    updateRole(
+      f.store,
+      {
+        id: saved.id,
+        version: saved.version,
+        name: saved.name,
+        instructions: "Later unrelated guidance",
+        expectedOutput: "Later output shape",
+      },
+      "later-role",
+    );
+    await f.engine.idle();
+    assert.deepEqual(f.store.getRun(run.id).teamSnapshot?.roles[1], saved);
+    const launch = f.launches.find((args) => args.includes("--session-dir"));
+    assert.ok(launch);
+    const instructions = launch[launch.indexOf("--system-prompt") + 1];
+    assert.ok(instructions);
+    assert.match(instructions, /Saved implementation guidance/);
+    assert.match(instructions, /Expected output:\nSaved evidence shape/);
+    assert.doesNotMatch(instructions, /Later unrelated/);
+    assert.match(instructions, /Shell and delegation are disabled/);
+    assert.equal(run.teamSnapshot?.profiles[1]?.permission, "workspace_write");
+    assert.equal(run.teamSnapshot?.profiles[1]?.model, f.input.model);
+  } finally {
+    await f.close();
+    await f.repo.verify(async () =>
+      assert.equal(await f.repo.git("status", "--porcelain"), ""),
+    );
+  }
+});
 test("native text-only completion persists worktree, report and exit code, and blocks an undeclared new file for owner review", async () => {
   const f = await fixture();
   try {

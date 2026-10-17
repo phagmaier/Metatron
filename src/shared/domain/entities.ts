@@ -71,6 +71,7 @@ export const roleTemplateSchema = z.strictObject({
 export type RoleTemplate = z.infer<typeof roleTemplateSchema>;
 export const agentProfileSchema = z.strictObject({
   ...metadata,
+  version: z.int().positive().default(1),
   name: textSchema,
   roleId: idSchema,
   harness: harnessSchema,

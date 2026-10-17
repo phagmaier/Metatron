@@ -33,8 +33,10 @@ import { inspectRepository, requireClean } from "../git/inspect.ts";
 import { Worktrees } from "../git/worktrees.ts";
 import { reconcileDependencyWaits } from "../storage/dependencies.ts";
 import { mutate } from "../storage/mutations.ts";
+import { Profiles } from "../storage/profiles.ts";
 import { saveAttemptRecovery } from "../storage/recovery.ts";
 import { implementationTask, revisionTaskIds } from "../storage/revisions.ts";
+import { getRole } from "../storage/roles.ts";
 import { Scheduling } from "../storage/scheduling.ts";
 import type { Store } from "../storage/store.ts";
 import { executeFakeTurn } from "./execute.ts";
@@ -60,6 +62,7 @@ export class Engine {
   readonly directory: string;
   readonly pi: HarnessAdapter;
   readonly codex: HarnessAdapter;
+  readonly profiles: Profiles;
   readonly gateway: Gateway;
   // Loopback MCP endpoint; null when no app server hosts the gateway.
   readonly gatewayUrl: string | null;
@@ -84,6 +87,7 @@ export class Engine {
     this.directory = directory;
     this.pi = pi;
     this.codex = options.codex ?? new CodexAdapter(directory);
+    this.profiles = new Profiles(store, { pi: this.pi, codex: this.codex });
     this.gatewayUrl = options.gatewayUrl ?? null;
     this.gateway = new Gateway(this);
     this.worktrees = new Worktrees(store, directory);
@@ -118,7 +122,12 @@ export class Engine {
     }, 100);
   }
   presets() {
-    return fakeTeamSnapshot;
+    return {
+      ...fakeTeamSnapshot,
+      roles: fakeTeamSnapshot.roles.map((role) =>
+        getRole(this.store, { id: role.id }),
+      ),
+    };
   }
   isStopping() {
     return this.stopping;
@@ -196,7 +205,7 @@ export class Engine {
         "CONFLICT",
         "Project identity changed; reopen it before starting",
       );
-    const snapshot = fakeTeamSnapshot;
+    const snapshot = this.presets();
     if (data.leadProfileId !== snapshot.preset.leadProfileId)
       throw new DomainError(
         "INVALID_REFERENCE",

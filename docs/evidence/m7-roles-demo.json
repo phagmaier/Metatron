@@ -1,0 +1,7 @@
+{
+  "viewport": 390,
+  "documentWidth": 390,
+  "selected": "Subsystem evidence reader · v2",
+  "instructions": "Inspect the assigned subsystem. Cite file paths and state uncertainty.",
+  "expectedOutput": "Findings, cited evidence, test coverage and explicit gaps."
+}

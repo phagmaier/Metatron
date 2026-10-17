@@ -12,6 +12,7 @@ import { startApp } from "../src/server/app.ts";
 import { requestLeadTurn } from "../src/server/orchestration/lead-run.ts";
 import { emergencyStop } from "../src/server/orchestration/stops.ts";
 import { listIntegrationCandidates } from "../src/server/storage/candidates.ts";
+import { updateRole } from "../src/server/storage/roles.ts";
 import type { Run } from "../src/shared/domain/entities.ts";
 import { createGitFixture } from "./helpers/git-fixture.ts";
 
@@ -233,6 +234,50 @@ const leadSessions = (
     const task = f.store.getTask(f.store.getAttempt(s.attemptId).taskId);
     return task.runId === runId && task.kind === "lead";
   });
+
+test("native Lead snapshots saved role content without changing profile selection or Chat/Plan authority", async () => {
+  const f = await leadFixture();
+  try {
+    const role = f.engine.presets().roles[0];
+    assert.ok(role);
+    const saved = updateRole(
+      f.store,
+      {
+        id: role.id,
+        version: role.version,
+        name: role.name,
+        instructions: "Explain evidence before planning",
+        expectedOutput: "Scoped plan with citations",
+      },
+      "lead-role",
+    );
+    const run = await f.start("chat_plan");
+    updateRole(
+      f.store,
+      {
+        id: role.id,
+        version: saved.version,
+        name: role.name,
+        instructions: "Later guidance",
+        expectedOutput: "Later shape",
+      },
+      "later-lead-role",
+    );
+    await f.engine.idle();
+    assert.deepEqual(f.store.getRun(run.id).teamSnapshot?.roles[0], saved);
+    assert.equal(run.teamSnapshot?.profiles[0]?.harness, "codex");
+    assert.equal(run.teamSnapshot?.profiles[0]?.model, "fixture-model");
+    assert.equal(
+      f.store
+        .listAttempts()
+        .filter((a) => f.store.getTask(a.taskId).kind === "work").length,
+      0,
+    );
+    assert.ok(f.events(run.id, "lead.message").length > 0);
+  } finally {
+    await f.close();
+  }
+});
 
 test("native Codex permission denials reach the owner inbox once per request without grants, secret payloads or a fabricated wait", async () => {
   const f = await leadFixture({ scenario: "permissions" });

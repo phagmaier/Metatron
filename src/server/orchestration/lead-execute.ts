@@ -150,7 +150,7 @@ export async function executeLeadTurn(
       taskId: task.id,
       attemptId,
       cwd: dispatch.cwd,
-      roleInstructions: `${role.instructions}\n\n${rules}`,
+      roleInstructions: `${role.instructions}\n\nExpected output:\n${role.expectedOutput}\n\n${rules}`,
       model: profile.model,
       thinking: profile.thinking,
       permission: "coordinator" as const,

@@ -37,6 +37,14 @@ import { candidateDiff, requestReview } from "./orchestration/review.ts";
 import { requestRevision } from "./orchestration/revision.ts";
 import { emergencyStop, stopRun } from "./orchestration/stops.ts";
 import { reviewHistory } from "./storage/reviews.ts";
+import {
+  createRole,
+  deleteRole,
+  exportRole,
+  importRole,
+  listRoles,
+  updateRole,
+} from "./storage/roles.ts";
 import type { Store } from "./storage/store.ts";
 
 const maxArtifactText = 512 * 1024;
@@ -71,7 +79,7 @@ function json(
   });
   response.end(head ? undefined : JSON.stringify(value));
 }
-async function readBody(request: IncomingMessage) {
+async function readBody(request: IncomingMessage, maxBytes = 65_536) {
   if (request.headers["content-type"]?.split(";")[0] !== "application/json")
     throw new DomainError("CONFLICT", "JSON content type required");
   const chunks: Buffer[] = [];
@@ -79,8 +87,11 @@ async function readBody(request: IncomingMessage) {
   for await (const chunk of request) {
     const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     size += bytes.length;
-    if (size > 65_536)
-      throw new DomainError("CONFLICT", "Request body exceeds 64 KiB");
+    if (size > maxBytes)
+      throw new DomainError(
+        "CONFLICT",
+        `Request body exceeds ${maxBytes / 1024} KiB`,
+      );
     chunks.push(bytes);
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
@@ -168,6 +179,23 @@ export function createApi(store: Store, engine: Engine) {
             case "/api/presets":
               z.strictObject({}).parse(query);
               result = engine.presets();
+              break;
+            case "/api/role-templates":
+              z.strictObject({}).parse(query);
+              result = { roles: listRoles(store) };
+              break;
+            case "/api/role-templates/export":
+              result = exportRole(store, query);
+              break;
+            case "/api/agent-profiles":
+              z.strictObject({}).parse(query);
+              result = {
+                profiles: engine.profiles.list(),
+                demoProfileIds: engine.profiles.demoProfileIds,
+              };
+              break;
+            case "/api/agent-profiles/discover":
+              result = await engine.profiles.discover(query);
               break;
             case "/api/adapters/pi":
               z.strictObject({}).parse(query);
@@ -303,6 +331,20 @@ export function createApi(store: Store, engine: Engine) {
         }
         const writes: Record<string, (input: unknown, key: string) => unknown> =
           {
+            "POST /api/role-templates": (input, key) =>
+              createRole(store, input, key),
+            "PATCH /api/role-templates": (input, key) =>
+              updateRole(store, input, key),
+            "DELETE /api/role-templates": (input, key) =>
+              deleteRole(store, input, key),
+            "POST /api/role-templates/import": (input, key) =>
+              importRole(store, input, key),
+            "POST /api/agent-profiles": (input, key) =>
+              engine.profiles.create(input, key),
+            "PATCH /api/agent-profiles": (input, key) =>
+              engine.profiles.update(input, key),
+            "DELETE /api/agent-profiles": (input, key) =>
+              engine.profiles.delete(input, key),
             "POST /api/projects/inspect": async (input) =>
               inspectRepository(
                 z
@@ -371,7 +413,12 @@ export function createApi(store: Store, engine: Engine) {
         }
         z.strictObject({}).parse(query);
         const key = mutationKeySchema.parse(request.headers["idempotency-key"]);
-        json(response, await write(await readBody(request), key));
+        // A single role's escaped JSON can exceed 64 KiB; keep imports bounded
+        // while allowing every valid exported role to round-trip.
+        const bodyLimit = url.pathname.startsWith("/api/role-templates")
+          ? 131_072
+          : 65_536;
+        json(response, await write(await readBody(request, bodyLimit), key));
       } catch (error) {
         if (error instanceof z.ZodError || error instanceof SyntaxError) {
           json(response, { error: "Invalid input" }, 400);

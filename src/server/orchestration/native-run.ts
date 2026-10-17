@@ -33,7 +33,10 @@ export async function createNativeRun(
       "Pi model/thinking is unavailable; refresh native capabilities",
     );
   return mutate(engine.store.db, key, "startNativeRun", data, runSchema, () => {
-    const snapshot = nativeTeam(data.model, data.thinking);
+    const snapshot = {
+      ...nativeTeam(data.model, data.thinking),
+      roles: engine.presets().roles,
+    };
     const run = engine.store.createRun(
       {
         projectId: project.id,
