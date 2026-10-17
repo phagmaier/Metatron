@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nativeApprovalSchema } from "../native-approvals.ts";
 import { nativePermissionDenialSchema } from "../native-permissions.ts";
 import { providerFailureSchema } from "../provider-failures.ts";
 import {
@@ -406,6 +407,7 @@ export const humanRequestSchema = z.strictObject({
   resolvedAt: timestampSchema.nullable(),
   nativePermission: nativePermissionDenialSchema.nullable().default(null),
   providerFailure: providerFailureSchema.nullable().default(null),
+  nativeApproval: nativeApprovalSchema.optional(),
 });
 export type HumanRequest = z.infer<typeof humanRequestSchema>;
 

@@ -17,7 +17,11 @@ export async function startApp(options: {
   development: boolean;
   port: number;
   databasePath?: string;
-  adapters?: { pi?: HarnessAdapter; codex?: HarnessAdapter };
+  adapters?: {
+    pi?: HarnessAdapter;
+    codex?: HarnessAdapter;
+    claude?: HarnessAdapter;
+  };
 }) {
   const store = new Store(options.databasePath ?? appLocations().database);
   let engine: Engine | undefined;
@@ -157,6 +161,7 @@ export async function startApp(options: {
     const directory = dirname(options.databasePath ?? appLocations().database);
     engine = new Engine(store, directory, options.adapters?.pi, {
       ...(options.adapters?.codex ? { codex: options.adapters.codex } : {}),
+      ...(options.adapters?.claude ? { claude: options.adapters.claude } : {}),
       gatewayUrl: `${origin}/mcp`,
     });
     // Observation only, before any owner action can reach a recovered task.

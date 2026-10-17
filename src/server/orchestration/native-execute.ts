@@ -9,6 +9,7 @@ import {
   handoffReportSchema,
 } from "../../shared/orchestration.ts";
 import type { Candidate } from "../../shared/worktrees.ts";
+import { ClaudeAdapter } from "../adapters/claude.ts";
 import type { ManagedSession } from "../adapters/contract.ts";
 import { PiAdapter } from "../adapters/pi.ts";
 import { GitError } from "../git/command.ts";
@@ -19,6 +20,10 @@ import { reconcileRevision } from "../storage/revisions.ts";
 import { prepareContext } from "./context-policy.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
+import {
+  endClaudeApprovals,
+  recordClaudeApproval,
+} from "./native-approvals.ts";
 import { finishProviderFailure } from "./provider-failures.ts";
 import { observeRecovery, processIdentity } from "./recovery-observe.ts";
 import { reviewPacket } from "./review.ts";
@@ -35,6 +40,8 @@ export async function executeNativeTurn(
   const task = store.getTask(dispatch.taskId);
   const run = store.getRun(task.runId);
   const profile = engine.scheduling.profile(run.id, dispatch.profileId);
+  const adapter = profile.harness === "claude-code" ? engine.claude : engine.pi;
+  const label = profile.harness === "claude-code" ? "Claude Code" : "Pi";
   const role = run.teamSnapshot?.roles.find((r) => r.id === profile.roleId);
   const planned = await prepareContext(engine, dispatch, attemptId);
   if ("refused" in planned) {
@@ -114,12 +121,12 @@ export async function executeNativeTurn(
         "Run paused, stopping or Chat/Plan selected before native process launch",
       );
     }
-    if (!role || profile.harness !== "pi")
+    if (!role || !["pi", "claude-code"].includes(profile.harness))
       throw new Error("Native worker configuration is unsupported");
     const resultInstructions = task.reviewCandidateId
       ? "Submit your structured review using the contract in the prompt and read_assignment. A recommendation grants no integration authority."
       : "Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.";
-    managed = await engine.pi.startSession({
+    managed = await adapter.startSession({
       runId: run.id,
       taskId: task.id,
       attemptId,
@@ -128,7 +135,7 @@ export async function executeNativeTurn(
       model: profile.model,
       thinking: profile.thinking,
       permission: profile.permission,
-      // The Pi adapter refuses "resume", so a resume plan can never run fresh.
+      // Every assignment owns a new checkout; native SDK resume stays same-cwd only.
       contextPolicy: planned.context.effective,
       contextPacket: prompt,
       toolEndpoint: token ? engine.gatewayUrl : null,
@@ -151,22 +158,27 @@ export async function executeNativeTurn(
       `session:${attemptId}:busy`,
     );
     const active = managed;
-    engine.workerMessages.register(session.id, engine.pi, active);
+    engine.workerMessages.register(session.id, adapter, active);
     engine.nativeStops.set(task.id, async (reason) => {
       interrupted = true;
       // Emergency skips cooperative abort and closes only this owned child,
       // bounded by TERM/KILL deadlines. Its descendants are not tracked.
-      if (reason === "emergency" && engine.pi instanceof PiAdapter) {
-        await engine.pi.exit(active);
+      if (
+        reason === "emergency" &&
+        (adapter instanceof PiAdapter || adapter instanceof ClaudeAdapter)
+      ) {
+        await adapter.exit(active);
         return;
       }
       try {
-        await engine.pi.cancel(active);
+        await adapter.cancel(active);
       } finally {
-        // Pi has cancellation, not suspension. A help request ends only this
-        // owned process, bounded by the existing TERM/KILL shutdown deadlines.
-        if (reason === "human_request" && engine.pi instanceof PiAdapter)
-          await engine.pi.exit(active);
+        // A help request ends the owned child rather than claiming suspension.
+        if (
+          reason === "human_request" &&
+          (adapter instanceof PiAdapter || adapter instanceof ClaudeAdapter)
+        )
+          await adapter.exit(active);
       }
     });
     if (
@@ -177,7 +189,7 @@ export async function executeNativeTurn(
       interrupted = true;
       throw new Error("Owner cancelled/stopped during native startup");
     }
-    for await (const event of engine.pi.prompt(active, prompt)) {
+    for await (const event of adapter.prompt(active, prompt)) {
       if (event.type === "owner_message_delivered")
         engine.workerMessages.delivered(session.id, event.messageId);
       store.recordEvent(
@@ -186,12 +198,14 @@ export async function executeNativeTurn(
           taskId: task.id,
           attemptId,
           sessionId: session.id,
-          type: `pi.${event.type}`,
+          type: `${profile.harness}.${event.type}`,
           correlationId: attemptId,
           payload: event,
         },
-        `pi:${attemptId}:${index++}`,
+        `${profile.harness}:${attemptId}:${index++}`,
       );
+      if (event.type === "approval_requested")
+        recordClaudeApproval(engine, session.id, adapter, active, event);
       if (event.type === "text_delta")
         output = (output + event.text).slice(0, 32_000);
       if (
@@ -204,10 +218,13 @@ export async function executeNativeTurn(
             : "crashed";
         if (!pendingWorkerHelp(store, attemptId))
           changeState(state, event.exitCode);
-        if (state !== "exited") lost = state;
-        interrupted = true;
-        diagnostic =
-          "Pi exited without authoritative completion; no automatic retry";
+        // Native adapters can publish owned exit before their verified result.
+        // A clean exit is not success or failure; evaluate the full stream below.
+        if (state !== "exited" || event.exitCode !== 0) {
+          if (state !== "exited") lost = state;
+          interrupted = true;
+          diagnostic = `${label} exited without safe authoritative completion; no automatic retry`;
+        }
       }
       if (event.type === "session_error") {
         diagnostic = event.message;
@@ -221,7 +238,7 @@ export async function executeNativeTurn(
           terminal !== "completed" &&
           diagnostic === "Native attempt did not complete"
         )
-          diagnostic = `Pi ${terminal}; explicit retry decision required`;
+          diagnostic = `${label} ${terminal}; explicit retry decision required`;
       }
     }
     if (terminal === "completed") changeState("idle");
@@ -233,10 +250,11 @@ export async function executeNativeTurn(
     engine.nativeStops.delete(task.id);
     if (managed) {
       try {
-        // Pi exposes an explicit process shutdown result in addition to turn
-        // completion. Exiting alone never changes task success.
+        // Process exit is separate evidence; it never establishes task success.
         const exit =
-          engine.pi instanceof PiAdapter ? await engine.pi.exit(managed) : null;
+          adapter instanceof PiAdapter || adapter instanceof ClaudeAdapter
+            ? await adapter.exit(managed)
+            : null;
         changeState(
           !interrupted && exit && (exit.code !== 0 || exit.signal)
             ? "crashed"
@@ -250,7 +268,7 @@ export async function executeNativeTurn(
               taskId: task.id,
               attemptId,
               sessionId: session.id,
-              type: "pi.process_exit",
+              type: `${profile.harness}.process_exit`,
               correlationId: attemptId,
               payload: {
                 exitCode: exit.code,
@@ -260,23 +278,23 @@ export async function executeNativeTurn(
             },
             `process-exit:${attemptId}`,
           );
-        await engine.pi.dispose(managed);
+        await adapter.dispose(managed);
         stopped = true;
         if (!interrupted && exit && (exit.code !== 0 || exit.signal)) {
           terminal = "failed";
           interrupted = true;
           lost = "crashed";
-          diagnostic =
-            "Pi process did not shut down cleanly; retained for recovery";
+          diagnostic = `${label} process did not shut down cleanly; retained for recovery`;
         }
       } catch {
         terminal = "failed";
         interrupted = true;
         lost = "recovery_required";
-        diagnostic =
-          "Pi shutdown failed; process/worktree require owner inspection";
+        diagnostic = `${label} shutdown failed; process/worktree require owner inspection`;
       }
     } else changeState("exited", null);
+    if (profile.harness === "claude-code")
+      endClaudeApprovals(engine, session.id);
     engine.workerMessages.end(session.id);
     try {
       if (

@@ -20,21 +20,24 @@ export async function createNativeRun(
     project.repository.commonDirectory !== repository.commonDirectory
   )
     throw new DomainError("CONFLICT", "Project identity changed; reopen it");
-  const capabilities = await engine.pi.discover();
+  const adapter = data.harness === "claude-code" ? engine.claude : engine.pi;
+  const label = data.harness === "claude-code" ? "Claude Code" : "Pi";
+  const capabilities = await adapter.discover();
   const model = capabilities.models.find((m) => m.id === data.model);
   if (
     !capabilities.installed ||
+    capabilities.authenticated === false ||
     !model ||
     (data.thinking !== null &&
       !model.thinking.some((t) => t.id === data.thinking))
   )
     throw new DomainError(
       "UNSUPPORTED",
-      "Pi model/thinking is unavailable; refresh native capabilities",
+      `${label} model/thinking or supported authentication is unavailable; refresh native capabilities`,
     );
   return mutate(engine.store.db, key, "startNativeRun", data, runSchema, () => {
     const snapshot = {
-      ...nativeTeam(data.model, data.thinking),
+      ...nativeTeam(data.model, data.thinking, data.harness),
       roles: engine.presets().roles,
     };
     const run = engine.store.createRun(
@@ -54,11 +57,11 @@ export async function createNativeRun(
       (p) => p.permission === data.permission,
     );
     if (!profile)
-      throw new DomainError("INVALID_REFERENCE", "Pi worker role missing");
+      throw new DomainError("INVALID_REFERENCE", "Native worker role missing");
     const task = engine.store.createTask(
       {
         runId: run.id,
-        title: data.permission === "read_only" ? "Pi reader" : "Pi writer",
+        title: `${label} ${data.permission === "read_only" ? "reader" : "writer"}`,
         objective: data.initialPrompt,
       },
       `${key}:task`,

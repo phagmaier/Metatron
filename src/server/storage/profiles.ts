@@ -37,14 +37,22 @@ export function getProfile(store: Store, input: unknown) {
 
 export class Profiles {
   private readonly store: Store;
-  private readonly adapters: { pi: HarnessAdapter; codex: HarnessAdapter };
+  private readonly adapters: {
+    pi: HarnessAdapter;
+    codex: HarnessAdapter;
+    "claude-code"?: HarnessAdapter;
+  };
   readonly demoProfileIds = fakeTeamSnapshot.profiles.map(
     (profile) => profile.id,
   );
 
   constructor(
     store: Store,
-    adapters: { pi: HarnessAdapter; codex: HarnessAdapter },
+    adapters: {
+      pi: HarnessAdapter;
+      codex: HarnessAdapter;
+      "claude-code"?: HarnessAdapter;
+    },
   ) {
     this.store = store;
     this.adapters = adapters;
@@ -60,7 +68,8 @@ export class Profiles {
   }
   async discover(input: unknown): Promise<ProfileCapabilities> {
     const { harness } = profileDiscoverySchema.parse(input);
-    if (harness !== "pi" && harness !== "codex")
+    const adapter = harness === "opencode" ? undefined : this.adapters[harness];
+    if (!adapter)
       return profileCapabilitiesSchema.parse({
         harness,
         implemented: false,
@@ -74,9 +83,7 @@ export class Profiles {
       });
     let capability: AdapterCapabilities;
     try {
-      capability = capabilitiesSchema.parse(
-        await this.adapters[harness].discover(),
-      );
+      capability = capabilitiesSchema.parse(await adapter.discover());
     } catch (error) {
       return profileCapabilitiesSchema.parse({
         harness,
@@ -103,15 +110,15 @@ export class Profiles {
       authenticated: capability.authenticated,
       models: usable ? capability.models : [],
       permissions: usable
-        ? harness === "pi"
-          ? ["read_only", "workspace_write"]
-          : ["coordinator"]
+        ? harness === "codex"
+          ? ["coordinator"]
+          : ["read_only", "workspace_write"]
         : [],
       diagnostics: [
         ...capability.diagnostics,
-        harness === "pi"
-          ? "Profiles support file-tool readers and writers only; Pi coordinator control is unavailable. Catalog discovery does not prove provider entitlement."
-          : "Profiles support the read-only Codex coordinator only; Codex worker execution is not implemented yet.",
+        harness === "codex"
+          ? "Profiles support the read-only Codex coordinator only; Codex worker execution is not implemented yet."
+          : `${harness} profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement.`,
         ...(!usable
           ? [
               "Native adapter/gateway capability is unavailable; refresh discovery after fixing setup.",

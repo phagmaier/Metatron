@@ -1,0 +1,408 @@
+{
+  "execution": "Real installed Pi native harness, read-only; provider usage incurred",
+  "model": "deepseek/deepseek-flash",
+  "thinking": "off",
+  "fixture": {
+    "README.md": "# Disposable inventory\n\n`src/inventory.ts` exports inStock; quantities come from data/stock.json.\nTests in tests/inventory.test.ts are examples to inspect, not evidence of execution.\n",
+    "src/inventory.ts": "export function inStock(items: { name: string; quantity: number }[]) {\n  return items.filter((item) => item.quantity > 0).map((item) => item.name);\n}\n",
+    "data/stock.json": "[{\"name\":\"bolt\",\"quantity\":2},{\"name\":\"nut\",\"quantity\":0}]\n",
+    "tests/inventory.test.ts": "import assert from 'node:assert/strict';\nimport { test } from 'node:test';\nimport { inStock } from '../src/inventory.ts';\ntest('only positive quantities are in stock', () => {\n  assert.deepEqual(inStock([{name:'bolt',quantity:2},{name:'nut',quantity:0},{name:'washer',quantity:-1}]), ['bolt']);\n});\n"
+  },
+  "scenarios": [
+    {
+      "case": "partial",
+      "runId": "f74b95f7-162f-4ae4-9643-fb250ae1ccaa",
+      "workflowId": "9461449a-389e-46da-86de-e9c72ec63fe4",
+      "status": "partial",
+      "templateId": "141a4254-ca95-46a9-9bfd-80b2226f9954",
+      "teamId": null,
+      "ownerDirectedWithoutModelLead": true,
+      "fanOut": {
+        "declared": 3,
+        "allowed": 3,
+        "rejected": 4,
+        "activeCap": 1,
+        "peakActiveAttempts": 1,
+        "initialReaderQueue": [
+          {
+            "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+            "status": "RUNNING"
+          },
+          {
+            "taskId": "7dea3f38-fa53-4dcf-9cfe-c8563bd1f801",
+            "status": "QUEUED"
+          },
+          {
+            "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+            "status": "QUEUED"
+          }
+        ]
+      },
+      "launches": 3,
+      "launchBudget": 3,
+      "sources": [
+        {
+          "input": "reader_reports",
+          "stageId": "readers",
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "attemptId": "9d1d00b1-8c00-4e5e-ba0b-c9a7b89c9ae2",
+          "status": "completed",
+          "artifactId": "7df18739-e704-4776-ba20-310ba533b3d7",
+          "resultEventId": "c98a7fda-f6a3-43ea-adcc-e120570edfc8",
+          "failureEventId": null,
+          "failure": null,
+          "diagnostic": null
+        },
+        {
+          "input": "reader_reports",
+          "stageId": "readers",
+          "taskId": "7dea3f38-fa53-4dcf-9cfe-c8563bd1f801",
+          "attemptId": null,
+          "status": "failed",
+          "artifactId": null,
+          "resultEventId": null,
+          "failureEventId": "19ceddd3-d768-44c4-8340-efb50fed4a39",
+          "failure": "cancelled",
+          "diagnostic": "Owner cancelled"
+        },
+        {
+          "input": "reader_reports",
+          "stageId": "readers",
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "attemptId": "d4a42603-49ba-4048-84bc-a140afd69d20",
+          "status": "completed",
+          "artifactId": "5ee97c8f-efec-4538-bcd4-1d3b324be96b",
+          "resultEventId": "6522e8fc-d501-4895-9141-bfd4f3f4a051",
+          "failureEventId": null,
+          "failure": null,
+          "diagnostic": null
+        }
+      ],
+      "reports": [
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "stageId": "readers",
+          "artifactId": "7df18739-e704-4776-ba20-310ba533b3d7",
+          "sha256": "cc831288cd4edf30ef88108f53a14b773b6fba5b331225321aa8550e1fc70d92",
+          "content": "Structured report (tool-submitted):\n{\n  \"outcome\": \"completed\",\n  \"summary\": \"OBSERVED — Entry points/architecture: the whole subsystem is 4 files. Public interface is a single export, `inStock(items: {name:string;quantity:number}[])` at src/inventory.ts:1-3, returning `string[]` (names only) via filter(quantity>0) then map(name). No other export, class, or module exists (find over **/* returns only README.md, data/stock.json, src/inventory.ts, tests/inventory.test.ts). Sole caller in-tree is tests/inventory.test.ts:3,5; grep for inStock/stock.json/inventory finds no runtime consumer. README.md:3 states the same contract and claims quantities come from data/stock.json. Representative path: test constructs literal items → inStock → filter → map → deepEqual against ['bolt'] (tests/inventory.test.ts:5).\\nTests/edge cases: exactly one test, 'only positive quantities are in stock' (tests/inventory.test.ts:4-6), covering quantity>0 keep, quantity==0 drop, quantity<0 drop. Untested: empty array, all-zero, duplicate names, non-integer/NaN/Infinity quantity, missing name, missing/extra fields, mutation/aliasing, and ordering of results. No fixtures directory exists; data/stock.json is the only data file and is never imported by source or test.\\n\\nINFERRED (not executed): test import '../src/inventory.ts' with an explicit .ts extension (tests/inventory.test.ts:3) requires a TS-aware loader/strip-types runtime; no package.json or tsconfig.json exists in the worktree to confirm the runner or module type. README.md:4 explicitly disclaims the tests as evidence of execution.\\n\\nGAPS: no wiring between src/inventory.ts and data/stock.json despite README.md:3; no build config or CI evidence; behavior under non-finite/NaN quantities is unspecified by both code and tests (NaN>0 is false, so NaN names would be dropped — inference, unverified). No files created, changed or deleted; tests not run.\",\n  \"changedFiles\": [],\n  \"tests\": [\n    {\n      \"command\": \"node --test tests/inventory.test.ts (and any tsc/build check)\",\n      \"result\": \"not_run\"\n    }\n  ],\n  \"findings\": [\n    {\n      \"severity\": \"info\",\n      \"location\": \"src/inventory.ts:1-3\",\n      \"text\": \"Entire public surface: one export inStock(items) filtering quantity>0 and mapping to names. Return type inferred string[]; no validation or normalization.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"location\": \"README.md:3 vs src/inventory.ts:1\",\n      \"text\": \"README claims 'quantities come from data/stock.json' but inventory.ts takes items as a parameter and nothing in the worktree imports data/stock.json (grep: only README mentions it). Documented wiring is absent — reader of the README may assume a load step that does not exist.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"location\": \"tests/inventory.test.ts:4-6\",\n      \"text\": \"Single test covers >0 kept, ==0 dropped, <0 dropped. No coverage for empty array, duplicates, NaN/Infinity/non-integer quantities, missing name, or result ordering.\"\n    },\n    {\n      \"severity\": \"info\",\n      \"location\": \"data/stock.json:1\",\n      \"text\": \"Only fixture data: 2 records (bolt qty 2, nut qty 0). Not referenced by source or test; unreachable from code path.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"location\": \"tests/inventory.test.ts:3\",\n      \"text\": \"Import uses explicit '../src/inventory.ts' extension; no package.json/tsconfig.json exists in the worktree to establish runner, module kind, or typecheck config. Executability unverifiable from static evidence.\"\n    },\n    {\n      \"severity\": \"info\",\n      \"location\": \"README.md:4\",\n      \"text\": \"README explicitly labels tests as 'examples to inspect, not evidence of execution', corroborating that no test result may be claimed.\"\n    }\n  ],\n  \"knownRisks\": [\n    \"Absence of package.json/tsconfig means the intended test runner and TS handling are undetermined; conclusions about runnability are inferences only.\",\n    \"README'd contract (stock.json as source of quantities) diverges from the implemented signature; any downstream consumer relying on README may expect a loader that does not exist.\",\n    \"Negative/zero/NaN quantity semantics are defined only by the single comparison quantity>0; non-finite and type-violating inputs are unvalidated at runtime.\"\n  ],\n  \"questions\": [\n    \"Is data/stock.json intended to be loaded by a caller outside this worktree, or is it a stray fixture?\",\n    \"Which runner/TS config governed the original test (node --test with strip-types vs a bundler)?\",\n    \"Should inStock preserve input order and duplicates, or deduplicate/aggregate by name? Neither code nor test states it.\"\n  ],\n  \"artifactRefs\": [\n    \"src/inventory.ts\",\n    \"data/stock.json\",\n    \"tests/inventory.test.ts\",\n    \"README.md\"\n  ],\n  \"revisionOrCommit\": \"99735c6240918fadd076853c73dfceac5c6af307\"\n}\n\nFinal text:\nI'll start by reading the assignment and surveying the worktree.Result submitted (single `submit_result` call). Report below.\n\n## Partition 1/3 — Entry points/architecture + tests/edge cases\n\n**Observed facts (most important first)**\n\n1. **Public surface is one function.** `src/inventory.ts:1-3` exports only `inStock(items: {name:string;quantity:number}[])`, which does `filter(quantity>0)` then `map(name)` → names array. No other exports, classes, or modules exist (`find **/*` → only `README.md`, `data/stock.json`, `src/inventory.ts`, `tests/inventory.test.ts`).\n2. **Sole call site is the test.** `tests/inventory.test.ts:3,5`; grep for `inStock|stock.json|inventory` shows no runtime consumer anywhere.\n3. **Fixture is unreachable from code.** `data/stock.json:1` holds two records (bolt 2, nut 0) but is never imported by source or test.\n4. **README contract diverges from implementation.** `README.md:3` says \"quantities come from data/stock.json\", yet `inventory.ts` takes `items` as a parameter — no loader exists. `README.md:4` explicitly disclaims the tests as execution evidence.\n5. **Test coverage is a single case.** `tests/inventory.test.ts:4-6` covers qty>0 kept, qty==0 dropped, qty<0 dropped. Untested: empty array, all-zero, duplicate names, NaN/Infinity/non-integer, missing `name`, missing/extra fields, mutation, result ordering.\n6. **No build config.** No `package.json`/`tsconfig.json` in the worktree; the test's explicit `.ts` import (`:3`) implies a TS-aware runtime but cannot be confirmed statically.\n\n**Inferences (unverified):** NaN quantities would be dropped (`NaN>0` is false); runnability of the test depends on an undeclared runner.\n\n**Gaps/questions:** Is `data/stock.json` consumed outside this worktree or stray? Which runner/TS config applied? Should `inStock` preserve order/duplicates?\n\n**Tests:** not run. **Changed files:** none (read-only).",
+          "session": {
+            "nativeSessionId": "01a14a08-30dc-749f-9c43-2151a84cbdc0",
+            "adapter": "pi",
+            "state": "exited",
+            "exitCode": 0
+          }
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "stageId": "readers",
+          "artifactId": "5ee97c8f-efec-4538-bcd4-1d3b324be96b",
+          "sha256": "d25fefda291ff0e3a8c2a5d2bbb11c4186f0cedbe755fc29ca3567ad0ec876c3",
+          "content": "Structured report (tool-submitted):\n{\n  \"outcome\": \"completed\",\n  \"summary\": \"Partition 3/3 (dependencies & integration contracts). Verified facts: (1) src/inventory.ts:1-2 has ZERO imports — no external packages, no fs/path, no JSON import; it takes `items` as a parameter and only uses Array.prototype.filter/map. So it is dependency-free and side-effect-free (pure). (2) data/stock.json:1 is a JSON array [{name:\\\"bolt\\\",quantity:2},{name:\\\"nut\\\",quantity:0}] and is referenced ONLY in prose (README.md:3), never in code — no runtime or test code loads it. (3) tests/inventory.test.ts:1-2 imports node:assert/strict and node:test (Node built-ins); :3 imports ../src/inventory.ts via explicit .ts extension, which requires a TS-aware loader/runner (node --experimental-strip-types or ts-node/tsx) — config absent. (4) No package.json, tsconfig.json, lockfile, CI config, or index barrel exists in the worktree (find **/* returns only README.md, data/stock.json, src/inventory.ts, tests/inventory.test.ts) — build/test ownership and dependency pins are unobservable. Contracts: exported signature `inStock(items: {name:string; quantity:number}[]): string[]` (inventory.ts:1), returns names where quantity>0; test asserts quantity 0 and -1 excluded, order preserved. Integration gaps: README.md:3 claims quantities \\\"come from data/stock.json\\\" but nothing wires the file to the function — the producer/consumer link is documentation-only. Coupling is one-directional test→src with no src→data edge. Inferred (not verified): a loader flag or package config is expected to exist outside scope to run .ts tests; stock.json was intended as an example fixture rather than a runtime data source. No tests run; no files changed. New files created: none.\",\n  \"changedFiles\": [],\n  \"tests\": [\n    {\n      \"command\": \"node --test tests/inventory.test.ts\",\n      \"result\": \"not_run\"\n    }\n  ],\n  \"findings\": [\n    {\n      \"severity\": \"info\",\n      \"location\": \"src/inventory.ts:1\",\n      \"text\": \"inStock uses no imports at all (no external deps, no fs, no JSON import); the only API surface is its parameter. Verified dependency-free and pure — no side effects, no I/O, no mutable module state.\"\n    },\n    {\n      \"severity\": \"medium\",\n      \"location\": \"README.md:3\",\n      \"text\": \"Prose claims quantities come from data/stock.json, but data/stock.json:1 is referenced by no code path (no import/readFile in src/ or tests/). The README-to-code data contract is documentation-only; stock.json is an orphan file under verified evidence.\"\n    },\n    {\n      \"severity\": \"medium\",\n      \"location\": \"tests/inventory.test.ts:3\",\n      \"text\": \"Imports '../src/inventory.ts' with an explicit .ts extension plus node:test (:2) and node:assert/strict (:1). Running this requires a TS-capable loader (e.g. --experimental-strip-types) yet no package.json/tsconfig/runner config exists in the worktree; the integration contract for test execution is undefined here.\"\n    },\n    {\n      \"severity\": \"info\",\n      \"location\": \"tests/inventory.test.ts:4-6\",\n      \"text\": \"Test is the sole consumer of the exported function and pins the behavior contract two other partitions describe: only quantity>0 kept, names returned, input order preserved. It uses an inline array, not stock.json, confirming the src/data link is absent at the test boundary.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"location\": \"data/stock.json:1\",\n      \"text\": \"Stock data contains quantity 0 for 'nut' and only positive 'bolt', matching the >0 filter contract, but no schema/version marker or loader contract exists — format compatibility is unenforced.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"location\": \"(worktree root)\",\n      \"text\": \"No package.json, dependency manifest, lockfile, or CI config present; external dependency pinning, license/ownership metadata, and canonical test command cannot be established from this partition.\"\n    }\n  ],\n  \"knownRisks\": [\n    \"Running the test file may fail on a stock Node runtime without type-stripping support, since the import path carries a .ts extension.\",\n    \"data/stock.json has no code consumer; any change to it is silently unverified by tests and could drift from the documented contract.\",\n    \"Absence of a manifest/tsconfig outside this worktree cannot be ruled out, so 'no dependencies' refers strictly to what inventory.ts itself requires, not to the enclosing project.\"\n  ],\n  \"questions\": [\n    \"Is a package.json/tsconfig and a TS loader (tsx, ts-node, or --experimental-strip-types) expected to live outside this checkout, or is the project intentionally manifest-free?\",\n    \"Is data/stock.json meant to be a live runtime input (needing a readFile/JSON loader) or merely a documentation example fixture given no code references it?\",\n    \"Should the README claim at README.md:3 be treated as an intended-but-unimplemented dependency edge, or corrected to describe stock.json as an example only?\"\n  ],\n  \"artifactRefs\": [],\n  \"revisionOrCommit\": null\n}\n\nFinal text:\nI'll start by reading the assignment, then explore the target files.Target is tiny. Facts gathered; here is the dependency-partition handoff.Partition 3/3 (dependencies & integration contracts) is complete and submitted. No files were created, changed, or deleted; no tests were run.\n\n**Most important findings (observed facts):**\n\n1. **`src/inventory.ts:1-2` has zero imports** — no external packages, no `fs`/`path`, no JSON import. `inStock` is parameter-driven and uses only `filter`/`map`. Verified: dependency-free, pure, no I/O or module state.\n2. **`data/stock.json:1` is referenced only in prose** (`README.md:3`); no code path in `src/` or `tests/` loads it. The documented data contract is not backed by any producer/consumer edge.\n3. **`tests/inventory.test.ts:1-3`** depends on Node built-ins (`node:test`, `node:assert/strict`) and imports `../src/inventory.ts` with an explicit `.ts` extension — requiring a TS-capable loader, yet no `package.json`/`tsconfig`/runner config exists in the worktree.\n4. **No manifest, lockfile, CI config, or barrel file** — `find **/*` returns only the four target files, so dependency pinning, ownership metadata, and the canonical test command are unobservable here.\n\n**Contract:** `inStock(items: {name: string; quantity: number}[]): string[]` keeps entries with `quantity > 0`, returns names in input order; the single test (`tests/inventory.test.ts:4-6`) pins exactly that and uses an inline array rather than `stock.json`.\n\n**Inferred, not verified:** a TS loader flag or package config likely lives outside this checkout; `stock.json` was probably intended as an example fixture rather than a runtime source.\n\n**Gaps/uncertainty:** test executability is unconfirmed (reported `not_run`); whether `README.md:3` describes an intended-but-unimplemented edge or outdated prose is unresolved.",
+          "session": {
+            "nativeSessionId": "01a14a08-81d5-756d-a5fd-12abddee03a5",
+            "adapter": "pi",
+            "state": "exited",
+            "exitCode": 0
+          }
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "stageId": "synthesis",
+          "artifactId": "469b4293-ea5a-40cc-bb54-dd08abe98890",
+          "sha256": "ada47737cfb276bd4c89c0761b8e9ebc60cde20dfe3497a1731ea5beb0ffbba1",
+          "content": "Structured report (tool-submitted):\n{\n  \"outcome\": \"partial\",\n  \"summary\": \"SUBSYSTEM MAP · Inventory. EVIDENCE: PARTIAL — 2 of 3 reader tasks completed; third cancelled by owner. Tests not run (shell disabled). No files modified.\\n\\nSCOPE. Declared target is 4 paths only: src/inventory.ts, data/stock.json, tests/inventory.test.ts, README.md. I confirmed these are the sole non-.git entries (find **/*). No package.json, tsconfig.json, lockfile, CI config, fixtures dir or index barrel exists. I re-verified all reader claims against the files rather than trusting the excerpts.\\n\\nENTRY POINTS (supported). Single public surface: `export function inStock(items:{name:string; quantity:number}[])` — src/inventory.ts:1; implicit return, effectively string[] of names — src/inventory.ts:2. No other export/class/module. Sole in-tree caller: tests/inventory.test.ts:3 (import), :5 (call).\\n\\nDATA FLOW & INVARIANTS (supported). Pure and stateless: input → filter(item.quantity > 0) → map(item.name) — src/inventory.ts:2. No module state; filter/map return new arrays, so caller data is not mutated. Invariants: output is a name-subset of input in original order; predicate is strictly > 0, so 0, negatives and NaN are excluded.\\n\\nDEPENDENCIES (supported). src/inventory.ts:1-2 imports nothing — no packages, fs/path, or JSON import. Test uses Node built-ins only: node:assert/strict (tests/inventory.test.ts:1), node:test (:2), plus relative src import (:3). Coupling is one-directional test→src; no src→data edge.\\n\\nTESTS & EDGE CASES (supported). Exactly one test, 'only positive quantities are in stock' — tests/inventory.test.ts:4-6, asserting one input triple: quantity 2 kept, 0 dropped, -1 dropped, expected ['bolt'] (:5). Untested: empty array, all-non-positive, duplicate names, NaN/Infinity, missing name, extra fields, ordering, input mutation.\\n\\nDOC-vs-CODE GAP (supported; both completed readers agree and I confirmed it). README.md:3 says quantities \\\"come from data/stock.json\\\", but data/stock.json:1 ([{name:\\\"bolt\\\",quantity:2},{name:\\\"nut\\\",quantity:0}]) is referenced nowhere in code. The producer/consumer link is documentation-only.\\n\\nINFERENCES (unverified). (a) tests/inventory.test.ts:3's explicit .ts import needs a TS-aware runner (node --experimental-strip-types, ts-node or tsx); without package.json/tsconfig the real runner, module type and pins are unobservable. (b) README.md:4 itself calls the tests \\\"examples to inspect, not evidence of execution\\\", consistent with not running them. (c) data/stock.json plausibly is an unwired demo fixture, but nothing in-tree proves intent.\\n\\nDISAGREEMENTS. None substantive. Reader task 24e55ef4 (artifact 7df18739-e704-4776-ba20-310ba533b3d7) covers entry points/tests; task eec7afaf (artifact 5ee97c8f-efec-4538-bcd4-1d3b324be96b) covers dependencies/contracts. They agree on every overlapping claim (single export, purity, one test, doc-only stock.json, missing config). Wording differs, not substance: 24e55ef4 says README \\\"claims\\\" the stock.json provenance; eec7afaf calls it an \\\"integration gap\\\" — same unimplemented wiring, reported here as the shared observation, not either label. Both excerpts were truncated mid-sentence; I verified concrete facts directly and did not extrapolate into cut-off text.\\n\\nFAILED READER. Task 7dea3f38-fa53-4dcf-9cfe-c8563bd1f801 FAILED: failure \\\"cancelled\\\", diagnostic \\\"Owner cancelled\\\", attemptId/artifactId null, empty excerpt, failureEventId 19ceddd3-d768-44c4-8340-efb50fed4a39 — zero findings. That partition (1 of 3 shards) is UNCOVERED by any dedicated report; my own reads substitute only partially. No claim is attributed to it.\\n\\nUNKNOWNS. Actual test runner/module resolution; whether stock.json is meant to be loaded or is documentation-only; intended semantics for duplicates, NaN and missing fields (currently whatever filter lets through); whether a consumer of inStock exists outside this worktree. PARTIAL is driven by the cancelled reader plus missing configuration evidence.\",\n  \"changedFiles\": [],\n  \"tests\": [\n    {\n      \"command\": \"none — shell/delegation disabled; tests not executed\",\n      \"result\": \"not_run\"\n    }\n  ],\n  \"findings\": [\n    {\n      \"severity\": \"medium\",\n      \"location\": \"README.md:3 vs data/stock.json:1\",\n      \"text\": \"Documented data flow is unimplemented: README claims quantities come from data/stock.json, but no source or test file references it. Link is prose-only.\"\n    },\n    {\n      \"severity\": \"medium\",\n      \"location\": \"reader_reports/task 7dea3f38-fa53-4dcf-9cfe-c8563bd1f801 (failureEventId 19ceddd3-d768-44c4-8340-efb50fed4a39)\",\n      \"text\": \"One of three reader tasks was cancelled by the owner (attemptId/artifactId null, empty excerpt), so its partition has no dedicated findings. Whole-subsystem exploration is partial; no claims were invented for it.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"location\": \"tests/inventory.test.ts:4-6\",\n      \"text\": \"Coverage is a single assertion on quantity >0, ==0, <0. Empty array, all-non-positive input, duplicates, NaN/Infinity, missing name/fields, ordering and input mutation are untested.\"\n    },\n    {\n      \"severity\": \"low\",\n      \"location\": \"tests/inventory.test.ts:3\",\n      \"text\": \"Relative import uses an explicit .ts extension; with no package.json/tsconfig.json present, runner, module type and loader flag are unobservable and ejecutability is unverified (not run here).\"\n    },\n    {\n      \"severity\": \"info\",\n      \"location\": \"src/inventory.ts:1-2\",\n      \"text\": \"Confirmed single export, zero imports, pure function; output preserves input order and is a name-subset of the input. No module-level state or caller-data mutation.\"\n    }\n  ],\n  \"knownRisks\": [\n    \"Reader partition 7dea3f38 is entirely uncovered (owner cancelled); its scope may contain findings absent from this synthesis.\",\n    \"Both retained reader reports arrived as bounded excerpts truncated mid-sentence; concrete file:line claims were re-verified directly, but conclusions beyond the excerpt are unavailable.\",\n    \"No test runner configuration exists, so any claim that the suite 'passes' would be unfounded.\",\n    \"Synthesis reflects worktree snapshot at baseSha 99735c6240918fadd076853c73dfceac5c6af307 only.\"\n  ],\n  \"questions\": [\n    \"Is data/stock.json intended to be loaded by runtime code (making the missing wiring a defect) or is it documentation-only sample data?\",\n    \"Which runner/loader is intended to execute tests/inventory.test.ts given the explicit .ts import and no package.json/tsconfig.json?\",\n    \"What was the intended partition of the cancelled reader task 7dea3f38, and should it be re-run to close the coverage gap?\"\n  ],\n  \"artifactRefs\": [\n    \"task:24e55ef4-852e-4533-bf21-219718de450e/attempt:9d1d00b1-8c00-4e5e-ba0b-c9a7b89c9ae2/artifact:7df18739-e704-4776-ba20-310ba533b3d7\",\n    \"task:eec7afaf-96a3-4ad7-9243-b22374321767/attempt:d4a42603-49ba-4048-84bc-a140afd69d20/artifact:5ee97c8f-efec-4538-bcd4-1d3b324be96b\",\n    \"task:7dea3f38-fa53-4dcf-9cfe-c8563bd1f801/failure:19ceddd3-d768-44c4-8340-efb50fed4a39 (failed/cancelled, no artifact)\"\n  ],\n  \"revisionOrCommit\": \"99735c6240918fadd076853c73dfceac5c6af307\"\n}\n\nFinal text:\nI'll start by reading the assignment, then verify the excerpts against the actual files.Files match. Let me verify the reader claims (single export, no other files, no configs) with targeted searches.The summary exceeded the 4000-character cap. Condensing while keeping all citations and the partial/completeness qualifiers.Submitted (outcome: **partial**).\n\n**What I did:** read the assignment, then independently verified every reader claim against the actual files rather than trusting the excerpts — `src/inventory.ts`, `tests/inventory.test.ts`, `data/stock.json`, `README.md`, plus a `find` for the full file inventory and a `grep` for `inStock`/`stock.json`/imports.\n\n**Consolidated map (all supported by file:line):**\n- Single export `inStock` at `src/inventory.ts:1`, pure filter→map at `:2`, no imports.\n- Test depends only on Node built-ins plus the relative src import (`tests/inventory.test.ts:1-3`); one test at `:4-6`.\n- `README.md:3` claims quantities come from `data/stock.json`, but nothing in code references that file (`data/stock.json:1`) — the integration is prose-only. Both completed readers agree here; I confirmed it.\n\n**Reconciliation:** the two completed readers conflict on nothing substantive — their difference is partition scope (entries/tests vs dependencies/contracts) and wording (\"claims\" vs \"integration gap\" for the same unwired link). I reported the shared observation rather than picking a label.\n\n**Completeness:** labeled partial because reader task `7dea3f38` was **cancelled by the owner** (null attempt/artifact, empty excerpt, failureEventId `19ceddd3…`) — its shard is uncovered and I attributed no claim to it. Inferences (needed TS runner, unwired demo fixture) and open questions (real runner, intended `stock.json` role, untested edge cases like duplicates/NaN) are kept separate from supported conclusions. Nothing was invented, no source touched, tests recorded as `not_run`, `changedFiles` empty.\n\nTwo notes on the submission mechanics: my first `submit_result` call was rejected for exceeding the 4000-character summary cap, so I condensed it — all citations and qualifiers were retained, though I should flag that the condensed findings text contains a typo (\"ejecutability\") that doesn't affect meaning. Separately, one path refers to `.git` only as an entry listed by `find`; I did not read into it.",
+          "session": {
+            "nativeSessionId": "01a14a08-cbcb-749c-b57d-13b8c0f2eb5e",
+            "adapter": "pi",
+            "state": "exited",
+            "exitCode": 0
+          }
+        }
+      ],
+      "tools": [
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "mcp__lao__read_assignment"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "ls"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "find"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "read"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "read"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "read"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "read"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "grep"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "find"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "mcp__lao__report_progress"
+        },
+        {
+          "taskId": "24e55ef4-852e-4533-bf21-219718de450e",
+          "tool": "mcp__lao__submit_result"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "mcp__lao__read_assignment"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "ls"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "ls"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "ls"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "ls"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "read"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "read"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "read"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "read"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "find"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "grep"
+        },
+        {
+          "taskId": "eec7afaf-96a3-4ad7-9243-b22374321767",
+          "tool": "mcp__lao__submit_result"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "mcp__lao__read_assignment"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "ls"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "read"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "read"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "read"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "read"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "find"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "grep"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "mcp__lao__submit_result"
+        },
+        {
+          "taskId": "1831015e-430c-41ae-afc7-eaa4895991f1",
+          "tool": "mcp__lao__submit_result"
+        }
+      ],
+      "usage": [
+        {
+          "type": "usage",
+          "inputTokens": 2889,
+          "outputTokens": 132,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 652,
+          "outputTokens": 118,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 168,
+          "outputTokens": 267,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 193,
+          "outputTokens": 264,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 151,
+          "outputTokens": 126,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 177,
+          "outputTokens": 134,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 213,
+          "outputTokens": 145,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 446,
+          "outputTokens": 1247,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 1344,
+          "outputTokens": 483,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 2799,
+          "outputTokens": 131,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 642,
+          "outputTokens": 283,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 194,
+          "outputTokens": 514,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 284,
+          "outputTokens": 116,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 182,
+          "outputTokens": 139,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 278,
+          "outputTokens": 1247,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 1440,
+          "outputTokens": 430,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 5166,
+          "outputTokens": 70,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 1915,
+          "outputTokens": 256,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 339,
+          "outputTokens": 145,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 475,
+          "outputTokens": 2252,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 2299,
+          "outputTokens": 2052,
+          "source": "pi native assistant message (may be partial)"
+        },
+        {
+          "type": "usage",
+          "inputTokens": 2252,
+          "outputTokens": 482,
+          "source": "pi native assistant message (may be partial)"
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "savedTeamReusedInNewRun": false,
+    "readerReportsRetained": true,
+    "partialFailureProvenance": true,
+    "fanOutAndConcurrencyCaps": true,
+    "restartAndIdempotencyWithoutReplay": true,
+    "ownerCheckoutUnchanged": true,
+    "personalConfigMetadataUnchanged": true,
+    "disposableFixtureAndDatabaseRemoved": true
+  },
+  "limits": {
+    "noNativeLead": true,
+    "realHarnessCrashNotInduced": true,
+    "noOsSandboxClaim": true,
+    "usageIsPartialNativeSamplesNotAccountBalance": true
+  }
+}

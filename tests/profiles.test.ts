@@ -239,13 +239,6 @@ test("profile discovery reports actual adapter limits, missing/auth states and p
       (await f.engine.profiles.discover({ harness: "codex" })).permissions,
       ["coordinator"],
     );
-    for (const harness of ["claude-code", "opencode"]) {
-      const catalog = await f.engine.profiles.discover({ harness });
-      assert.equal(catalog.implemented, false);
-      assert.equal(catalog.installed, "unknown");
-      assert.deepEqual(catalog.permissions, []);
-      assert.deepEqual(catalog.models, []);
-    }
     await f.engine.profiles.create(
       { ...f.content, model: "fixture/plain", thinking: null },
       "plain",

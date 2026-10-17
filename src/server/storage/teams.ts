@@ -75,15 +75,17 @@ export function resolveTeam(store: Store, team: TeamContent) {
       "POLICY_DENIED",
       "Choose a coordinator Lead and read-only or writer workers",
     );
-  // These are the only executors this build has; other harnesses arrive in M8.
+  // Lead authority stays on Codex; worker tool policies exist for Pi and Claude.
   if (
     !fake &&
     (lead.harness !== "codex" ||
-      workers.some((profile) => profile.harness !== "pi"))
+      workers.some(
+        (profile) => !["pi", "claude-code"].includes(profile.harness),
+      ))
   )
     throw new DomainError(
       "UNSUPPORTED",
-      "Native teams currently need a Codex Lead and Pi workers",
+      "Native teams currently need a Codex Lead and Pi or Claude Code workers",
     );
   const workflows = team.workflowTemplateIds.map((id) => {
     const row = store.db

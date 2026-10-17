@@ -10,6 +10,8 @@ import { workflowContentSchema } from "../../shared/domain/workflow.ts";
 import {
   exploreSubsystemConfigSchema,
   exploreSubsystemContent,
+  reviewImplementationConfigSchema,
+  reviewImplementationContent,
 } from "../../shared/workflow-presets.ts";
 import { type WorkflowRun, workflowRunSchema } from "../../shared/workflows.ts";
 import { mutate } from "./mutations.ts";
@@ -35,6 +37,11 @@ export function createWorkflowTemplate(
           throw new DomainError(
             "POLICY_DENIED",
             "Workflow stages need worker profiles, not a coordinator",
+          );
+        if (stage.type === "review" && profile.permission !== "read_only")
+          throw new DomainError(
+            "POLICY_DENIED",
+            "Review stages require read-only reviewer profiles",
           );
       }
       const now = new Date().toISOString();
@@ -87,6 +94,27 @@ export function createExploreSubsystemTemplate(
         `${key}:template`,
       );
     },
+  );
+}
+
+export function createReviewImplementationTemplate(
+  store: Store,
+  input: unknown,
+  key: string,
+) {
+  const config = reviewImplementationConfigSchema.parse(input);
+  return mutate(
+    store.db,
+    key,
+    "createReviewImplementationTemplate",
+    config,
+    workflowTemplateSchema,
+    () =>
+      createWorkflowTemplate(
+        store,
+        reviewImplementationContent(config),
+        `${key}:template`,
+      ),
   );
 }
 

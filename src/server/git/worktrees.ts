@@ -73,7 +73,7 @@ export class Worktrees {
         "Repository identity or base changed before worktree creation",
       );
     if (
-      attempt.adapter !== "pi" ||
+      !["pi", "claude-code"].includes(attempt.adapter) ||
       !attempt.worktreePath ||
       attempt.cwd !== attempt.worktreePath
     )

@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "mode": "SCRIPTED fixture, not a live Claude model",
+  "checks": [
+    "Approve once changed only its isolated worker README and produced a candidate",
+    "Deny once preserved its worker README and produced no candidate",
+    "Both requests retained adapter receipts and reached review without integration",
+    "Owner checkout unchanged; fixture and app data removed"
+  ],
+  "cases": [
+    {
+      "decision": "approve",
+      "runId": "fa05803b-edfb-4280-986c-157aa4f2178c",
+      "requestId": "00a11338-50c7-4fcb-8ee2-4209d95f9b62"
+    },
+    {
+      "decision": "deny",
+      "runId": "4506babc-b4e2-470a-b6ad-735994553349",
+      "requestId": "7131cc4d-096a-422e-9d29-5905bb587737"
+    }
+  ],
+  "modelPromptsSubmitted": 0
+}

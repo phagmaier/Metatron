@@ -3,7 +3,10 @@ import {
   teamSnapshotSchema,
   workflowTemplateSchema,
 } from "./domain/entities.ts";
-import { exploreSubsystemContent } from "./workflow-presets.ts";
+import {
+  exploreSubsystemContent,
+  reviewImplementationContent,
+} from "./workflow-presets.ts";
 
 const identity = (number: number) => ({
   id: `00000000-0000-4000-8000-${String(number).padStart(12, "0")}`,
@@ -85,4 +88,10 @@ export const fakeExploreSubsystemTemplate = workflowTemplateSchema.parse({
     synthesizerProfileId: identity(14).id,
     readerCount: 4,
   }),
+});
+
+export const fakeReviewImplementationTemplate = workflowTemplateSchema.parse({
+  ...identity(201),
+  version: 1,
+  ...reviewImplementationContent({ reviewerProfileId: identity(12).id }),
 });

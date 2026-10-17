@@ -1,0 +1,61 @@
+{
+  "execution": "Deterministic Pi protocol subprocess fixture; no native harness or provider contacted",
+  "start": "Owner's browser form -> authenticated POST /api/workflows",
+  "workflow": {
+    "id": "7886e8e9-6d86-4a90-8dc6-598da3331aad",
+    "name": "Review Implementation",
+    "status": "completed",
+    "stages": [
+      {
+        "stageId": "review",
+        "taskIds": [
+          "28aff376-90d8-4b11-af18-48e38665faf0"
+        ],
+        "status": "completed",
+        "diagnostic": null
+      }
+    ]
+  },
+  "candidate": {
+    "id": "e225f970-4630-473e-a223-1c0635b0afd5",
+    "baseSha": "f92eb6b0522a7cfb49ab4d3bfe264897ce851a37",
+    "candidateSha": "7c3c54e04e9768f2de2e19cc5fd0e952d2b16e5c",
+    "status": "reviewed",
+    "humanDecision": null
+  },
+  "reviews": [
+    {
+      "summary": "Fixture review: README loses the project heading",
+      "recommendation": "changes_requested",
+      "findings": [
+        {
+          "severity": "important",
+          "file": "README.md",
+          "line": 1,
+          "justification": "Restore the project heading so readers can identify the project.",
+          "evidence": "The candidate replaces the heading with 'Protocol fixture result'.",
+          "confidence": 0.95
+        }
+      ],
+      "tests": [
+        {
+          "command": "Tests unavailable: shell is disabled",
+          "result": "not_run"
+        }
+      ],
+      "id": "b6a0fe90-ae46-4c83-9790-cd8d30208725",
+      "createdAt": "2026-10-17T13:15:03.568Z",
+      "updatedAt": "2026-10-17T13:15:03.568Z",
+      "taskId": "ed0316d5-8b89-41d5-b672-f1dc0751f003",
+      "reviewerAttemptId": "ff79d730-dd40-40bb-b443-80cf3292279b",
+      "candidateId": "e225f970-4630-473e-a223-1c0635b0afd5"
+    }
+  ],
+  "attempts": 2,
+  "implementationStatus": "AWAITING_REVIEW",
+  "ownerCheckout": {
+    "clean": true,
+    "headUnchanged": true
+  },
+  "fixtureCleanup": "App, disposable database and Git fixture removed after successful safety checks"
+}

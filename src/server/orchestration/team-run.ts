@@ -23,7 +23,10 @@ export async function createTeamRun(
     project.repository.commonDirectory !== repository.commonDirectory
   )
     throw new DomainError("CONFLICT", "Project identity changed; reopen it");
-  const { execution } = resolveTeam(store, getTeam(store, { id: data.teamId }));
+  const { execution, profiles } = resolveTeam(
+    store,
+    getTeam(store, { id: data.teamId }),
+  );
   if (execution === "native" && data.scenario !== "success")
     throw new DomainError(
       "POLICY_DENIED",
@@ -36,6 +39,9 @@ export async function createTeamRun(
       ? {
           pi: await engine.profiles.discover({ harness: "pi" }),
           codex: await engine.profiles.discover({ harness: "codex" }),
+          claude: profiles.some((profile) => profile.harness === "claude-code")
+            ? await engine.profiles.discover({ harness: "claude-code" })
+            : null,
         }
       : null;
   return mutate(store.db, key, "startTeamRun", data, runSchema, () => {
@@ -53,11 +59,20 @@ export async function createTeamRun(
           "UNSUPPORTED",
           "The team's Codex Lead requires app-owned login; check Codex discovery",
         );
-      for (const profile of resolved.profiles)
-        engine.profiles.validate(
-          profile,
-          profile.harness === "codex" ? catalogs.codex : catalogs.pi,
-        );
+      for (const profile of resolved.profiles) {
+        const catalog =
+          profile.harness === "codex"
+            ? catalogs.codex
+            : profile.harness === "claude-code"
+              ? catalogs.claude
+              : catalogs.pi;
+        if (!catalog)
+          throw new DomainError(
+            "UNSUPPORTED",
+            "The worker harness was not discovered for this team",
+          );
+        engine.profiles.validate(profile, catalog);
+      }
     }
     // The run owns this resolved copy; later library edits never reach it.
     const run = {

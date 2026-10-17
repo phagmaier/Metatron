@@ -22,6 +22,7 @@ const stageTypes = {
   single_agent: "single agent",
   parallel_agents: "parallel agents",
   synthesize: "synthesis",
+  review: "independent review",
 };
 
 function eventText(payload: Record<string, unknown>) {

@@ -1,8 +1,10 @@
 import { z } from "zod";
 import {
   idSchema,
+  type Run,
   type Task,
   taskSchema,
+  type WorkflowTemplate,
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import type { Actor } from "../../shared/orchestration.ts";
@@ -117,6 +119,52 @@ export function requestReview(
           };
     },
   );
+}
+
+export function workflowReviewCandidate(
+  engine: Engine,
+  run: Run,
+  stage: WorkflowTemplate["stages"][number],
+  parameters: Record<string, string>,
+) {
+  if (stage.type !== "review") return null;
+  if (run.execution !== "native")
+    throw new DomainError(
+      "UNSUPPORTED",
+      "Review workflows require a captured native candidate; FAKE playback cannot produce a Git-backed review",
+    );
+  if (
+    engine.scheduling.profile(run.id, stage.profileId).permission !==
+    "read_only"
+  )
+    throw new DomainError(
+      "POLICY_DENIED",
+      "Review stages require read-only reviewer profiles",
+    );
+  const { store } = engine;
+  const candidate = getIntegrationCandidate(
+    store,
+    idSchema.parse(parameters[stage.inputs[0]?.ref ?? ""]),
+  );
+  const implementation = store.getTask(candidate.taskId);
+  if (implementation.runId !== run.id)
+    throw new DomainError(
+      "INVALID_REFERENCE",
+      "Review candidate must belong to this run",
+    );
+  if (
+    implementation.kind !== "work" ||
+    implementation.reviewCandidateId ||
+    implementation.status !== "AWAITING_REVIEW" ||
+    implementationTask(store, implementation).id !== implementation.id ||
+    listIntegrationCandidates(store, implementation.id).at(-1)?.id !==
+      candidate.id
+  )
+    throw new DomainError(
+      "CONFLICT",
+      "Choose the current captured candidate of an implementation awaiting review",
+    );
+  return candidate;
 }
 
 // The reviewer's prompt: the original objective and criteria, immutable refs,

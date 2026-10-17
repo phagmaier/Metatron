@@ -69,3 +69,41 @@ export function exploreSubsystemContent(
     ],
   };
 }
+
+export const reviewImplementationConfigSchema = z.strictObject({
+  reviewerProfileId: idSchema,
+});
+
+export function reviewImplementationContent(
+  config: z.infer<typeof reviewImplementationConfigSchema>,
+): z.input<typeof workflowContentSchema> {
+  return {
+    name: "Review Implementation",
+    inputs: [
+      {
+        name: "candidate_id",
+        description:
+          "Captured integration candidate ID from an implementation awaiting review in this run",
+      },
+    ],
+    results: [{ name: "review", stageId: "review" }],
+    stages: [
+      {
+        id: "review",
+        type: "review",
+        profileId: config.reviewerProfileId,
+        instructions:
+          "Independently review the stable candidate diff and the surrounding repository snapshot against the original objective and acceptance criteria. Trace changed behavior into callers, dependencies and tests; prioritize actionable correctness, safety and regression findings with file:line evidence and confidence. Separate observed facts from inference and state coverage gaps. Do not rely on the implementer's report, edit files, delegate, expand scope or approve integration. Shell is disabled; never claim unperformed tests.",
+        inputs: [
+          { name: "candidate_id", source: "parameter", ref: "candidate_id" },
+        ],
+        result:
+          "Submit a structured review: summary, pass or changes_requested recommendation, actionable findings with severity, repository-relative file, positive line, justification, evidence and confidence, and tests honestly marked not_run. A recommendation is not human approval or integration authority.",
+        dependsOn: [],
+        count: 1,
+        partitions: [],
+        partialFailure: "stop",
+      },
+    ],
+  };
+}

@@ -27,7 +27,12 @@ export const workflowFields = {
     .array(
       z.strictObject({
         id: keySchema,
-        type: z.enum(["single_agent", "parallel_agents", "synthesize"]),
+        type: z.enum([
+          "single_agent",
+          "parallel_agents",
+          "synthesize",
+          "review",
+        ]),
         profileId: z.uuid(),
         instructions: guidance,
         inputs: z.array(bindingSchema).max(32),
@@ -84,8 +89,17 @@ export function validateWorkflow(
         issue("Each parallel child needs an explicit partition");
     } else if (stage.count !== 1 || stage.partitions.length)
       issue(
-        "Single-agent and synthesis stages have one child and no partitions",
+        "Single-agent, synthesis and review stages have one child and no partitions",
       );
+    // Review context comes only from the pinned candidate, never upstream
+    // implementation reports that could bias the independent assessment.
+    if (
+      stage.type === "review" &&
+      (stage.inputs.length !== 1 ||
+        stage.inputs[0]?.name !== "candidate_id" ||
+        stage.inputs[0]?.source !== "parameter")
+    )
+      issue("Review stages require only a candidate_id parameter binding");
     if (
       stage.type === "synthesize" &&
       !stage.inputs.some((input) => input.source === "stage")

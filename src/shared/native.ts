@@ -11,6 +11,7 @@ import { fakeTeamSnapshot } from "./presets.ts";
 
 export const nativeRunSchema = z.strictObject({
   projectId: idSchema,
+  harness: z.enum(["pi", "claude-code"]).default("pi"),
   title: textSchema,
   initialPrompt: textSchema,
   model: textSchema,
@@ -18,12 +19,16 @@ export const nativeRunSchema = z.strictObject({
   permission: z.enum(["read_only", "workspace_write"]),
   limits: limitsSchema.default(defaultLimits),
 });
-export function nativeTeam(model: string, thinking: string | null) {
+export function nativeTeam(
+  model: string,
+  thinking: string | null,
+  harness: "pi" | "claude-code" = "pi",
+) {
   return {
     ...fakeTeamSnapshot,
     preset: {
       ...fakeTeamSnapshot.preset,
-      name: "Owner-directed Pi workers",
+      name: `Owner-directed ${harness === "pi" ? "Pi" : "Claude Code"} workers`,
       mode: "supervised" as const,
     },
     profiles: fakeTeamSnapshot.profiles.map((p) => ({
@@ -31,7 +36,8 @@ export function nativeTeam(model: string, thinking: string | null) {
       name:
         p.permission === "coordinator"
           ? "Owner-directed (no live Lead)"
-          : p.name.replace("Fake ", "Pi "),
+          : p.name.replace("Fake ", harness === "pi" ? "Pi " : "Claude Code "),
+      harness: p.permission === "coordinator" ? p.harness : harness,
       model,
       thinking,
     })),

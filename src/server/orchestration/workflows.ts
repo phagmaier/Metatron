@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { open } from "node:fs/promises";
 import type { z } from "zod";
-import type { WorkflowTemplate } from "../../shared/domain/entities.ts";
+import {
+  taskSchema,
+  type WorkflowTemplate,
+} from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import type { Actor } from "../../shared/orchestration.ts";
 import {
@@ -27,6 +30,7 @@ import {
 import type { Engine } from "./engine.ts";
 import { notifyWorkflowSettled } from "./lead-run.ts";
 import { authorize } from "./policy.ts";
+import { workflowReviewCandidate } from "./review.ts";
 
 type Stage = WorkflowTemplate["stages"][number];
 const settled = (status: string) =>
@@ -96,7 +100,13 @@ export class Workflows {
         "BUDGET_EXCEEDED",
         `Workflow needs ${launches} worker launches; ${Math.max(0, remaining)} remain in this run's budget`,
       );
-    return { run, template };
+    const reviews = Object.fromEntries(
+      template.stages.map((stage) => [
+        stage.id,
+        workflowReviewCandidate(this.engine, run, stage, data.parameters),
+      ]),
+    );
+    return { run, template, reviews };
   }
 
   // A Supervised Lead's invocation: validated like a start, then left to the
@@ -159,7 +169,7 @@ export class Workflows {
       data,
       workflowRunSchema,
       () => {
-        const { run, template } = this.resolve(actor, data);
+        const { run, template, reviews } = this.resolve(actor, data);
         const id = randomUUID();
         const now = new Date().toISOString();
         // Stage prerequisites consume reports, not DONE-only Git integration gates.
@@ -168,21 +178,48 @@ export class Workflows {
           stageId: stage.id,
           status: "pending",
           diagnostic: null,
-          taskIds: Array.from(
-            { length: stage.count },
-            (_, index) =>
-              store.createTask(
+          taskIds: Array.from({ length: stage.count }, (_, index) => {
+            const candidate = reviews[stage.id];
+            const task = store.createTask(
+              {
+                runId: run.id,
+                workflowId: id,
+                parentTaskId: candidate?.taskId ?? null,
+                origin: "workflow",
+                title: `${template.name} · ${stage.id}${stage.count > 1 ? ` ${index + 1}/${stage.count}` : ""}`,
+                objective: stage.instructions,
+                acceptanceCriteria: [stage.result],
+              },
+              `${key}:${stage.id}:${index}`,
+            );
+            if (candidate) {
+              // Existing review execution pins the checkout, starts fresh,
+              // and accepts findings only after clean completion evidence.
+              const review = taskSchema.parse({
+                ...task,
+                reviewCandidateId: candidate.id,
+              });
+              store.db
+                .prepare("UPDATE tasks SET data=? WHERE id=?")
+                .run(JSON.stringify(review), task.id);
+              store.recordEvent(
                 {
                   runId: run.id,
-                  workflowId: id,
-                  origin: "workflow",
-                  title: `${template.name} · ${stage.id}${stage.count > 1 ? ` ${index + 1}/${stage.count}` : ""}`,
-                  objective: stage.instructions,
-                  acceptanceCriteria: [stage.result],
+                  taskId: candidate.taskId,
+                  type: "review.requested",
+                  correlationId: key,
+                  payload: {
+                    reviewTaskId: task.id,
+                    candidateId: candidate.id,
+                    profileId: stage.profileId,
+                    workflowId: id,
+                  },
                 },
-                `${key}:${stage.id}:${index}`,
-              ).id,
-          ),
+                `${key}:${stage.id}:${index}:review`,
+              );
+            }
+            return task.id;
+          }),
         }));
         const workflow = workflowRunSchema.parse({
           id,

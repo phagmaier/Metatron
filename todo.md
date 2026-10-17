@@ -146,14 +146,15 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 - [x] Persist per-reader evidence and synthesis references, including explicit partial failures, rather than discarding originals.
 - [x] Render workflow as one expandable item with child stages/agents, logs, and reports.
 - [x] Let owner run workflow manually and Lead invoke only a saved template with validated parameters.
-- [ ] Add simple `Review Implementation` workflow preset; optional multi-reader variant only if it stays within beta scope.
-- [ ] Exercise workflow with FakeAdapter and at least one real read-only harness; verify fan-out cap and partial reader failure.
+- [x] Add simple `Review Implementation` workflow preset; optional multi-reader variant only if it stays within beta scope.
+- [x] Exercise workflow with FakeAdapter and at least one real read-only harness; verify fan-out cap and partial reader failure.
 
 **M7 gate:** user saves a team and Explore Subsystem workflow, starts them again in a new run, sees parallel child work and one grounded final report.
 
 ## M8 - Complete the remaining harnesses [spec §5, 13.3]
 
 - [ ] Implement Claude Code adapter via official Agent SDK; validate auth with installed CLI, streaming, session ID/resume, model choice, hooks/permission prompts and cancellation.
+  - Adapter, fixtures and no-model SDK/installed-CLI probe implemented; authenticated native streaming/model/resume/hooks/cancellation validation is **BLOCKED** on supported SDK authentication. See [current evidence and owner command](docs/adapter-recon.md#m8-item-1--claude-sdk-worker-implementation-2026-10-17); do not mark the item complete from scripted results.
 - [ ] Implement OpenCode adapter via documented SDK/server; bind local server to loopback and protect it; validate session/prompt/events/abort/permissions.
 - [ ] Revisit Pi and Codex adapter capabilities after discovering real SDK/version differences; surface unavailable controls accurately.
 - [ ] Show installed/missing/auth-required/available state in GUI, with actionable diagnostics for each harness.

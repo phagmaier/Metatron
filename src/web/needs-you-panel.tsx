@@ -34,15 +34,36 @@ function RequestCard({
 }) {
   const [response, setResponse] = useState("");
   const [busy, setBusy] = useState(false);
-  const actions = humanRequestActions(
-    request.status,
-    Boolean(request.nativePermission),
-  );
+  const actions = request.nativeApproval
+    ? []
+    : humanRequestActions(request.status, Boolean(request.nativePermission));
   const session = sessions.find((item) => item.id === request.sessionId);
   const attempt = attempts.find((item) => item.id === session?.attemptId);
   const profile = run.teamSnapshot?.profiles.find(
     (item) => item.id === attempt?.profileId,
   );
+  const nativePending =
+    request.status === "open" &&
+    request.nativeApproval?.state === "pending" &&
+    session?.state === "waiting_permission" &&
+    session.recovery === "none" &&
+    attempt?.status === "running";
+  async function decideNative(decision: "approve" | "deny") {
+    setBusy(true);
+    onError("");
+    try {
+      const saved = humanRequestSchema.parse(
+        await writeApi("native-approvals", { id: request.id, decision }),
+      );
+      onSaved(saved);
+    } catch (error) {
+      onError(
+        error instanceof Error ? error.message : "Native decision failed",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
   async function decide(status: HumanRequest["status"]) {
     setBusy(true);
     onError("");
@@ -80,7 +101,7 @@ function RequestCard({
       <p className={request.urgency === "urgent" ? "warning" : "note"}>
         {request.urgency} urgency ·{" "}
         {request.blocking
-          ? actions.length > 0
+          ? actions.length > 0 || nativePending
             ? "Blocking"
             : "Was blocking"
           : "Nonblocking"}
@@ -118,6 +139,39 @@ function RequestCard({
             Native permission denied by app policy. No permission was granted.
             Acknowledging records your receipt; native delivery is not verified.
           </p>
+        </div>
+      )}
+      {request.nativeApproval && (
+        <div className="warning">
+          <p>
+            Claude Code native permission · {request.nativeApproval.state}.
+            Approval applies to this one policy-checked operation in the
+            isolated worktree, never to shell, delegation or integration.
+          </p>
+          <p>
+            A saved decision or adapter receipt is not proof that the tool ran.
+            Ended/restarted sessions cannot receive this approval.
+          </p>
+          {nativePending && (
+            <div className="actions">
+              <button
+                type="button"
+                disabled={
+                  busy || run.status !== "active" || run.mode === "chat_plan"
+                }
+                onClick={() => void decideNative("approve")}
+              >
+                Approve once
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void decideNative("deny")}
+              >
+                Deny once
+              </button>
+            </div>
+          )}
         </div>
       )}
       <details>
@@ -302,10 +356,11 @@ export function NeedsYouPanel({
         </button>
       </div>
       <p className="note">
-        Decisions are saved here. Native permission denials are notifications;
-        acknowledging them grants no access. Other replies and safe continuation
-        are not delivered to workers yet. Marking completed records your action;
-        it does not verify that it worked.
+        Decisions are saved here. Codex coordinator permission denials are
+        notifications; acknowledging them grants no access. Claude worker
+        permissions use the one-shot controls below. Other replies and safe
+        continuation are not delivered to workers yet. Marking completed records
+        your action; it does not verify that it worked.
       </p>
       {error && (
         <p className="error" role="alert">

@@ -1,0 +1,156 @@
+import { spawn } from "node:child_process";
+import { constants } from "node:fs";
+import { access, realpath } from "node:fs/promises";
+import { delimiter, isAbsolute, join } from "node:path";
+import type {
+  SpawnedProcess,
+  SpawnOptions,
+} from "@anthropic-ai/claude-agent-sdk";
+import { DomainError } from "../../shared/domain/states.ts";
+
+export type ClaudeExit = { code: number | null; signal: string | null };
+export type ClaudeChild = SpawnedProcess & { pid?: number | undefined };
+export type ClaudeSpawn = (options: SpawnOptions) => ClaudeChild;
+export const spawnClaude: ClaudeSpawn = (options) => {
+  const child = spawn(options.command, options.args, {
+    cwd: options.cwd,
+    env: options.env,
+    stdio: ["pipe", "pipe", "pipe"],
+    detached: false,
+  });
+  // Native stderr can contain prompts, tool inputs and credentials. Never retain it.
+  child.stderr.resume();
+  return child;
+};
+
+export async function claudeExecutable(explicit?: string): Promise<string> {
+  const candidates = explicit
+    ? isAbsolute(explicit)
+      ? [explicit]
+      : []
+    : (process.env.PATH ?? "")
+        .split(delimiter)
+        .filter((entry) => isAbsolute(entry))
+        .map((entry) => join(entry, "claude"));
+  for (const candidate of candidates) {
+    try {
+      await access(candidate, constants.X_OK);
+      return await realpath(candidate);
+    } catch {
+      /* Continue only through explicit absolute PATH entries. */
+    }
+  }
+  throw new DomainError(
+    "UNSUPPORTED",
+    "Installed Claude Code executable was not found on the absolute PATH",
+  );
+}
+
+export class ClaudeInput<T> implements AsyncIterable<T> {
+  private readonly values: T[] = [];
+  private wake: (() => void) | undefined;
+  private ended = false;
+  push(value: T): void {
+    if (this.ended) throw new DomainError("CONFLICT", "Claude input is closed");
+    if (this.values.length >= 4096) {
+      this.values.length = 0;
+      throw new DomainError(
+        "CONFLICT",
+        "Claude event queue exceeded its bounded capacity",
+      );
+    }
+    this.values.push(value);
+    this.wake?.();
+  }
+  close(): void {
+    this.ended = true;
+    this.wake?.();
+  }
+  async *[Symbol.asyncIterator](): AsyncGenerator<T> {
+    while (true) {
+      const value = this.values.shift();
+      if (value !== undefined) {
+        yield value;
+        continue;
+      }
+      if (this.ended) return;
+      await new Promise<void>((resolve) => {
+        this.wake = resolve;
+      });
+      this.wake = undefined;
+    }
+  }
+}
+
+export class ClaudeProcess {
+  private child: ClaudeChild | undefined;
+  private evidence: ClaudeExit | undefined;
+  private settle: ((exit: ClaudeExit) => void) | undefined;
+  readonly exit = new Promise<ClaudeExit>((resolve) => {
+    this.settle = resolve;
+  });
+  private stopping: Promise<ClaudeExit> | undefined;
+  private readonly factory: ClaudeSpawn;
+  constructor(factory: ClaudeSpawn) {
+    this.factory = factory;
+  }
+  get pid(): number | undefined {
+    return this.child?.pid;
+  }
+  readonly spawn = (options: SpawnOptions): SpawnedProcess => {
+    if (this.child)
+      throw new DomainError(
+        "CONFLICT",
+        "Claude attempted to replace its owned subprocess",
+      );
+    const child = this.factory(options);
+    this.child = child;
+    child.on("error", () => {
+      /* The SDK reports a redacted transport failure. */
+    });
+    child.once("exit", (code, signal) => {
+      this.evidence = { code, signal };
+      this.settle?.(this.evidence);
+    });
+    if (child.exitCode !== null || child.signalCode) {
+      this.evidence = {
+        code: child.exitCode,
+        signal: child.signalCode ?? null,
+      };
+      this.settle?.(this.evidence);
+    }
+    return child;
+  };
+  private async wait(milliseconds: number): Promise<boolean> {
+    if (this.evidence) return true;
+    let timer: NodeJS.Timeout | undefined;
+    const result = await Promise.race([
+      this.exit.then(() => true),
+      new Promise<false>((resolve) => {
+        timer = setTimeout(() => resolve(false), milliseconds);
+      }),
+    ]);
+    clearTimeout(timer);
+    return result;
+  }
+  stop(): Promise<ClaudeExit> {
+    this.stopping ??= this.shutdown();
+    return this.stopping;
+  }
+  private async shutdown(): Promise<ClaudeExit> {
+    if (!this.child)
+      throw new DomainError(
+        "CONFLICT",
+        "Claude has no owned subprocess exit evidence",
+      );
+    if (!this.evidence) this.child.stdin.end();
+    if (!(await this.wait(2000))) this.child.kill("SIGTERM");
+    if (!(await this.wait(1000))) this.child.kill("SIGKILL");
+    if (!(await this.wait(1000)))
+      throw new DomainError(
+        "CONFLICT",
+        "Owned Claude process has not confirmed exit after cancellation",
+      );
+    return this.exit;
+  }
+}

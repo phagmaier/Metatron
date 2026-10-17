@@ -2,7 +2,7 @@
 
 This is the working repo for a **single-user, local-first multi-agent coding-harness orchestrator** targeting Arch Linux / Omarchy. Design docs and implementation live here side by side.
 
-The planned application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 adds owner-directed **native Pi workers** in isolated Git worktrees, alongside M2's explicitly simulated Lead/team demonstration. M4 adds a **native Codex Lead** that coordinates Pi workers only through a session-scoped tool gateway. All runs persist tasks, reports and events. The beta is incomplete.
+The application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 added owner-directed **native Pi workers** in isolated Git worktrees; M4 added a **native Codex Lead** using a session-scoped tool gateway. M8 item 1 adds the official **Claude Code Agent SDK worker adapter**, with authenticated live validation still blocked on supported SDK authentication. Runs persist tasks, reports and events. OpenCode and the remaining M8 gates are not complete; neither is the beta.
 
 ## Run the app
 
@@ -47,7 +47,7 @@ Git fixture tests retain their M0 safety checks: each fixture is created under t
 
 ## Role templates
 
-Expand **Role templates** to create, edit or delete reusable instructions and an expected output shape. Harness, model, reasoning and permission settings belong to AgentProfiles. Choose custom roles in **Agent profiles** after reloading profiles and roles. Editing a built-in role affects future fake, Pi and Codex Lead runs; saved runs keep their original snapshots.
+Expand **Role templates** to create, edit or delete reusable instructions and an expected output shape. Harness, model, reasoning and permission settings belong to AgentProfiles. Choose custom roles in **Agent profiles** after reloading profiles and roles. Editing a built-in role affects future fake, Pi, Claude Code and Codex Lead runs; saved runs keep their original snapshots.
 
 **Export role** downloads one versioned JSON document. Import that file or paste its JSON under **Import role JSON**, then choose **Import as new role**. Imports always create a new identity, even when the name already exists; they never replace saved guidance or configure a harness. Format version 1 contains only `format`, `formatVersion` and `role: {name, instructions, expectedOutput}`. Files are limited to 128 KiB; names to 160 characters, instructions to 12,000 and output guidance to 8,000. All fields are required.
 
@@ -57,30 +57,54 @@ Stale saves/deletes are refused; use **Reload roles** before editing again. A ro
 
 Expand **Agent profiles**, choose **New profile**, enter a name and saved role, then **Discover profile settings**. Select a discovered model, optional reasoning setting, supported permission and optional additional instructions, then **Create profile**. Discovery starts app-owned catalog processes without a model turn; saving checks discovery again on the server. No workers are dispatched. A null reasoning setting uses the harness default. Profiles are reusable configuration, not ongoing conversations. Names are limited to 160 characters and additional instructions to 4,000.
 
-Pi currently permits `read_only` and `workspace_write` file-tool workers; its catalog does not prove provider entitlement. Codex permits only `coordinator` (a read-only Lead) and requires app-owned login. Claude Code and OpenCode adapters remain unimplemented, with installation/authentication reported as unknown. Unsupported models, reasoning or permission choices are refused. These controls are not an OS sandbox. The built-in FAKE demo profiles are fixed, labeled playback configuration and cannot be edited or deleted.
+Pi and Claude Code permit `read_only` and `workspace_write` file-tool workers; a catalog does not prove provider entitlement. Claude requires supported SDK API/provider authentication (see below). Codex permits only `coordinator` (a read-only Lead) and requires app-owned login. OpenCode remains unimplemented, with installation/authentication reported as unknown. Unsupported models, reasoning or permission choices are refused. These controls are not an OS sandbox. The built-in FAKE demo profiles are fixed, labeled playback configuration and cannot be edited or deleted.
 
 Select a saved native profile to edit/delete it. Stale versions are refused; **Reload profiles and roles** before trying again. Referenced team/workflow profiles cannot be deleted, and role references are kept consistent. Existing run snapshots retain their original settings even after library edits/deletes. A profile in a saved team cannot switch between the coordinator (Lead) and worker permission classes until the team is edited. Add profiles to runs through **Team presets**; the older native run forms still use their explicit settings. Minimal protocol-only demo: `mise x -- node --test tests/profiles.test.ts tests/profiles-api.test.ts`. [Desktop](docs/evidence/m7-profiles-desktop.png) and [mobile](docs/evidence/m7-profiles-mobile.png) captures use protocol fixtures with no provider calls.
+
+## Claude Code workers — M8 item 1
+
+The adapter pins official `@anthropic-ai/claude-agent-sdk` **0.3.302** and launches the installed **Claude Code 2.1.302**, not a generic Anthropic API client or a silently substituted bundled CLI. Its native configuration/transcripts live under app data. Discovered settings, plugins, skills, agents and other MCP servers are disabled. Supported authentication is an inherited `ANTHROPIC_API_KEY` or an approved Bedrock/Vertex/Foundry environment; personal subscription/OAuth credentials are not read, copied or reused. Configured account metadata reports auth **unknown**; only a successful provider turn proves access at that time, not future entitlement.
+
+Choose `claude-code` in **Agent profiles**, discover its actual models/efforts, then include a saved worker profile in a native team. The owner-directed `POST /api/runs/native` also accepts `harness: "claude-code"` with the same model/thinking/permission checks; its default remains Pi. There is no dedicated Claude run form or Claude Lead executor in this slice.
+
+Workers have Read/Grep/Glob and, for writers, Edit/Write, plus only the five scoped worker gateway methods. No shell, delegation or integration authority. A safe Edit/Write blocks in **Needs You** until **Approve once** or **Deny once** answers its exact live callback. Unsafe paths, secrets, symlinks, replaced checkouts and Lead tools cannot be approved. Other tasks continue. An adapter receipt is **not** proof that a tool ran; inspect the final report/worktree evidence. Generic inbox replies cannot grant native access. Stale callbacks expire on cancellation, session end or restart, and a saved decision never replays a grant. [Authority/recovery decision](docs/adr/2026-10-17-claude-worker-permissions.md).
+
+Native streaming preserves root-session text; completion requires an authoritative successful result **and** a clean owned-process exit. Model/effort must match native discovery and initialization. Explicit SDK resume permits only a clean app-owned session in the same run/task/checkout/model/permission; interrupted work never resumes or replays. Engine assignments create fresh worktrees, so cross-assignment resume remains refused and auto continuation uses a checkpoint. Live steering is unsupported. File guards/worktrees are **not OS isolation**.
+
+```sh
+# Installed CLI/SDK control/catalog/auth probe; zero model prompts.
+mise x -- pnpm test:live:claude --output /tmp/claude-probe.json
+
+# Privately configure approved SDK authentication first; this explicitly allows provider cost.
+# Use a model/effort returned by fresh discovery; these values were observed on this machine.
+mise x -- pnpm test:live:claude --allow-live \
+  --model sonnet --thinking low --output /tmp/claude-live.json
+```
+
+Both modes create their own marked disposable Git fixture and app configuration, refuse an existing evidence output and verify the owner checkout plus checked personal-config metadata before cleanup. Without a configured supported authentication route, the opt-in command exits **2**, records **BLOCKED**, submits **zero** model prompts and cleans its unused fixtures. With a configured route, it attempts a streamed reader, same-checkout native resume, a blocked Write denied by the owner, and cancellation; invalid credentials or missing entitlement can still fail. Failed/ambiguous native work is retained for inspection, never automatically retried.
+
+Observed: [real no-model SDK probe](docs/evidence/m8-claude-probe.json) and [authentication blocker](docs/evidence/m8-claude-blocked.json). The default suite's 52 Claude regressions and actual Chromium [approval receipt](docs/evidence/m8-claude-approve-once.png)/[runtime checks](docs/evidence/m8-claude-ui.json) use deterministic SDK-boundary/scripted fixtures, not paid model turns. **Authenticated native streaming/model effectiveness/resume/hooks/cancellation remain unverified; M8 item 1 stays unchecked until that live gate passes.** Other M8 items are unchanged.
 
 ## Team presets
 
 Expand **Team presets**, choose **New team**, then pick a coordinator Lead profile, one or more worker profiles, available workflows (workflow authoring is currently backend-only), a default mode and resource limits, and choose **Create team**. Saving dispatches nothing. Stale saves/deletes are refused; **Reload teams and profiles** before editing again. The seeded **Fake demo team** is fixed playback configuration.
 
-A team is either all FAKE demo profiles (scripted playback, no model tokens) or all native profiles; the two never mix. Native teams currently need a Codex Lead and Pi workers, because those are the only executors in this build. A worker can never be a coordinator. Selected workflows may only use the team's profiles.
+A team is either all FAKE demo profiles (scripted playback, no model tokens) or all native profiles; the two never mix. Native teams currently need a Codex Lead and Pi and/or Claude Code workers. A worker can never be a coordinator. Selected workflows may only use the team's profiles. Claude's authenticated live-validation gate remains blocked as documented above.
 
-Under **Projects and new runs**, open **Start a run from a saved team**, choose a team, enter a title and objective, then **Start team run**. The server refuses the start if the team changed after you reviewed that version. Native starts check Codex login and Pi/Codex discovery again; live runs use your providers and may cost money. The run copies the team version, its Lead/worker profiles, their roles, its workflows, mode and limits into its own snapshot. Later edits or deletion of the team, profiles, roles or workflows do not change it; the run header shows the snapshot name and version. Minimal protocol-only demo: `mise x -- node --test tests/teams.test.ts tests/teams-api.test.ts`.
+Under **Projects and new runs**, open **Start a run from a saved team**, choose a team, enter a title and objective, then **Start team run**. The server refuses the start if the team changed after you reviewed that version. Native starts check Codex login and fresh discovery for the selected native workers, including Claude when present; live runs use your providers and may cost money. The run copies the team version, its Lead/worker profiles, their roles, its workflows, mode and limits into its own snapshot. Later edits or deletion of the team, profiles, roles or workflows do not change it; the run header shows the snapshot name and version. Minimal protocol-only demo: `mise x -- node --test tests/teams.test.ts tests/teams-api.test.ts`.
 
 ## Static workflow engine
 
-M7 provides backend template authoring (no authoring UI), owner and Lead invocation, and a grouped workflow view. `createWorkflowTemplate(store, content, key)` saves a validated v1 recipe; `engine.workflows.start({runId, templateId, parameters}, key)` (owner `POST /api/workflows`, Lead `run_workflow`) instantiates only a workflow already allowed in the run's immutable team snapshot. No arbitrary runtime graphs, nested calls or loops. `Explore Subsystem` is available as a saved preset.
+M7 provides backend template authoring (no authoring UI), owner and Lead invocation, and a grouped workflow view. `createWorkflowTemplate(store, content, key)` saves a validated v1 recipe; `engine.workflows.start({runId, templateId, parameters}, key)` (owner `POST /api/workflows`, Lead `run_workflow`) instantiates only a workflow already allowed in the run's immutable team snapshot. No arbitrary runtime graphs, nested calls or loops. Saved presets include `Explore Subsystem` and `Review Implementation`.
 
-Recipes declare named runtime `inputs`, named `results: [{name, stageId}]`, and topologically ordered stages. Each stage declares `id`, `type` (`single_agent`, `parallel_agents`, `synthesize`), a roster worker's `profileId`, `instructions`, `inputs: [{name, source: "parameter" | "stage", ref}]`, expected `result` guidance, `dependsOn`, `count`, `partitions` and `partialFailure`. Parallel stages require one independent partition per child; other stages have count 1 and no partitions. Stage inputs can reference declared parameters or direct upstream dependencies. Synthesis must consume an upstream result. Runtime parameter names must match exactly.
+Recipes declare named runtime `inputs`, named `results: [{name, stageId}]`, and topologically ordered stages. Each stage declares `id`, `type` (`single_agent`, `parallel_agents`, `synthesize`, `review`), a roster worker's `profileId`, `instructions`, `inputs: [{name, source: "parameter" | "stage", ref}]`, expected `result` guidance, `dependsOn`, `count`, `partitions` and `partialFailure`. Parallel stages require one independent partition per child; other stages have count 1 and no partitions. Stage inputs can reference declared parameters or direct upstream dependencies. Synthesis must consume an upstream result. A review stage requires a read-only profile and exactly one parameter binding named `candidate_id`; it cannot consume implementation reports. Runtime parameter names must match exactly.
 
 Each child is a durable ordinary task dispatched through the existing scheduler and executor. A stage succeeds on authoritative attempt completion plus a saved report, **not** source integration: child tasks retain `AWAITING_REVIEW`. Workflow report prerequisites are separate from ordinary task dependencies, which still require `DONE`. A consumer's `partialFailure: "stop"` requires successful upstream stages; `"include_partial"` accepts settled failed/cancelled children with explicit failure references and no fabricated report. Ambiguous disconnect/recovery blocks downstream execution and never automatically retries a child. Pause and Chat/Plan prevent new dispatch.
 Owner reassignment of a prepared, queued child still uses the normal roster, pin and budget checks; neither an owner assignment nor a tool call can dispatch an unprepared downstream stage.
 
 Bounds: 64 children per parallel stage, at most 128 children per recipe, and the run's `maxParallelReadersPerWorkflow` fan-out limit. Parameter values total at most 4,000 characters; each instruction/result/partition is at most 4,000. Handoffs retain task/artifact references and at most 2,000 characters per source excerpt inside the 32,768-character context limit; originals remain separate. Missing/unreadable source reports block the consumer. SQLite migration v8 adds durable workflow executions; stage inputs and child dispatches commit atomically. Replaying a start or reopening the app never duplicates completed attempts.
 
-Regression demo: `mise x -- node --test tests/workflows.test.ts`. A separate disposable runtime smoke exercised single → parallel → synthesis under a one-reader cap with four completed attempts and an unchanged owner checkout: [observed output](docs/evidence/m7-workflows-smoke.json). Only FAKE playback was exercised; real harness workflow verification remains M7's later gate.
+Regression demo: `mise x -- node --test tests/workflows.test.ts`. The initial disposable runtime smoke exercised single → parallel → synthesis under a one-reader cap with four completed FAKE attempts and an unchanged owner checkout: [observed output](docs/evidence/m7-workflows-smoke.json). The [M7 workflow smoke gate](#workflow-smoke-gate) below also records actual read-only Pi execution.
 
 ### Reader evidence and synthesis provenance
 
@@ -130,7 +154,42 @@ Backend callers can save the same recipe for their own read-only profiles throug
 
 The runtime input is `{target: "path, subsystem or question"}`. Readers return concise findings with file:line evidence, confidence and gaps; one synthesizer receives their bounded reports and task/artifact references, preserves citations, reconciles disagreements and identifies missing evidence. The named `exploration` result points to synthesis. Confirmed reader failures yield an explicit partial workflow result; ambiguous recovery still blocks synthesis. Nothing approves integration or changes the native harness's permission guarantees.
 
-Verification: `mise x -- node --test tests/explore-subsystem.test.ts`. [Runtime evidence](docs/evidence/m7-explore-smoke.json) covers the four-reader success/partial paths and all 1–4 partition layouts; [team selection](docs/evidence/m7-explore-preset.png) and [reload readback](docs/evidence/m7-explore-browser.json) confirm reusable GUI configuration without worker launches. Live cost-bearing workflow turns remain the later M7 gate.
+Verification: `mise x -- node --test tests/explore-subsystem.test.ts`. [Initial FAKE evidence](docs/evidence/m7-explore-smoke.json) covers the four-reader success/partial paths and all 1–4 partition layouts; [team selection](docs/evidence/m7-explore-preset.png) and [reload readback](docs/evidence/m7-explore-browser.json) confirm reusable GUI configuration. The [M7 workflow smoke gate](#workflow-smoke-gate) exercises saved-team reuse, fan-out bounds and actual read-only Pi readers/synthesis.
+
+### Review Implementation
+
+Save the single-reviewer recipe through `createReviewImplementationTemplate(store, {reviewerProfileId}, key)` in `src/server/storage/workflows.ts`, using a real read-only worker profile. Include that profile and the saved workflow in a team **before starting its run**. No model/harness is hardcoded, no extra synthesizer or multi-reader variant is added, and the child consumes normal scheduling slots and launch budget.
+
+In **Workflows → Run a saved workflow**, choose **Review Implementation** and supply `{candidate_id: "<captured candidate UUID>"}`. The candidate must be the current captured candidate of an implementation awaiting review **in the same run**. The server rejects paths, raw diffs, unknown/foreign/stale candidates and extra parameters before creating children. The Lead uses the same saved-template validation and existing Supervised approval policy.
+
+The child reuses M5's independent-review path: a fresh session and separate read-only worktree pinned to the immutable candidate commit, the full repository snapshot, original objective/acceptance criteria, changed files and a bounded base-to-candidate diff. Its context excludes the implementer's report. Only a valid structured recommendation with file/line findings, evidence and confidence, followed by clean completion/Git evidence, records a Review. Missing structured output requires a retry decision; changed checkout evidence blocks for explicit recovery. Neither automatically reruns.
+
+The named `review` result points to the review child's report; expand the workflow to inspect its agent, findings, context packet and logs. `completed` means the assessment finished, even when its recommendation is `changes_requested`; it never means human approval or integration. Shell is disabled, so tests remain `not_run`. Existing harness guardrails are not an OS sandbox.
+
+Startup also saves a **Review Implementation · v1** example using **Fake Reviewer**, without changing existing teams/runs or overwriting saved edits. This example is for configuration only: FAKE runs cannot produce Git-backed reviews and invocation returns `UNSUPPORTED`, never simulated approval. Save a native-profile copy through the factory above for execution.
+
+Verification: `mise x -- node --test tests/review-implementation.test.ts`. [Browser smoke evidence](docs/evidence/m7-review-workflow-smoke.json) and [review result](docs/evidence/m7-review-workflow.png) use deterministic Pi protocol subprocesses on a disposable Git fixture, not a native harness or provider. M7 item 11 verified native exploration; a live candidate-review turn remains intentionally omitted (cost).
+
+### Workflow smoke gate
+
+`scripts/smoke-workflow.ts` exercises the saved **Explore Subsystem** recipe without accepting an existing repository or database. It creates a marked disposable inventory repository and a private loopback app/database, refuses an existing evidence output, and cleans up only after every safety check passes. Failures retain the database and checkout for inspection, never automatically rerun a model turn, and leave this gate incomplete.
+
+```sh
+# No native harness/provider: saved team reused for complete and failed-reader runs.
+mise x -- pnpm smoke:workflow --fake \
+  --output /tmp/m7-workflow-fake-evidence.json
+
+# Explicit provider cost: installed Pi; no model Lead; hard limit of 3 worker launches.
+mise x -- pnpm smoke:workflow --allow-live \
+  --model deepseek/deepseek-flash --thinking off \
+  --output /tmp/m7-workflow-pi-evidence.json
+```
+
+Choose a model/thinking setting returned by fresh Pi discovery; catalog presence is not authentication or entitlement. The sample selection above is environment-specific, never a fallback. Pi uses app-owned settings/session directories and supported inherited provider authentication; this script never extracts/copies credentials or edits personal configuration.
+
+Both modes declare three readers, observe one active/two queued under a one-agent cap, reject a saved four-reader recipe against the fan-out limit of three, and preserve the original reports plus explicit missing-reader provenance before synthesis. FAKE mode injects one deterministic reader failure in its second run. Live mode starts an owner-directed native snapshot (not a live Codex Lead/team-start test), cancels one **queued, unlaunched** reader and runs two real Pi readers plus synthesis. The cancelled reader has no native session/report; this is not evidence of a native crash. Restart rechecks workflow outcomes, original report hashes and idempotent starts without launching anything. The exported evidence retains original report text, session IDs, source references, fixture source and observed usage samples; usage is not account balance or complete billing.
+
+Observed M7 gate: [FAKE complete + failed-reader runs](docs/evidence/m7-workflow-fake-smoke.json) reused one saved team/template in two runs; [Pi 1.3.0 live partial run](docs/evidence/m7-workflow-pi-smoke.json) used `deepseek/deepseek-flash`, thinking `off`, with three real read-only sessions, clean Git evidence and explicit cancelled-reader provenance in the grounded synthesis. All passed restart/idempotency, report-hash retention, unchanged owner checkout and checked personal-config metadata. The synthesizer corrected an overlong tool submission within its existing turn; no new attempt or relaxed context bound was needed. No new browser check, live candidate review, native crash or four-harness matrix is claimed; M8 and beta remain incomplete.
 
 ## M2 fake orchestration demonstration
 

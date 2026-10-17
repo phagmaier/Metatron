@@ -203,6 +203,11 @@ export function updateHumanRequest(store: Store, input: unknown, key: string) {
     humanRequestSchema,
     () => {
       const previous = store.getHumanRequest(data.id);
+      if (previous.nativeApproval)
+        throw new DomainError(
+          "POLICY_DENIED",
+          "Use the native approval decision control; a generic inbox reply cannot grant or resume native permission",
+        );
       if (previous.status !== data.expectedStatus)
         throw new DomainError(
           "CONFLICT",
