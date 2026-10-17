@@ -259,10 +259,12 @@ export class Workflows {
           const outcomes = state.taskIds.map((id) =>
             workflowOutcome(store, id),
           );
-          state.diagnostic = outcomes.some(
+          const blocked = outcomes.find(
             (outcome) => outcome.status === "blocked",
-          )
-            ? "A child requires recovery or has no saved report; downstream execution is held"
+          );
+          state.diagnostic = blocked
+            ? (blocked.diagnostic ??
+              "A child requires recovery or has no saved report; downstream execution is held")
             : null;
           if (
             outcomes.every((outcome) =>

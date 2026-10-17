@@ -187,18 +187,30 @@ export function workflowOutcome(store: Store, taskId: string) {
   const report = artifact
     ? artifactSchema.parse(JSON.parse(String(artifact.data)))
     : null;
+  const blocked = store.db
+    .prepare(
+      "SELECT diagnostic FROM dispatches WHERE task_id=? AND state='blocked'",
+    )
+    .get(taskId);
   const status = reserved
     ? "waiting"
     : report
       ? "completed"
-      : attempt?.status === "RECOVERY_REQUIRED" ||
+      : blocked ||
+          attempt?.status === "RECOVERY_REQUIRED" ||
           attempt?.status === "interrupted" ||
           attempt?.status === "completed"
         ? "blocked"
         : task.status === "CANCELLED" || attempt?.status === "failed"
           ? "failed"
           : "waiting";
-  return { taskId, status, report, attemptId: attempt?.id ?? null };
+  return {
+    taskId,
+    status,
+    report,
+    attemptId: attempt?.id ?? null,
+    diagnostic: blocked?.diagnostic == null ? null : String(blocked.diagnostic),
+  };
 }
 
 export const workflowResultSchema = z.array(

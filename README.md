@@ -82,6 +82,18 @@ Bounds: 64 children per parallel stage, at most 128 children per recipe, and the
 
 Regression demo: `mise x -- node --test tests/workflows.test.ts`. A separate disposable runtime smoke exercised single → parallel → synthesis under a one-reader cap with four completed attempts and an unchanged owner checkout: [observed output](docs/evidence/m7-workflows-smoke.json). Only FAKE playback was exercised; real harness workflow verification remains M7's later gate.
 
+### Child scheduling and launch budgets
+
+Workflow cards have no special quota: each child acquires the ordinary global reader/writer and total-agent slots, including contention with other runs and active Lead turns. Idle sessions consume no slot. Concurrency pressure leaves funded children queued with their FIFO identity intact; each spawned worker attempt, including synthesis, failures and retries, counts against the run's launch budget.
+
+An eligible stage records every child's prepared inputs and dispatch intent atomically. When its remaining launch budget cannot fund every child, affordable children proceed and the rest retain `QUEUED` task status with a `blocked` dispatch, `blockedReason: "launch_budget"`, no attempt ID and an actionable warning on the task card. These unfunded intents do not count as committed launches or active agents. Ordinary over-budget task assignments still return `BUDGET_EXCEEDED`.
+
+Cancelling an **unstarted, funded** assignment frees its commitment. Eligible budget-held children can then enter the normal queue in priority/FIFO order, retaining owner reassignment and queue generation. Admission rechecks active run, mode, human blockers and stage preparation; it never launches by itself. A slot release or cancellation after an attempt spawned does **not** refund that launch. Human waits require explicit owner continuation, and repository/recovery blocks are never automatically re-admitted.
+
+A workflow can exhaust its budget before synthesis. Its unlaunched child stays visible and the workflow is blocked rather than reporting invented partial evidence. Once the budget is spent, start a new run with sufficient limits; the engine never raises caps or reruns ambiguous work. SQLite migration v9 preserves budget holds across restart and permits their block reason only on never-launched dispatches. [Decision and safety invariants](docs/adr/2026-10-17-workflow-budget-holds.md).
+
+Checks: `mise x -- node --test tests/workflow-scheduling.test.ts tests/workflow-slots.test.ts`. [Runtime evidence](docs/evidence/m7-workflow-budgets-smoke.json) covers shared one-agent contention, hard budget exhaustion, cancellation-funded admission and restart identity; [retained child](docs/evidence/m7-workflow-budgets-child.png) and [reload readback](docs/evidence/m7-workflow-budgets-browser.json) verify the existing task-card warning without additional launches. All demonstrations use labeled FAKE playback, not live harness turns.
+
 ### Explore Subsystem
 
 Startup adds one saved **Explore Subsystem · v1** example using the fixed **Fake Reader** and **Fake Synthesizer** profiles. To reuse it, include both profiles and the workflow under a team's **Available workflows**, then save the team. This only configures access; it never starts exploration or changes existing teams/runs. The example executes FAKE playback, not a live harness.

@@ -1,0 +1,65 @@
+{
+  "execution": "FAKE playback only; no provider contacted",
+  "observedPeakActiveAgents": 1,
+  "observedPeakReaders": 1,
+  "configuredGlobalTotalCap": 1,
+  "configuredReaderCap": 1,
+  "activeLeadObserved": true,
+  "queuedWorkObservedAlongsideExecution": true,
+  "cancelledUnstartedTaskSpawned": false,
+  "budgetAdmissionEvents": 1,
+  "attemptsBeforeAndAfterRestart": 10,
+  "queueAndAttemptIdentityPreservedAfterRestart": true,
+  "scenarios": [
+    {
+      "name": "serial completion",
+      "runId": "326c9f68-4231-4338-a9ed-de17ee5dad1b",
+      "workflowId": "b2705ffb-13e0-4669-8f0b-5be0ea50639d",
+      "readerCount": 2,
+      "budget": 4,
+      "workflowStatus": "completed",
+      "workerAttempts": 4,
+      "held": [],
+      "committed": 4
+    },
+    {
+      "name": "budget-held children",
+      "runId": "81e0e76a-458c-4c4c-93de-36477ca48722",
+      "workflowId": "5921c4f6-3ea9-4e8d-8d3d-fd4defdd653d",
+      "readerCount": 3,
+      "budget": 2,
+      "workflowStatus": "blocked",
+      "workerAttempts": 2,
+      "held": [
+        {
+          "taskId": "dc92ca4c-92e9-4de4-a5ab-988c4ac2da8b",
+          "sequence": 8,
+          "state": "blocked",
+          "blockedReason": "launch_budget",
+          "attemptId": null
+        }
+      ],
+      "committed": 2
+    },
+    {
+      "name": "cancelled commitment",
+      "runId": "cb394c46-75c8-45c0-b62c-5ea9f3f2468c",
+      "workflowId": "b2d8b301-70bf-4f4d-9a52-f71695f256ea",
+      "readerCount": 2,
+      "budget": 1,
+      "workflowStatus": "blocked",
+      "workerAttempts": 1,
+      "held": [
+        {
+          "taskId": "1a604d27-d60a-42ad-b8a3-b0ad81b461d3",
+          "sequence": 12,
+          "state": "blocked",
+          "blockedReason": "launch_budget",
+          "attemptId": null
+        }
+      ],
+      "committed": 1
+    }
+  ],
+  "ownerCheckoutUnchanged": true
+}

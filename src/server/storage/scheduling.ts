@@ -26,7 +26,7 @@ export class Scheduling {
   list() {
     return this.store.db
       .prepare(
-        `SELECT sequence, task_id AS taskId, run_id AS runId, profile_id AS profileId, cwd, scenario, context_policy AS contextPolicy, resume_session_id AS resumeSessionId, state, attempt_id AS attemptId, diagnostic FROM dispatches ORDER BY sequence`,
+        `SELECT sequence, task_id AS taskId, run_id AS runId, profile_id AS profileId, cwd, scenario, context_policy AS contextPolicy, resume_session_id AS resumeSessionId, state, attempt_id AS attemptId, diagnostic, blocked_reason AS blockedReason FROM dispatches ORDER BY sequence`,
       )
       .all()
       .map((row) => dispatchSchema.parse(row));
@@ -175,18 +175,21 @@ export class Scheduling {
             !["READY", "WAITING_DEPENDENCY"].includes(task.status))
         )
           throw new DomainError("CONFLICT", "Task was already dispatched");
-        // The launch budget never grows during a run, so queued work counts too:
-        // no actor may queue a launch that reservation must later refuse. A
-        // reassignment keeps its already-counted queued slot.
-        if (
+        // Ordinary assignments commit an unspent launch before queueing.
+        // Workflow children retain unfunded intents, but acquire no launch,
+        // attempt or execution slot until the same budget check admits them.
+        const budgetHeld =
           previous?.state !== "queued" &&
           this.committedLaunches(run.id) >=
-            run.limits.maxTotalWorkerLaunchesPerRun
-        )
+            run.limits.maxTotalWorkerLaunchesPerRun;
+        if (budgetHeld && !task.workflowId)
           throw new DomainError(
             "BUDGET_EXCEEDED",
             "Worker launch budget exhausted for this run",
           );
+        const diagnostic = budgetHeld
+          ? "Worker launch budget is fully spent or committed. This child remains queued without an attempt. Cancel unstarted work to free a commitment, or start a new run with a larger budget."
+          : null;
         if (task.status === "BACKLOG")
           task = this.store.transitionTask(
             {
@@ -267,12 +270,12 @@ export class Scheduling {
         // keeps a queued generation; retries get a fresh FIFO slot and identity.
         this.store.db
           .prepare(
-            `INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,context_policy,resume_session_id,state) VALUES (?,?,?,?,?,?,?,'queued')
+            `INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,context_policy,resume_session_id,state,diagnostic,blocked_reason) VALUES (?,?,?,?,?,?,?,?,?,?)
              ON CONFLICT(task_id) DO UPDATE SET
-               sequence=CASE WHEN dispatches.state='queued' THEN dispatches.sequence ELSE excluded.sequence END,
+               sequence=CASE WHEN dispatches.state='queued' OR dispatches.blocked_reason='launch_budget' THEN dispatches.sequence ELSE excluded.sequence END,
                profile_id=excluded.profile_id,cwd=excluded.cwd,scenario=excluded.scenario,
                context_policy=excluded.context_policy,resume_session_id=excluded.resume_session_id,
-               state='queued',attempt_id=NULL,diagnostic=NULL`,
+               state=excluded.state,attempt_id=NULL,diagnostic=excluded.diagnostic,blocked_reason=excluded.blocked_reason`,
           )
           .run(
             task.id,
@@ -282,6 +285,9 @@ export class Scheduling {
             data.scenario,
             data.contextPolicy,
             data.resumeSessionId,
+            budgetHeld ? "blocked" : "queued",
+            diagnostic,
+            budgetHeld ? "launch_budget" : null,
           );
         this.store.recordEvent(
           {
@@ -295,10 +301,25 @@ export class Scheduling {
               execution: run.execution,
               contextPolicy: data.contextPolicy,
               resumeSessionId: data.resumeSessionId,
+              blockedReason: budgetHeld ? "launch_budget" : null,
             },
           },
           `${key}:event`,
         );
+        if (budgetHeld)
+          this.store.recordEvent(
+            {
+              runId: run.id,
+              taskId: task.id,
+              type: "dispatch.budget_held",
+              correlationId: key,
+              payload: {
+                diagnostic,
+                limit: run.limits.maxTotalWorkerLaunchesPerRun,
+              },
+            },
+            `${key}:budget-held`,
+          );
         return dispatchSchema.parse(
           this.list().find((d) => d.taskId === task.id),
         );
@@ -509,7 +530,7 @@ export class Scheduling {
             .run(current.attemptId);
         this.store.db
           .prepare(
-            "UPDATE dispatches SET state='released',diagnostic=? WHERE task_id=?",
+            "UPDATE dispatches SET state='released',diagnostic=?,blocked_reason=NULL WHERE task_id=?",
           )
           .run(diagnostic, taskId);
         return true;

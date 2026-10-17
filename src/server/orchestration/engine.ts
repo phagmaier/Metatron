@@ -34,6 +34,7 @@ import { PiAdapter } from "../adapters/pi.ts";
 import { Gateway } from "../gateway/mcp.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
 import { Worktrees } from "../git/worktrees.ts";
+import { admitBudgetWaits } from "../storage/budget-waits.ts";
 import { reconcileDependencyWaits } from "../storage/dependencies.ts";
 import { mutate } from "../storage/mutations.ts";
 import { Profiles } from "../storage/profiles.ts";
@@ -375,6 +376,7 @@ export class Engine {
     this.pumping = true;
     try {
       reconcileDependencyWaits(this.store, "dependencies:scheduler");
+      admitBudgetWaits(this.store, this.scheduling);
       await this.workflows.reconcile();
       const queued = this.scheduling
         .list()

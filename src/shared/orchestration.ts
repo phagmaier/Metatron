@@ -187,6 +187,8 @@ export const dispatchSchema = z.strictObject({
   state: z.enum(["queued", "active", "released", "blocked"]),
   attemptId: idSchema.nullable(),
   diagnostic: z.string().nullable(),
+  // Historical mutation results predate budget holds.
+  blockedReason: z.literal("launch_budget").nullable().default(null),
 });
 export type Dispatch = z.infer<typeof dispatchSchema>;
 export type Actor =
