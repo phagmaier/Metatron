@@ -29,6 +29,10 @@ import { dispatchSchema } from "../shared/orchestration.ts";
 import { capabilitiesSchema } from "./adapters/contract.ts";
 import { inspectRepository } from "./git/inspect.ts";
 import type { Engine } from "./orchestration/engine.ts";
+import {
+  decideRecovery,
+  recheckRecovery,
+} from "./orchestration/recovery-decisions.ts";
 import { candidateDiff, requestReview } from "./orchestration/review.ts";
 import { requestRevision } from "./orchestration/revision.ts";
 import { emergencyStop, stopRun } from "./orchestration/stops.ts";
@@ -334,6 +338,10 @@ export function createApi(store: Store, engine: Engine) {
               engine.integrations.decide({ role: "owner" }, input, key),
             "POST /api/integrations/apply": (input, key) =>
               engine.integrations.apply({ role: "owner" }, input, key),
+            "POST /api/recovery/recheck": (input, key) =>
+              recheckRecovery(engine, input, key),
+            "POST /api/recovery/decision": (input, key) =>
+              decideRecovery(engine, input, key),
             "POST /api/tasks/cancel": (input, key) =>
               engine.cancel(
                 z.strictObject({ taskId: idSchema }).parse(input).taskId,

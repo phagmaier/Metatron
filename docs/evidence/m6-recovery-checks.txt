@@ -1,0 +1,32 @@
+M6 item 8 final checks; pinned toolchain via mise (node 26.7.0, pnpm 11.22.0)
+
+Baseline: mise x -- pnpm test — PASS 212/212 (before item 8 changes).
+Final: mise x -- pnpm test — PASS 223/223; see m6-recovery-tests.txt.
+Focused: mise x -- node --test tests/recovery-decisions.test.ts — 11 tests; eight targeted mutations detected: m6-recovery-mutations.txt.
+Browser: system Chromium 152 over CDP, isolated profile, disposable Git/SQLite, FAKE run (no harness, no model): m6-recovery-demo.json. Only console entries: browser default /favicon.ico 404 (no app favicon; pre-existing).
+
+$ mise x -- pnpm typecheck
+$ tsc --noEmit
+exit=0
+
+$ mise x -- pnpm lint
+$ biome check .
+Checked 139 files in 81ms. No fixes applied.
+exit=0
+
+$ mise x -- pnpm test:fixtures
+ℹ pass 3
+ℹ fail 0
+exit=0
+
+$ mise x -- pnpm build
+✓ built in 165ms
+exit=0
+
+$ mise x -- pnpm smoke
+Development launch, health, HTML and script: passed (http://127.0.0.1:36173)
+Production launch, health, HTML and script: passed (http://127.0.0.1:44149)
+exit=0
+
+$ git diff --check
+exit=0

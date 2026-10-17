@@ -5,6 +5,8 @@ import { z } from "zod";
 import {
   artifactSchema,
   projectSchema,
+  type RecoveryCause,
+  type RecoveryCheck,
   runSchema,
   type Task,
   taskSchema,
@@ -31,6 +33,7 @@ import { inspectRepository, requireClean } from "../git/inspect.ts";
 import { Worktrees } from "../git/worktrees.ts";
 import { reconcileDependencyWaits } from "../storage/dependencies.ts";
 import { mutate } from "../storage/mutations.ts";
+import { saveAttemptRecovery } from "../storage/recovery.ts";
 import { implementationTask, revisionTaskIds } from "../storage/revisions.ts";
 import { Scheduling } from "../storage/scheduling.ts";
 import type { Store } from "../storage/store.ts";
@@ -447,19 +450,23 @@ export class Engine {
       this.pumping = false;
     }
   }
+  // `check` is an observation taken when the failure itself could not verify
+  // the worktree; it becomes the first recorded recovery fact.
   fail(
     taskId: string,
     attemptId: string,
     diagnostic: string,
-    interrupted = false,
+    cause: RecoveryCause = "failed",
+    check: RecoveryCheck | null = null,
   ) {
     const task = this.store.getTask(taskId);
     const key = `finish:${attemptId}`;
+    const interrupted = cause !== "failed";
     mutate(
       this.store.db,
       key,
       "failAttempt",
-      { taskId, diagnostic, interrupted },
+      { taskId, diagnostic, cause, checkId: check?.id ?? null },
       z.boolean(),
       () => {
         const attempt = this.store.getAttempt(attemptId);
@@ -495,6 +502,13 @@ export class Engine {
             },
             `${key}:decision`,
           );
+          saveAttemptRecovery(this.store.db, this.store.getAttempt(attemptId), {
+            cause,
+            reason: diagnostic,
+            recordedAt: new Date().toISOString(),
+            checks: check ? [check] : [],
+            decision: null,
+          });
         }
         this.store.recordEvent(
           {
@@ -503,7 +517,7 @@ export class Engine {
             attemptId,
             type: "attempt.diagnostic",
             correlationId: key,
-            payload: { diagnostic },
+            payload: { diagnostic, cause },
           },
           `${key}:event`,
         );

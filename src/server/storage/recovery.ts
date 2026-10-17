@@ -1,5 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import {
+  type Attempt,
+  type AttemptRecovery,
   attemptSchema,
   sessionSchema,
   taskSchema,
@@ -12,6 +14,25 @@ import {
 import { appendEvent } from "./journal.ts";
 import { mutate } from "./mutations.ts";
 import type { Store } from "./store.ts";
+
+// Recovery facts live on the attempt and are written only by failure, restart,
+// an observation-only recheck or an owner decision, inside their transaction.
+export function saveAttemptRecovery(
+  db: DatabaseSync,
+  attempt: Attempt,
+  recovery: AttemptRecovery,
+) {
+  const updated = attemptSchema.parse({
+    ...attempt,
+    recovery,
+    updatedAt: new Date().toISOString(),
+  });
+  db.prepare("UPDATE attempts SET data = ? WHERE id = ?").run(
+    JSON.stringify(updated),
+    attempt.id,
+  );
+  return updated;
+}
 
 export function recoverInterrupted(
   db: DatabaseSync,
@@ -34,6 +55,14 @@ export function recoverInterrupted(
           ...attempt,
           status: "RECOVERY_REQUIRED",
           updatedAt: now,
+          recovery: {
+            cause: "recovery_required",
+            reason:
+              "The app restarted while this attempt was unfinished; its process, native session and worktree were not observed",
+            recordedAt: now,
+            checks: [],
+            decision: null,
+          },
         });
         db.prepare("UPDATE attempts SET data = ? WHERE id = ?").run(
           JSON.stringify(recovered),
@@ -105,6 +134,7 @@ export function recoverInterrupted(
           payload: {
             previousAttemptStatus: attempt.status,
             taskStatus: task.status,
+            cause: "recovery_required",
           },
         });
         return recovered;

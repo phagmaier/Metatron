@@ -323,3 +323,19 @@ button.danger {
   border-color: #9b3d13;
   color: #fff;
 }
+.recovery {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #d5ddd6;
+}
+.recovery li {
+  overflow-wrap: anywhere;
+}
+label.check {
+  flex-direction: row;
+  align-items: flex-start;
+}
+label.check input {
+  width: auto;
+  margin-top: 2px;
+}

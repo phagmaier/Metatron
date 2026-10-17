@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { reviewResultSchema } from "../../shared/domain/entities.ts";
+import {
+  type RecoveryCause,
+  type RecoveryCheck,
+  reviewResultSchema,
+} from "../../shared/domain/entities.ts";
 import {
   type Dispatch,
   handoffReportSchema,
@@ -14,6 +18,7 @@ import { createReview } from "../storage/reviews.ts";
 import { reconcileRevision } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
+import { observeRecovery } from "./recovery-decisions.ts";
 import { reviewPacket } from "./review.ts";
 import { revisionPacket } from "./revision.ts";
 import { stopPending } from "./stops.ts";
@@ -50,8 +55,11 @@ export async function executeNativeTurn(
   let index = 0;
   let interrupted = false;
   let stopped = false;
+  // Explicit loss cause; otherwise derived from `interrupted` and `terminal`.
+  let lost: RecoveryCause | null = null;
+  let check: RecoveryCheck | null = null;
   const changeState = (
-    state: "busy" | "idle" | "exited" | "crashed",
+    state: "busy" | "idle" | "exited" | "crashed" | "disconnected",
     exitCode?: number | null,
   ) => {
     const current = store.getSession(session.id);
@@ -166,11 +174,13 @@ export async function executeNativeTurn(
         event.type === "process_state" &&
         ["crashed", "exited", "disconnected"].includes(event.state)
       ) {
+        const state =
+          event.state === "exited" || event.state === "disconnected"
+            ? event.state
+            : "crashed";
         if (!pendingWorkerHelp(store, attemptId))
-          changeState(
-            event.state === "exited" ? "exited" : "crashed",
-            event.exitCode,
-          );
+          changeState(state, event.exitCode);
+        if (state !== "exited") lost = state;
         interrupted = true;
         diagnostic =
           "Pi exited without authoritative completion; no automatic retry";
@@ -178,6 +188,8 @@ export async function executeNativeTurn(
       if (event.type === "session_error") {
         diagnostic = event.message;
         if (["protocol", "deadline"].includes(event.code)) interrupted = true;
+        // The RPC channel failed; the child may live until the owned exit below.
+        if (event.code === "protocol") lost ??= "disconnected";
       }
       if (event.type === "turn_completed") {
         terminal = event.nativeStatus;
@@ -229,12 +241,14 @@ export async function executeNativeTurn(
         if (!interrupted && exit && (exit.code !== 0 || exit.signal)) {
           terminal = "failed";
           interrupted = true;
+          lost = "crashed";
           diagnostic =
             "Pi process did not shut down cleanly; retained for recovery";
         }
       } catch {
         terminal = "failed";
         interrupted = true;
+        lost = "recovery_required";
         diagnostic =
           "Pi shutdown failed; process/worktree require owner inspection";
       }
@@ -275,8 +289,14 @@ export async function executeNativeTurn(
       }
     } catch {
       terminal = "failed";
+      lost = "recovery_required";
       diagnostic =
         "Cannot verify final worktree identity/status; retained for owner inspection";
+      // Classify missing/inaccessible/replaced now; if even observation fails,
+      // the generic diagnostic stands and the owner can recheck later.
+      check = await observeRecovery(engine, attemptId).catch(() => null);
+      if (check && check.worktree.state !== "verified")
+        diagnostic = `Worktree ${check.worktree.state}: ${check.worktree.reason.replace(/\.$/, "")}; retained for owner inspection`;
     }
     engine.worktrees.retain(attemptId);
   }
@@ -297,7 +317,9 @@ export async function executeNativeTurn(
       task.id,
       attemptId,
       diagnostic,
-      interrupted || terminal === "interrupted",
+      lost ??
+        (interrupted || terminal === "interrupted" ? "interrupted" : "failed"),
+      check,
     );
     return;
   }

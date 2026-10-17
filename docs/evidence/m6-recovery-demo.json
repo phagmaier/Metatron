@@ -1,0 +1,34 @@
+{
+  "beforeRecheck": {
+    "cause": true,
+    "retryDisabled": true,
+    "attempts": 1
+  },
+  "recheck": {
+    "facts": true,
+    "retryEnabled": true,
+    "status": "RETRY_DECISION",
+    "attempts": 1
+  },
+  "restart": {
+    "factsVisible": true,
+    "status": "RETRY_DECISION",
+    "attempts": [
+      "interrupted"
+    ]
+  },
+  "narrowOverflow": false,
+  "retry": {
+    "status": "AWAITING_REVIEW",
+    "attempts": [
+      "interrupted",
+      "completed"
+    ],
+    "decision": true,
+    "priorCause": "disconnected"
+  },
+  "console": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:45333/favicon.ico",
+    "Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:34995/favicon.ico"
+  ]
+}

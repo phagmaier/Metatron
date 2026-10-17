@@ -12,6 +12,7 @@ import type { Dispatch } from "../shared/orchestration.ts";
 import { candidateSchema } from "../shared/worktrees.ts";
 import { readApi, writeApi } from "./api.ts";
 import { IntegrationPanel } from "./integration-panel.tsx";
+import { RecoveryPanel } from "./recovery-panel.tsx";
 import { ReviewPanel, useReviewHistory } from "./review-panel.tsx";
 import { WorkerMessagePanel } from "./worker-message-panel.tsx";
 
@@ -347,10 +348,15 @@ export function TaskCard({
         </button>
       </div>
       {task.status === "RETRY_DECISION" && (
-        <p className="warning">
-          Work was not rerun. Recovery/resume controls arrive in M6; this task
-          can be cancelled.
-        </p>
+        <RecoveryPanel
+          task={task}
+          run={run}
+          attempt={attempt}
+          session={session}
+          profileId={profileId}
+          scenario={scenario}
+          onError={onError}
+        />
       )}
       {lineageRoot && history && history.candidates.length > 0 && (
         <ReviewPanel history={history} run={run} onError={onError} />

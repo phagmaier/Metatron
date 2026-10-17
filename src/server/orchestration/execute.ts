@@ -117,7 +117,7 @@ export async function executeFakeTurn(
           cancelled
             ? "Owner cancelled"
             : "Emergency stop interrupted this FAKE session; explicit retry decision required",
-          true,
+          "interrupted",
         );
         store.updateSession(
           { id: session.id, expectedState: "busy", state: "stopping" },
@@ -158,7 +158,7 @@ export async function executeFakeTurn(
           task.id,
           attemptId,
           "Ambiguous fake disconnect; never rerun automatically",
-          true,
+          "disconnected",
         );
         return;
       }
@@ -282,7 +282,7 @@ export async function executeFakeTurn(
         task.id,
         attemptId,
         "No authoritative fake completion event",
-        true,
+        "interrupted",
       );
   } finally {
     engine.nativeStops.delete(task.id);

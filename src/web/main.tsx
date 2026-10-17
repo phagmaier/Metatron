@@ -347,7 +347,7 @@ function App() {
                                 (item) => item.id === task.latestRevisionTaskId,
                               )}
                               run={selectedRun}
-                              session={runSessions.find(
+                              session={runSessions.findLast(
                                 (session) =>
                                   runAttempts.find(
                                     (attempt) =>
@@ -357,10 +357,10 @@ function App() {
                               dispatch={dispatches.find(
                                 (d) => d.taskId === task.id,
                               )}
-                              attempt={runAttempts.find(
+                              attempt={runAttempts.findLast(
                                 (a) => a.taskId === task.id,
                               )}
-                              evidence={runEvents.find(
+                              evidence={runEvents.findLast(
                                 (e) =>
                                   e.taskId === task.id &&
                                   e.type === "worktree.captured",

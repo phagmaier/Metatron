@@ -245,7 +245,7 @@ export function finishWorkerHelp(
           task.id,
           attemptId,
           "Worker help shutdown is unconfirmed; inspect retained evidence before retrying",
-          true,
+          "recovery_required",
         );
       else if (attempt.status === "running")
         store.updateAttempt(

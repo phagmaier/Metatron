@@ -12,6 +12,9 @@ export const worktreeSchema = z.strictObject({
   ownerToken: idSchema,
   repository: repositorySchema,
   state: z.enum(["creating", "ready", "retained", "error"]),
+  // Device/inode/birth time of the checkout directory once Git created it. A
+  // checkout re-created at the same path gets a new identity. Legacy rows: null.
+  checkoutIdentity: z.string().nullable().default(null),
 });
 export type Worktree = z.infer<typeof worktreeSchema>;
 export const worktreeEvidenceSchema = z.strictObject({

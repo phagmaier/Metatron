@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Run } from "../../shared/domain/entities.ts";
+import type { RecoveryCause, Run } from "../../shared/domain/entities.ts";
 import type { Dispatch } from "../../shared/orchestration.ts";
 import { CodexAdapter } from "../adapters/codex.ts";
 import type { ManagedSession } from "../adapters/contract.ts";
@@ -95,6 +95,7 @@ export async function executeLeadTurn(
   let terminal = "failed";
   let diagnostic = "Lead turn did not complete";
   let interrupted = false;
+  let lost: RecoveryCause | null = null;
   let index = 0;
   const changeState = (
     state: "busy" | "idle" | "exited" | "crashed",
@@ -211,6 +212,7 @@ export async function executeLeadTurn(
         text = (text + event.text).slice(0, 16_000);
       if (event.type === "process_state") {
         changeState(event.state === "exited" ? "exited" : "crashed");
+        if (event.state !== "exited") lost = "crashed";
         interrupted = true;
         diagnostic = "Codex exited without authoritative completion; no retry";
       }
@@ -218,6 +220,7 @@ export async function executeLeadTurn(
         diagnostic = event.message;
         if (["protocol", "delegation_blocked"].includes(event.code))
           interrupted = true;
+        if (event.code === "protocol") lost ??= "disconnected";
       }
       if (event.type === "turn_completed") {
         terminal = event.nativeStatus;
@@ -251,6 +254,7 @@ export async function executeLeadTurn(
         await engine.codex.dispose(managed);
       } catch {
         terminal = "failed";
+        lost = "recovery_required";
         diagnostic = "Codex shutdown failed; owner inspection required";
       }
     } else changeState("exited");
@@ -284,7 +288,8 @@ export async function executeLeadTurn(
       task.id,
       attemptId,
       diagnostic,
-      interrupted || terminal === "interrupted",
+      lost ??
+        (interrupted || terminal === "interrupted" ? "interrupted" : "failed"),
     );
     return;
   }

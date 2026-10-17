@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, realpath, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
+import type { Attempt, RecoveryCheck } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import {
   type Worktree,
@@ -11,9 +12,18 @@ import { getIntegrationCandidate } from "../storage/candidates.ts";
 import { revisionCandidate } from "../storage/revisions.ts";
 import type { Store } from "../storage/store.ts";
 import { captureCandidate } from "./candidate.ts";
-import { diffCheckPasses, git } from "./command.ts";
+import { diffCheckPasses, GitError, git } from "./command.ts";
 import { inspectRepository, requireClean } from "./inspect.ts";
 import { inside, sensitivePath } from "./paths.ts";
+
+async function checkoutIdentity(path: string) {
+  const stat = await lstat(path, { bigint: true });
+  return `${stat.dev}:${stat.ino}:${stat.birthtimeNs}`;
+}
+const errorCode = (error: unknown) =>
+  error instanceof Error && "code" in error && typeof error.code === "string"
+    ? error.code
+    : null;
 
 export class Worktrees {
   private readonly store: Store;
@@ -159,7 +169,11 @@ export class Worktrees {
         manifest.path,
         startSha,
       ]);
-      const ready = worktreeSchema.parse({ ...manifest, state: "ready" });
+      const ready = worktreeSchema.parse({
+        ...manifest,
+        state: "ready",
+        checkoutIdentity: await checkoutIdentity(manifest.path),
+      });
       await this.verify(ready);
       this.save(ready);
       this.store.recordEvent(
@@ -202,12 +216,119 @@ export class Worktrees {
       marker.path !== manifest.path ||
       actual.root !== manifest.path ||
       actual.commonDirectory !== manifest.repository.commonDirectory ||
-      actual.branch !== manifest.branch
+      actual.branch !== manifest.branch ||
+      (manifest.checkoutIdentity !== null &&
+        (await checkoutIdentity(manifest.path)) !== manifest.checkoutIdentity)
     )
       throw new DomainError(
         "POLICY_DENIED",
         "Worktree ownership or repository identity changed; retained for inspection",
       );
+  }
+  // Observation only: never relinks, repairs or deletes. Same-path existence
+  // is not identity; only marker, Git and directory identity together are.
+  async observe(attempt: Attempt): Promise<RecoveryCheck["worktree"]> {
+    const path = attempt.worktreePath;
+    if (!path)
+      return {
+        path: null,
+        state: "not_isolated",
+        reason: "This attempt used no app-owned worktree",
+      };
+    const manifest = this.list().find((w) => w.attemptId === attempt.id);
+    const result = (
+      state: RecoveryCheck["worktree"]["state"],
+      reason: string,
+    ) => ({ path, state, reason });
+    try {
+      const stat = await lstat(path);
+      if (!manifest)
+        return result(
+          "replaced",
+          "Something exists at this path, but the app never recorded creating a worktree there",
+        );
+      if (!stat.isDirectory())
+        return result(
+          "replaced",
+          "The path is no longer a directory; it may be a symlink or file",
+        );
+    } catch (error) {
+      const code = errorCode(error);
+      if (code === "ENOENT" || code === "ENOTDIR")
+        return result(
+          "missing",
+          manifest
+            ? "The recorded checkout no longer exists. This does not prove the worker stopped."
+            : "No worktree was created for this attempt and nothing exists at its path",
+        );
+      return result(
+        "inaccessible",
+        `Cannot read the checkout path (${code ?? "unknown error"})`,
+      );
+    }
+    let marker: ReturnType<typeof worktreeSchema.parse>;
+    try {
+      marker = worktreeSchema.parse(
+        JSON.parse(
+          await readFile(join(dirname(path), "ownership.json"), "utf8"),
+        ),
+      );
+    } catch (error) {
+      const code = errorCode(error);
+      return code && code !== "ENOENT"
+        ? result("inaccessible", `Cannot read the ownership marker (${code})`)
+        : result(
+            "replaced",
+            "The app ownership marker beside the checkout is missing or invalid",
+          );
+    }
+    if (
+      marker.ownerToken !== manifest.ownerToken ||
+      marker.attemptId !== attempt.id ||
+      marker.path !== path
+    )
+      return result(
+        "replaced",
+        "The ownership marker belongs to a different worktree claim",
+      );
+    if (
+      manifest.checkoutIdentity &&
+      (await checkoutIdentity(path)) !== manifest.checkoutIdentity
+    )
+      return result(
+        "replaced",
+        "A different directory now exists at the recorded path; it does not inherit the prior checkout's authority",
+      );
+    let actual: Awaited<ReturnType<typeof inspectRepository>>;
+    try {
+      actual = await inspectRepository(path);
+    } catch (error) {
+      if (!(error instanceof GitError)) throw error;
+      return result(
+        "inaccessible",
+        `Git cannot read this checkout: ${error.message}`,
+      );
+    }
+    if (
+      actual.root !== path ||
+      actual.commonDirectory !== manifest.repository.commonDirectory ||
+      actual.branch !== manifest.branch
+    )
+      return result(
+        "replaced",
+        "The checkout's Git root, repository or branch differs from the recorded worktree",
+      );
+    if (!manifest.checkoutIdentity)
+      return result(
+        "unverified",
+        manifest.state === "creating" || manifest.state === "error"
+          ? "Worktree creation was interrupted before its directory identity was recorded"
+          : "This worktree was recorded before directory identity was saved; same-path replacement cannot be ruled out",
+      );
+    return result(
+      "verified",
+      "Ownership marker, Git repository, branch and directory identity match the recorded worktree",
+    );
   }
   retain(attemptId: string) {
     const item = this.list().find((w) => w.attemptId === attemptId);

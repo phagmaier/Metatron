@@ -219,6 +219,60 @@ export const taskSchema = z.strictObject({
   latestRevisionTaskId: idSchema.nullable().default(null),
 });
 export type Task = z.infer<typeof taskSchema>;
+// interrupted: stopped, deadline or ended without authoritative completion;
+// crashed: unexpected native exit; disconnected: control lost while the process
+// may live; recovery_required: restart or unverifiable process/worktree facts.
+export const recoveryCauseSchema = z.enum([
+  "interrupted",
+  "crashed",
+  "disconnected",
+  "recovery_required",
+  "failed",
+]);
+export type RecoveryCause = z.infer<typeof recoveryCauseSchema>;
+// Observed facts only. Path existence never proves checkout identity, and a
+// missing folder or absent PID never proves the worker ended.
+export const recoveryCheckSchema = z.strictObject({
+  id: idSchema,
+  observedAt: timestampSchema,
+  repository: z.strictObject({
+    state: z.enum(["verified", "changed", "unavailable"]),
+    reason: textSchema,
+  }),
+  worktree: z.strictObject({
+    path: absolutePathSchema.nullable(),
+    state: z.enum([
+      "verified",
+      "missing",
+      "inaccessible",
+      "replaced",
+      "unverified",
+      "not_isolated",
+    ]),
+    reason: textSchema,
+  }),
+  process: z.strictObject({
+    processId: z.int().positive().nullable(),
+    state: z.enum(["not_recorded", "not_running", "pid_present", "unknown"]),
+    reason: textSchema,
+  }),
+});
+export type RecoveryCheck = z.infer<typeof recoveryCheckSchema>;
+export const attemptRecoverySchema = z.strictObject({
+  cause: recoveryCauseSchema,
+  reason: textSchema,
+  recordedAt: timestampSchema,
+  checks: z.array(recoveryCheckSchema).max(20),
+  decision: z
+    .strictObject({
+      decidedAt: timestampSchema,
+      checkId: idSchema,
+      profileId: idSchema,
+      acceptedUnverified: z.boolean(),
+    })
+    .nullable(),
+});
+export type AttemptRecovery = z.infer<typeof attemptRecoverySchema>;
 export const attemptSchema = z.strictObject({
   ...metadata,
   taskId: idSchema,
@@ -238,6 +292,7 @@ export const attemptSchema = z.strictObject({
     "cancelled",
     "RECOVERY_REQUIRED",
   ]),
+  recovery: attemptRecoverySchema.nullable().default(null),
 });
 export type Attempt = z.infer<typeof attemptSchema>;
 export const workerMessageSchema = z.strictObject({
