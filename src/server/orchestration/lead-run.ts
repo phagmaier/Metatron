@@ -4,6 +4,7 @@ import {
   runSchema,
   taskSchema,
 } from "../../shared/domain/entities.ts";
+import type { createRunSchema } from "../../shared/domain/inputs.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import { hasNativeLead, leadRunSchema, leadTeam } from "../../shared/native.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
@@ -55,8 +56,9 @@ export async function createLeadRun(
     );
   requireSelection(codex, data.lead, "Codex Lead");
   requireSelection(pi, data.worker, "Pi worker");
-  return mutate(engine.store.db, key, "startLeadRun", data, runSchema, () => {
-    const run = engine.store.createRun(
+  return mutate(engine.store.db, key, "startLeadRun", data, runSchema, () =>
+    beginLeadRun(
+      engine,
       {
         projectId: project.id,
         title: data.title,
@@ -65,22 +67,34 @@ export async function createLeadRun(
         limits: data.limits,
         teamSnapshot: { ...leadTeam(data), roles: engine.presets().roles },
         repository,
-        execution: "native",
       },
-      `${key}:run`,
-    );
-    engine.store.recordEvent(
-      {
-        runId: run.id,
-        type: "owner.message",
-        correlationId: key,
-        payload: { text: data.initialPrompt },
-      },
-      `${key}:message`,
-    );
-    requestLeadTurn(engine, run.id, "owner", data.initialPrompt, `${key}:lead`);
-    return run;
-  });
+      key,
+    ),
+  );
+}
+
+// Call inside the caller's transaction: the run, owner message and first Lead
+// turn commit together.
+export function beginLeadRun(
+  engine: Engine,
+  input: Omit<z.input<typeof createRunSchema>, "execution">,
+  key: string,
+) {
+  const run = engine.store.createRun(
+    { ...input, execution: "native" },
+    `${key}:run`,
+  );
+  engine.store.recordEvent(
+    {
+      runId: run.id,
+      type: "owner.message",
+      correlationId: key,
+      payload: { text: run.initialPrompt },
+    },
+    `${key}:message`,
+  );
+  requestLeadTurn(engine, run.id, "owner", run.initialPrompt, `${key}:lead`);
+  return run;
 }
 
 // One Lead turn per run may run at a time (reservation index). A queued turn

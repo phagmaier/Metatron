@@ -55,6 +55,7 @@ import {
 import { runTool } from "./tools.ts";
 import { recoverWorkerHelp } from "./worker-help.ts";
 import { WorkerMessages } from "./worker-messages.ts";
+import { Workflows } from "./workflows.ts";
 
 export class Engine {
   readonly store: Store;
@@ -69,6 +70,7 @@ export class Engine {
   readonly worktrees: Worktrees;
   readonly integrations: Integrations;
   readonly workerMessages: WorkerMessages;
+  readonly workflows: Workflows;
   readonly nativeStops = new Map<
     string,
     (reason?: "human_request" | "emergency") => Promise<void>
@@ -94,6 +96,7 @@ export class Engine {
     this.integrations = new Integrations(this);
     this.scheduling = new Scheduling(store, directory);
     this.workerMessages = new WorkerMessages(this);
+    this.workflows = new Workflows(this);
     recoverWorkerHelp(this);
     recoverProviderFailures(this);
     recoverStops(store);
@@ -363,6 +366,7 @@ export class Engine {
     this.pumping = true;
     try {
       reconcileDependencyWaits(this.store, "dependencies:scheduler");
+      await this.workflows.reconcile();
       const queued = this.scheduling
         .list()
         .filter((d) => d.state === "queued")

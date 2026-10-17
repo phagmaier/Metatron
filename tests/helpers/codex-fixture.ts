@@ -317,7 +317,13 @@ async function handle(
   method: string,
   params: Record<string, unknown>,
 ) {
-  log({ method, ...(params.threadId ? { threadId: params.threadId } : {}) });
+  log({
+    method,
+    ...(params.threadId ? { threadId: params.threadId } : {}),
+    ...(typeof params.developerInstructions === "string"
+      ? { developerInstructions: params.developerInstructions }
+      : {}),
+  });
   let result: unknown = {};
   switch (method) {
     case "initialize":

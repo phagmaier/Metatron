@@ -26,6 +26,7 @@ import {
 import { DomainError } from "../shared/domain/states.ts";
 import { applyPlanSchema } from "../shared/integration.ts";
 import { dispatchSchema } from "../shared/orchestration.ts";
+import { teamsResponseSchema } from "../shared/teams.ts";
 import { capabilitiesSchema } from "./adapters/contract.ts";
 import { inspectRepository } from "./git/inspect.ts";
 import type { Engine } from "./orchestration/engine.ts";
@@ -36,6 +37,7 @@ import {
 import { candidateDiff, requestReview } from "./orchestration/review.ts";
 import { requestRevision } from "./orchestration/revision.ts";
 import { emergencyStop, stopRun } from "./orchestration/stops.ts";
+import { createTeamRun } from "./orchestration/team-run.ts";
 import { reviewHistory } from "./storage/reviews.ts";
 import {
   createRole,
@@ -46,6 +48,14 @@ import {
   updateRole,
 } from "./storage/roles.ts";
 import type { Store } from "./storage/store.ts";
+import {
+  createTeam,
+  deleteTeam,
+  demoTeamIds,
+  listTeams,
+  listWorkflows,
+  updateTeam,
+} from "./storage/teams.ts";
 
 const maxArtifactText = 512 * 1024;
 // Only paths the engine recorded are read; a missing file is reported, not hidden.
@@ -193,6 +203,14 @@ export function createApi(store: Store, engine: Engine) {
                 profiles: engine.profiles.list(),
                 demoProfileIds: engine.profiles.demoProfileIds,
               };
+              break;
+            case "/api/team-presets":
+              z.strictObject({}).parse(query);
+              result = teamsResponseSchema.parse({
+                teams: listTeams(store),
+                demoTeamIds,
+                workflows: listWorkflows(store),
+              });
               break;
             case "/api/agent-profiles/discover":
               result = await engine.profiles.discover(query);
@@ -345,6 +363,12 @@ export function createApi(store: Store, engine: Engine) {
               engine.profiles.update(input, key),
             "DELETE /api/agent-profiles": (input, key) =>
               engine.profiles.delete(input, key),
+            "POST /api/team-presets": (input, key) =>
+              createTeam(store, input, key),
+            "PATCH /api/team-presets": (input, key) =>
+              updateTeam(store, input, key),
+            "DELETE /api/team-presets": (input, key) =>
+              deleteTeam(store, input, key),
             "POST /api/projects/inspect": async (input) =>
               inspectRepository(
                 z
@@ -358,6 +382,8 @@ export function createApi(store: Store, engine: Engine) {
               engine.startNativeRun(input, key),
             "POST /api/runs/lead": (input, key) =>
               engine.startLeadRun(input, key),
+            "POST /api/runs/team": (input, key) =>
+              createTeamRun(engine, input, key),
             "POST /api/tasks": (input, key) => engine.createTask(input, key),
             "POST /api/worker-messages": (input, key) =>
               engine.workerMessages.send({ role: "owner" }, input, key),

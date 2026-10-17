@@ -331,9 +331,9 @@ export function ProfilesPanel() {
           turn. A saved profile is configuration, not a conversation.
         </p>
         <p className="note">
-          Using saved native profiles in teams is not available yet. Existing
-          runs keep their original snapshots. FAKE demo profiles remain fixed
-          playback configuration.
+          Add saved profiles to a roster under Team presets. Existing runs keep
+          their original snapshots. FAKE demo profiles remain fixed playback
+          configuration.
         </p>
         {error && (
           <p className="error" role="alert">

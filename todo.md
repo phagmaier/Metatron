@@ -139,8 +139,8 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 
 - [x] Build CRUD/import-export for RoleTemplates separate from model/harness choice.
 - [x] Build CRUD for named AgentProfiles with chosen harness/model/reasoning/permission class; validate from capability discovery.
-- [ ] Build reusable TeamPresets: Lead profile, worker pool, mode, resource budgets, available workflows; save immutable snapshot for each run.
-- [ ] Implement static sequential stage and bounded parallel -> synthesis execution templates with declared inputs and results.
+- [x] Build reusable TeamPresets: Lead profile, worker pool, mode, resource budgets, available workflows; save immutable snapshot for each run.
+- [x] Implement static sequential stage and bounded parallel -> synthesis execution templates with declared inputs and results.
 - [ ] Add reusable `Explore Subsystem` template: N complementary readers (entry points, data flow, dependencies, tests) then one synthesizer.
 - [ ] Ensure each workflow child consumes normal scheduling slots and attempt/launch budget; queued children don't vanish when over cap.
 - [ ] Persist per-reader evidence and synthesis references, including explicit partial failures, rather than discarding originals.

@@ -334,12 +334,17 @@ test("profile deletion checks saved team lead/worker and workflow references; ro
           version: 1,
           createdAt: profile.createdAt,
           updatedAt: profile.updatedAt,
+          inputs: [],
+          results: [{ name: "findings", stageId: "read" }],
           stages: [
             {
               id: "read",
               type: "single_agent",
               profileId: profile.id,
               instructions: "Read",
+              inputs: [],
+              result: "Evidence and gaps",
+              partitions: [],
               dependsOn: [],
               count: 1,
               partialFailure: "stop",

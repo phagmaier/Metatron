@@ -1,0 +1,11 @@
+# M7 item 3 mutation audit (2026-10-17): each mutation applied alone, then tests/teams.test.ts tests/teams-api.test.ts tests/profiles.test.ts; source restored after each
+DETECTED · stale team version accepted · src/server/orchestration/team-run.ts · ℹ fail 2
+DETECTED · FAKE/native mixing allowed · src/server/storage/teams.ts · ℹ fail 1
+DETECTED · coordinator worker allowed · src/server/storage/teams.ts · ℹ fail 1
+DETECTED · workflow profile outside team allowed · src/server/storage/teams.ts · ℹ fail 2
+DETECTED · native start skips discovery validation · src/server/orchestration/team-run.ts · ℹ fail 1
+DETECTED · native start skips Codex login · src/server/orchestration/team-run.ts · ℹ fail 1
+DETECTED · run ignores team mode · src/server/orchestration/team-run.ts · ℹ fail 1
+DETECTED · demo team editable · src/server/storage/teams.ts · ℹ fail 1
+DETECTED · profile class change allowed in team · src/server/storage/profiles.ts · ℹ fail 1
+DETECTED · Lead override dropped · src/server/orchestration/lead-execute.ts · ℹ fail 1

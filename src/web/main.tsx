@@ -32,6 +32,7 @@ import { RolesPanel } from "./roles-panel.tsx";
 import { RunControls } from "./run-controls.tsx";
 import { EmergencyStop, StopHistory } from "./stop-panel.tsx";
 import { TaskCard } from "./task-card.tsx";
+import { TeamsPanel } from "./teams-panel.tsx";
 import "./style.css";
 
 // Conversation events are few but must never be evicted by token traffic.
@@ -188,6 +189,7 @@ function App() {
       <EmergencyStop onError={setError} />
       <RolesPanel />
       <ProfilesPanel />
+      <TeamsPanel />
       <ProjectForms
         project={selectedProject}
         onProject={(id) => {
@@ -260,6 +262,8 @@ function App() {
                 <p className="note">
                   {selectedRun.mode} · {selectedRun.status} · saved{" "}
                   {new Date(selectedRun.createdAt).toLocaleString()}
+                  {selectedRun.teamSnapshot &&
+                    ` · team snapshot ${selectedRun.teamSnapshot.preset.name} v${selectedRun.teamSnapshot.preset.version}`}
                 </p>
                 <RunControls
                   key={selectedRun.id}

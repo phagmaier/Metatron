@@ -11,6 +11,7 @@ import { fakeTeamSnapshot } from "../shared/presets.ts";
 import { writeApi } from "./api.ts";
 import { LeadRunForm } from "./lead-run-form.tsx";
 import { NativeRunForm } from "./native-run-form.tsx";
+import { TeamRunForm } from "./team-run-form.tsx";
 
 export function ProjectForms({
   project,
@@ -237,6 +238,7 @@ export function ProjectForms({
       )}
       {project && (
         <>
+          <TeamRunForm project={project} onRun={onRun} onError={onError} />
           <LeadRunForm project={project} onRun={onRun} onError={onError} />
           <NativeRunForm project={project} onRun={onRun} onError={onError} />
         </>

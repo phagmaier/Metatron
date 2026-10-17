@@ -6,6 +6,7 @@ import {
   processStateSchema,
   taskStatusSchema,
 } from "./states.ts";
+import { validateWorkflow, workflowFields } from "./workflow.ts";
 
 export const idSchema = z.uuid();
 export const textSchema = z.string().trim().min(1).max(32_768);
@@ -48,7 +49,7 @@ const metadata = {
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
 };
-const idsSchema = z
+export const idsSchema = z
   .array(idSchema)
   .max(256)
   .refine((ids) => new Set(ids).size === ids.length, "Duplicate references");
@@ -112,30 +113,13 @@ export const teamPresetSchema = z.strictObject({
 });
 export type TeamPreset = z.infer<typeof teamPresetSchema>;
 
-export const workflowTemplateSchema = z.strictObject({
-  ...metadata,
-  version: z.int().positive(),
-  name: textSchema,
-  stages: z
-    .array(
-      z.strictObject({
-        id: textSchema,
-        type: z.enum([
-          "single_agent",
-          "parallel_agents",
-          "synthesize",
-          "review",
-        ]),
-        profileId: idSchema,
-        instructions: textSchema,
-        dependsOn: z.array(textSchema),
-        count: z.int().min(1).max(64),
-        partialFailure: z.enum(["stop", "include_partial"]),
-      }),
-    )
-    .min(1)
-    .max(128),
-});
+export const workflowTemplateSchema = z
+  .strictObject({
+    ...metadata,
+    version: z.int().positive(),
+    ...workflowFields,
+  })
+  .superRefine(validateWorkflow);
 export type WorkflowTemplate = z.infer<typeof workflowTemplateSchema>;
 export const teamSnapshotSchema = z
   .strictObject({

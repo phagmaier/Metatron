@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
   agentProfileSchema,
-  teamPresetSchema,
   workflowTemplateSchema,
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
@@ -25,6 +24,16 @@ import { appendEvent } from "./journal.ts";
 import { mutate } from "./mutations.ts";
 import { getRole } from "./roles.ts";
 import type { Store } from "./store.ts";
+import { teamsUsingProfile } from "./teams.ts";
+
+export function getProfile(store: Store, input: unknown) {
+  const { id } = profileReferenceSchema.parse(input);
+  const row = store.db
+    .prepare("SELECT data FROM agent_profiles WHERE id=?")
+    .get(id);
+  if (!row) throw new DomainError("NOT_FOUND", "Agent profile not found");
+  return agentProfileSchema.parse(JSON.parse(String(row.data)));
+}
 
 export class Profiles {
   private readonly store: Store;
@@ -47,12 +56,7 @@ export class Profiles {
       .map((row) => agentProfileSchema.parse(JSON.parse(String(row.data))));
   }
   get(input: unknown) {
-    const { id } = profileReferenceSchema.parse(input);
-    const row = this.store.db
-      .prepare("SELECT data FROM agent_profiles WHERE id=?")
-      .get(id);
-    if (!row) throw new DomainError("NOT_FOUND", "Agent profile not found");
-    return agentProfileSchema.parse(JSON.parse(String(row.data)));
+    return getProfile(this.store, input);
   }
   async discover(input: unknown): Promise<ProfileCapabilities> {
     const { harness } = profileDiscoverySchema.parse(input);
@@ -116,7 +120,7 @@ export class Profiles {
       ],
     });
   }
-  private validate(content: ProfileContent, catalog: ProfileCapabilities) {
+  validate(content: ProfileContent, catalog: ProfileCapabilities) {
     getRole(this.store, { id: content.roleId });
     const model = catalog.models.find((item) => item.id === content.model);
     if (
@@ -194,6 +198,17 @@ export class Profiles {
             "Profile changed; reload it before saving",
           );
         this.validate(data, catalog);
+        // A saved team's Lead must stay its coordinator and a worker must
+        // never gain Lead tools; the team is edited first.
+        if (
+          previous.permission !== data.permission &&
+          [previous.permission, data.permission].includes("coordinator") &&
+          teamsUsingProfile(this.store, previous.id).length
+        )
+          throw new DomainError(
+            "CONFLICT",
+            "Profile is used by a saved team; keep its Lead or worker permission, or edit the team first",
+          );
         const profile = agentProfileSchema.parse({
           ...previous,
           ...data,
@@ -229,19 +244,11 @@ export class Profiles {
             "CONFLICT",
             "Profile changed; reload it before deleting",
           );
-        for (const row of this.store.db
-          .prepare("SELECT data FROM team_presets")
-          .all()) {
-          const team = teamPresetSchema.parse(JSON.parse(String(row.data)));
-          if (
-            team.leadProfileId === profile.id ||
-            team.workerProfileIds.includes(profile.id)
-          )
-            throw new DomainError(
-              "CONFLICT",
-              "Profile is used by a saved team; remove its reference before deleting",
-            );
-        }
+        if (teamsUsingProfile(this.store, profile.id).length)
+          throw new DomainError(
+            "CONFLICT",
+            "Profile is used by a saved team; remove its reference before deleting",
+          );
         for (const row of this.store.db
           .prepare("SELECT data FROM workflow_templates")
           .all()) {

@@ -99,6 +99,10 @@ const migration7 = `
 ALTER TABLE dispatches ADD COLUMN context_policy TEXT NOT NULL DEFAULT 'fresh' CHECK(context_policy IN ('auto','fresh','resume'));
 ALTER TABLE dispatches ADD COLUMN resume_session_id TEXT;
 `;
+const migration8 = `
+CREATE TABLE workflow_runs (id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES runs(id), data TEXT NOT NULL CHECK(json_valid(data))) STRICT;
+CREATE INDEX workflow_runs_run ON workflow_runs(run_id);
+`;
 function migrateModes(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(migrateModes);
   if (value && typeof value === "object")
@@ -130,7 +134,7 @@ export function openDatabase(path: string) {
       if (version === 0) {
         database.exec(migration1);
         database.exec("PRAGMA user_version=1");
-      } else if (![1, 2, 3, 4, 5, 6, 7].includes(Number(version))) {
+      } else if (![1, 2, 3, 4, 5, 6, 7, 8].includes(Number(version))) {
         throw new DomainError("STORAGE", "Unsupported database schema version");
       }
       if (version === 0 || version === 1) {
@@ -175,6 +179,10 @@ export function openDatabase(path: string) {
       if (Number(version) < 7) {
         database.exec(migration7);
         database.exec("PRAGMA user_version=7");
+      }
+      if (Number(version) < 8) {
+        database.exec(migration8);
+        database.exec("PRAGMA user_version=8");
       }
       database.exec("COMMIT");
     } catch (error) {

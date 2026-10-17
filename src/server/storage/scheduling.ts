@@ -14,6 +14,7 @@ import { authorize } from "../orchestration/policy.ts";
 import { mutate } from "./mutations.ts";
 import { revisionSource } from "./revisions.ts";
 import type { Store } from "./store.ts";
+import { assertWorkflowAssignment } from "./workflows.ts";
 
 export class Scheduling {
   private readonly store: Store;
@@ -109,6 +110,7 @@ export class Scheduling {
           task.id,
         );
         const profile = this.profile(run.id, data.profileId);
+        assertWorkflowAssignment(this.store, task.id);
         if (run.status !== "active")
           throw new DomainError("CONFLICT", "Run is paused or terminal");
         if (this.store.listTaskBlockers(task.id).length)
@@ -384,6 +386,7 @@ export class Scheduling {
         const task = this.store.getTask(taskId);
         const run = this.store.getRun(task.runId);
         const profile = this.profile(run.id, current.profileId);
+        assertWorkflowAssignment(this.store, task.id);
         if (
           run.status !== "active" ||
           task.status !== "QUEUED" ||

@@ -1,0 +1,30 @@
+## mise x -- pnpm typecheck
+$ tsc --noEmit
+exit 0
+## mise x -- pnpm lint
+$ biome check .
+Checked 165 files in 229ms. No fixes applied.
+exit 0
+## mise x -- pnpm test:fixtures
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 362.451959
+exit 0
+## mise x -- pnpm build
+computing gzip size...
+dist/web/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/web/assets/index-JrUhHg_A.css    4.27 kB │ gzip:   1.39 kB
+dist/web/assets/index-DXkUxsYG.js   415.19 kB │ gzip: 121.56 kB
+
+✓ built in 366ms
+exit 0
+## mise x -- pnpm smoke
+$ node scripts/smoke.ts
+Development launch, health, HTML and script: passed (http://127.0.0.1:35133)
+Production launch, health, HTML and script: passed (http://127.0.0.1:45877)
+exit 0
+## git diff --check
+exit 0

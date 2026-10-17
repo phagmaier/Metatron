@@ -1,0 +1,65 @@
+{
+  "execution": "FAKE; no provider contacted",
+  "workflowStatus": "completed",
+  "stageStatuses": [
+    {
+      "stage": "collect",
+      "status": "completed",
+      "children": 1
+    },
+    {
+      "stage": "compare",
+      "status": "completed",
+      "children": 2
+    },
+    {
+      "stage": "combine",
+      "status": "completed",
+      "children": 1
+    }
+  ],
+  "activeReaderCap": 1,
+  "attempts": 4,
+  "ownerOverrideHonored": true,
+  "taskStatuses": [
+    {
+      "title": "Static workflow runtime smoke \u00b7 collect",
+      "status": "AWAITING_REVIEW"
+    },
+    {
+      "title": "Static workflow runtime smoke \u00b7 compare 1/2",
+      "status": "AWAITING_REVIEW"
+    },
+    {
+      "title": "Static workflow runtime smoke \u00b7 compare 2/2",
+      "status": "AWAITING_REVIEW"
+    },
+    {
+      "title": "Static workflow runtime smoke \u00b7 combine",
+      "status": "AWAITING_REVIEW"
+    }
+  ],
+  "synthesisSources": [
+    {
+      "taskId": "91a190b8-04e9-471d-be56-de7538b4cbcf",
+      "artifactId": "1b8630d6-c360-4182-860f-f4e19e87b621",
+      "status": "completed"
+    },
+    {
+      "taskId": "1ce9b104-1a69-4c17-9bd1-b9fffe5dce24",
+      "artifactId": "92ab2270-94c4-4df4-8bc4-420f11e7abbb",
+      "status": "completed"
+    }
+  ],
+  "result": [
+    {
+      "name": "answer",
+      "stageId": "combine",
+      "status": "completed",
+      "taskIds": [
+        "4480dc42-7d93-4aa7-a29c-4f82b4340914"
+      ]
+    }
+  ],
+  "ownerCheckout": ""
+}
