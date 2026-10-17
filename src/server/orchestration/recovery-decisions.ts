@@ -194,9 +194,10 @@ const facts = (check: RecoveryCheck) =>
     check.process.state,
   ]);
 
-// The only path from RETRY_DECISION back to scheduling. A retry is always a
-// fresh attempt in a new worktree: the prior checkout is retained, never
-// relinked, adopted or deleted, even when a same-path replacement exists.
+// The only path from RETRY_DECISION back to scheduling. A retry is a new
+// attempt: a native one gets a new worktree, and the prior checkout is
+// retained, never relinked, adopted or deleted, even when a same-path
+// replacement exists. Assignment decides whether its session resumes.
 export async function decideRecovery(
   engine: Engine,
   input: unknown,
@@ -252,8 +253,7 @@ export async function decideRecovery(
         id: current.task.id,
         expectedStatus: "RETRY_DECISION",
         status: "READY",
-        reason:
-          "Owner recovery decision: fresh attempt in a new worktree; the prior attempt's checkout is retained and not relinked",
+        reason: `Owner recovery decision (context ${data.contextPolicy}): new attempt; the prior attempt's checkout is retained and not relinked`,
       },
       `${key}:ready`,
     );
@@ -266,7 +266,8 @@ export async function decideRecovery(
         correlationId: key,
         payload: {
           ...decision,
-          choice: "retry_fresh",
+          choice: "retry",
+          contextPolicy: data.contextPolicy,
           unverified,
           repository: check.repository.state,
           worktree: check.worktree.state,
@@ -283,6 +284,8 @@ export async function decideRecovery(
         taskId: current.task.id,
         profileId: data.profileId,
         scenario: data.scenario,
+        contextPolicy: data.contextPolicy,
+        resumeSessionId: data.resumeSessionId,
       },
       `${key}:enqueue`,
     );

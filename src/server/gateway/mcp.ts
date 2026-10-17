@@ -12,7 +12,7 @@ import {
 import type { Engine } from "../orchestration/engine.ts";
 import { toolsFor } from "../orchestration/policy.ts";
 
-export const TOOL_SCHEMA_VERSION = "lao-tools/3";
+export const TOOL_SCHEMA_VERSION = "lao-tools/4";
 type Binding = {
   role: "lead" | "worker";
   sessionId: string;
@@ -33,7 +33,7 @@ const descriptions: Record<ToolName, string> = {
   propose_task:
     "Create a backlog task for work necessary to the run objective. Unrelated ideas stay proposals.",
   assign_task:
-    "Assign a backlog task to a roster worker profile. Supervised mode records a proposal for owner approval; Chat/Plan cannot dispatch.",
+    "Assign a backlog task to a roster worker profile. Supervised mode records a proposal for owner approval; Chat/Plan cannot dispatch. contextPolicy auto (default) continues the task's own cleanly ended session where the harness supports it and otherwise starts fresh with a generated checkpoint; fresh always starts a new session; resume requires resumeSessionId and is refused, with nothing queued, when unavailable.",
   request_revision:
     "Request a bounded revision of a task awaiting review; creates a revision task for the same worker profile.",
   request_review:

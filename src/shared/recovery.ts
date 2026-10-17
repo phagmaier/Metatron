@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { idSchema, type RecoveryCheck } from "./domain/entities.ts";
+import {
+  contextPolicySchema,
+  idSchema,
+  type RecoveryCheck,
+} from "./domain/entities.ts";
 import { scenarioSchema } from "./orchestration.ts";
 
 export const recheckRecoverySchema = z.strictObject({ taskId: idSchema });
@@ -10,6 +14,9 @@ export const recoveryDecisionSchema = z.strictObject({
   profileId: idSchema,
   scenario: scenarioSchema.default("success"),
   acceptUnverified: z.boolean().default(false),
+  // Validated by assignment: auto still starts fresh after an unclean end.
+  contextPolicy: contextPolicySchema.default("auto"),
+  resumeSessionId: idSchema.nullable().default(null),
 });
 
 // Facts a fresh retry must explicitly accept: the prior checkout's identity or

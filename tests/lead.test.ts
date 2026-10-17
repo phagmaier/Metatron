@@ -232,6 +232,7 @@ test("Codex Lead assigns a Pi worker, is woken with the structured report and re
     assert.equal(sessions[0]?.contextPolicy, "fresh");
     assert.equal(sessions[1]?.contextPolicy, "resume");
     assert.equal(sessions[0]?.nativeSessionId, sessions[1]?.nativeSessionId);
+    assert.equal(sessions[1]?.context?.predecessorSessionId, sessions[0]?.id);
     const log = await f.log();
     assert.equal(log.filter((l) => l.method === "thread/start").length, 1);
     assert.deepEqual(

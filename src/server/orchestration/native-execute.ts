@@ -16,6 +16,7 @@ import { createIntegrationCandidate } from "../storage/candidates.ts";
 import { mutate } from "../storage/mutations.ts";
 import { createReview } from "../storage/reviews.ts";
 import { reconcileRevision } from "../storage/revisions.ts";
+import { prepareContext } from "./context-policy.ts";
 import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 import { observeRecovery, processIdentity } from "./recovery-observe.ts";
@@ -34,7 +35,19 @@ export async function executeNativeTurn(
   const run = store.getRun(task.runId);
   const profile = engine.scheduling.profile(run.id, dispatch.profileId);
   const role = run.teamSnapshot?.roles.find((r) => r.id === profile.roleId);
-  const session = store.createSession({ attemptId }, `session:${attemptId}`);
+  const planned = await prepareContext(engine, dispatch, attemptId);
+  if ("refused" in planned) {
+    engine.fail(task.id, attemptId, planned.refused);
+    return;
+  }
+  const session = store.createSession(
+    {
+      attemptId,
+      contextPolicy: dispatch.contextPolicy,
+      context: planned.context,
+    },
+    `session:${attemptId}`,
+  );
   store.updateSession(
     { id: session.id, expectedState: "not_started", state: "starting" },
     `session:${attemptId}:starting`,
@@ -77,10 +90,13 @@ export async function executeNativeTurn(
   };
   try {
     await engine.worktrees.prepare(attemptId);
-    const prompt =
+    const packet =
       (await reviewPacket(engine, task, attemptId)) ??
       (await revisionPacket(engine, task, attemptId)) ??
       task.objective;
+    const prompt = planned.checkpoint
+      ? `${packet}\n\n${planned.checkpoint}`.slice(0, 32_768)
+      : packet;
     if (store.getTask(task.id).status === "CANCELLED") {
       interrupted = true;
       throw new Error("Owner cancelled before native process launch");
@@ -111,7 +127,8 @@ export async function executeNativeTurn(
       model: profile.model,
       thinking: profile.thinking,
       permission: profile.permission,
-      contextPolicy: "fresh",
+      // The Pi adapter refuses "resume", so a resume plan can never run fresh.
+      contextPolicy: planned.context.effective,
       contextPacket: prompt,
       toolEndpoint: token ? engine.gatewayUrl : null,
       environment: token ? { LAO_GATEWAY_TOKEN: token } : {},
@@ -122,6 +139,7 @@ export async function executeNativeTurn(
         expectedState: "starting",
         state: "busy",
         nativeSessionId: managed.nativeSessionId,
+        transcriptPath: managed.transcriptPath ?? null,
         ...(managed.processId
           ? {
               processId: managed.processId,

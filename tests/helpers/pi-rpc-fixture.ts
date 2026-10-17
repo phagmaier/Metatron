@@ -108,6 +108,11 @@ process.stdin.on("data", (chunk) => {
         };
         break;
       case "prompt":
+        if (process.env.LAO_FIXTURE_PROMPT_LOG)
+          appendFileSync(
+            process.env.LAO_FIXTURE_PROMPT_LOG,
+            `${JSON.stringify(command.message)}\n`,
+          );
         data = { disposition: "started" };
         break;
       case "steer":

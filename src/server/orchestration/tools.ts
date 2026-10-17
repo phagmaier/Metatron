@@ -250,6 +250,8 @@ export function runTool(
           taskId: data.taskId,
           profileId: data.profileId,
           scenario: data.scenario,
+          contextPolicy: data.contextPolicy,
+          resumeSessionId: data.resumeSessionId,
         },
         key,
       );

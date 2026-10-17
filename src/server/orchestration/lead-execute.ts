@@ -38,7 +38,7 @@ function previousThread(engine: Engine, runId: string) {
       return task.runId === runId && task.kind === "lead";
     })
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .at(-1)?.nativeSessionId;
+    .at(-1);
 }
 async function checkout(root: string) {
   return `${await git(root, ["rev-parse", "HEAD"])}\n${await git(root, [
@@ -60,9 +60,22 @@ export async function executeLeadTurn(
   const run = store.getRun(task.runId);
   const profile = engine.scheduling.profile(run.id, dispatch.profileId);
   const role = run.teamSnapshot?.roles.find((r) => r.id === profile.roleId);
-  const resumeId = previousThread(engine, run.id);
+  const previous = previousThread(engine, run.id);
+  const resumeId = previous?.nativeSessionId;
   const session = store.createSession(
-    { attemptId, contextPolicy: resumeId ? "resume" : "fresh" },
+    {
+      attemptId,
+      contextPolicy: resumeId ? "resume" : "fresh",
+      context: {
+        effective: resumeId ? "resume" : "fresh",
+        reason: resumeId
+          ? "The Lead continues its run thread"
+          : "First Lead turn of this run",
+        predecessorAttemptId: previous?.attemptId ?? null,
+        predecessorSessionId: previous?.id ?? null,
+        checkpointArtifactId: null,
+      },
+    },
     `session:${attemptId}`,
   );
   store.updateSession(

@@ -1,0 +1,38 @@
+M6 item 10 final checks; pinned toolchain via mise (node 26.7.0, pnpm 11.22.0)
+
+Baseline: mise x -- pnpm test — PASS 228/228 (before item 10 changes). Final: see m6-context-tests.txt.
+
+$ mise x -- pnpm typecheck
+$ tsc --noEmit
+exit: 0
+$ mise x -- pnpm lint
+$ biome check .
+Checked 144 files in 79ms. No fixes applied.
+exit: 0
+$ mise x -- pnpm test:fixtures
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 166.636097
+exit: 0
+$ mise x -- pnpm build
+transforming...
+✓ 136 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/web/index.html                   0.45 kB │ gzip:   0.29 kB
+dist/web/assets/index-DhpKzFQQ.css    4.17 kB │ gzip:   1.37 kB
+dist/web/assets/index-Dnuq48Wi.js   391.33 kB │ gzip: 116.06 kB
+✓ built in 187ms
+exit: 0
+$ mise x -- pnpm smoke
+$ node scripts/smoke.ts
+Development launch, health, HTML and script: passed (http://127.0.0.1:36989)
+Production launch, health, HTML and script: passed (http://127.0.0.1:39485)
+exit: 0
+$ git diff --check
+exit: 0

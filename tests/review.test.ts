@@ -324,25 +324,33 @@ test("a failed review journal write rolls back the review, candidate link and at
   }
 });
 
-test("migrations v5-v6 preserve candidates and events from a v4 database while adding review constraints and integrations", async () => {
+test("migrations v5-v7 preserve candidates and events from a v4 database while adding review constraints, integrations and context policies", async () => {
   const f = await reviewFixture();
   try {
     const events = f.store.events({ limit: 500 });
     f.store.db.exec(
-      "DROP TABLE integrations; DROP INDEX one_review_per_attempt; DROP TRIGGER reviews_no_update; DROP TRIGGER reviews_no_delete; PRAGMA user_version=4;",
+      "DROP TABLE integrations; DROP INDEX one_review_per_attempt; DROP TRIGGER reviews_no_update; DROP TRIGGER reviews_no_delete; ALTER TABLE dispatches DROP COLUMN context_policy; ALTER TABLE dispatches DROP COLUMN resume_session_id; PRAGMA user_version=4;",
     );
     await f.app.close();
     const reopened = new Store(join(f.data, "state.sqlite"));
     try {
       assert.equal(
         reopened.db.prepare("PRAGMA user_version").get()?.user_version,
-        6,
+        7,
       );
       assert.deepEqual(
         getIntegrationCandidate(reopened, f.candidate.id),
         f.candidate,
       );
       assert.deepEqual(reopened.events({ limit: 500 }), events);
+      // Dispatches queued before context policies keep their fresh behaviour.
+      assert.deepEqual(
+        reopened.db
+          .prepare("SELECT DISTINCT context_policy AS policy FROM dispatches")
+          .all()
+          .map((row) => row.policy),
+        ["fresh"],
+      );
       assert.deepEqual(
         reopened.db
           .prepare(

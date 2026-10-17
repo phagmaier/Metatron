@@ -99,6 +99,8 @@ export type ResumeInput = StartSessionInput;
 export type ManagedSession = {
   processId?: number;
   nativeSessionId: string;
+  // Where the harness keeps this session's transcript, when the app owns it.
+  transcriptPath?: string;
   adapter: AdapterCapabilities["adapter"];
   input: StartSessionInput;
 };

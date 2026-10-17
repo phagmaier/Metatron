@@ -93,6 +93,12 @@ const migration6 = `
 CREATE TABLE integrations (id TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES tasks(id), candidate_id TEXT NOT NULL REFERENCES integration_candidates(id), path TEXT NOT NULL UNIQUE, data TEXT NOT NULL CHECK(json_valid(data))) STRICT;
 CREATE UNIQUE INDEX one_preparing_integration ON integrations(task_id) WHERE json_extract(data,'$.status')='preparing';
 `;
+// Dispatches queued before context policies always ran fresh, so they keep it.
+// Assignment validates the named session against the task's own lineage.
+const migration7 = `
+ALTER TABLE dispatches ADD COLUMN context_policy TEXT NOT NULL DEFAULT 'fresh' CHECK(context_policy IN ('auto','fresh','resume'));
+ALTER TABLE dispatches ADD COLUMN resume_session_id TEXT;
+`;
 function migrateModes(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(migrateModes);
   if (value && typeof value === "object")
@@ -124,7 +130,7 @@ export function openDatabase(path: string) {
       if (version === 0) {
         database.exec(migration1);
         database.exec("PRAGMA user_version=1");
-      } else if (![1, 2, 3, 4, 5, 6].includes(Number(version))) {
+      } else if (![1, 2, 3, 4, 5, 6, 7].includes(Number(version))) {
         throw new DomainError("STORAGE", "Unsupported database schema version");
       }
       if (version === 0 || version === 1) {
@@ -165,6 +171,10 @@ export function openDatabase(path: string) {
       if (Number(version) < 6) {
         database.exec(migration6);
         database.exec("PRAGMA user_version=6");
+      }
+      if (Number(version) < 7) {
+        database.exec(migration7);
+        database.exec("PRAGMA user_version=7");
       }
       database.exec("COMMIT");
     } catch (error) {

@@ -379,6 +379,7 @@ for (const scenario of ["failure", "disconnect"] as const) {
         taskId: task.id,
         profileId: fakeTeamSnapshot.preset.workerProfileIds[0],
         scenario,
+        contextPolicy: "fresh",
       };
       let previous = f.engine.scheduling.enqueue(
         { role: "owner" },
@@ -442,7 +443,10 @@ for (const scenario of ["failure", "disconnect"] as const) {
         .filter((s) => history.some((a) => a.id === s.attemptId));
       assert.equal(sessions.length, 3);
       assert.equal(new Set(sessions.map((s) => s.nativeSessionId)).size, 3);
-      assert.equal((await f.engine.reports(task.id)).length, 1);
+      assert.deepEqual(
+        (await f.engine.reports(task.id)).map((r) => r.artifact.summary),
+        ["Context checkpoint", "Context checkpoint", "FAKE worker report"],
+      );
       await f.engine.pump();
       assert.equal(
         f.store.listAttempts().filter((a) => a.taskId === task.id).length,

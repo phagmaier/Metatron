@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   absolutePathSchema,
+  contextPolicySchema,
   defaultLimits,
   humanRequestSchema,
   idSchema,
@@ -29,11 +30,24 @@ export const ownerMessageSchema = z.strictObject({
   text: textSchema,
   scenario: scenarioSchema.default("success"),
 });
-export const assignSchema = z.strictObject({
-  taskId: idSchema,
-  profileId: idSchema,
-  scenario: scenarioSchema.default("success"),
-});
+// auto resumes only this task's own cleanly ended session where the adapter
+// and checkout allow it; resume names that session (an app session ID).
+const contextChoice = {
+  contextPolicy: contextPolicySchema.default("auto"),
+  resumeSessionId: idSchema.nullable().default(null),
+};
+export const assignSchema = z
+  .strictObject({
+    taskId: idSchema,
+    profileId: idSchema,
+    scenario: scenarioSchema.default("success"),
+    ...contextChoice,
+  })
+  .refine(
+    (data) =>
+      (data.contextPolicy === "resume") === (data.resumeSessionId !== null),
+    "Only the resume policy names a session, and it must name one",
+  );
 export const ownerTaskSchema = z.strictObject({
   runId: idSchema,
   title: textSchema,
@@ -101,6 +115,7 @@ export const toolSchema = z.discriminatedUnion("name", [
     taskId: idSchema,
     profileId: idSchema,
     scenario: scenarioSchema.default("success"),
+    ...contextChoice,
   }),
   z.strictObject({
     name: z.literal("request_revision"),
@@ -167,6 +182,8 @@ export const dispatchSchema = z.strictObject({
   profileId: idSchema,
   cwd: absolutePathSchema,
   scenario: scenarioSchema,
+  contextPolicy: contextPolicySchema,
+  resumeSessionId: idSchema.nullable(),
   state: z.enum(["queued", "active", "released", "blocked"]),
   attemptId: idSchema.nullable(),
   diagnostic: z.string().nullable(),

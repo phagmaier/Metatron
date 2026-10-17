@@ -36,6 +36,8 @@ export class FakeAdapter implements HarnessAdapter {
   private nextId = 1;
   private readonly namespace = randomUUID();
   private readonly turns: SessionEvent[][];
+  // FAKE has no native session store. `resumable` stands in for sessions an
+  // earlier attempt recorded, so resume identity rules run without a model.
   constructor(
     turns: SessionEvent[][] = [
       [
@@ -46,8 +48,24 @@ export class FakeAdapter implements HarnessAdapter {
         { type: "turn_completed", nativeStatus: "completed" },
       ],
     ],
+    resumable: ManagedSession[] = [],
   ) {
     this.turns = z.array(z.array(sessionEventSchema)).parse(turns);
+    for (const session of resumable) this.track(structuredClone(session));
+  }
+  private track(session: ManagedSession) {
+    this.sessions.set(session.nativeSessionId, {
+      session,
+      turn: 0,
+      active: false,
+      cancelled: false,
+      disconnected: false,
+      terminal: false,
+      prompts: [],
+      steering: [],
+      queuedMessages: [],
+      approval: null,
+    });
   }
   async discover() {
     return capabilitiesSchema.parse({
@@ -90,18 +108,7 @@ export class FakeAdapter implements HarnessAdapter {
       adapter: "fake",
       input: this.validate(input),
     };
-    this.sessions.set(session.nativeSessionId, {
-      session,
-      turn: 0,
-      active: false,
-      cancelled: false,
-      disconnected: false,
-      terminal: false,
-      prompts: [],
-      steering: [],
-      queuedMessages: [],
-      approval: null,
-    });
+    this.track(session);
     return structuredClone(session);
   }
   private lookup(session: ManagedSession) {
@@ -192,16 +199,26 @@ export class FakeAdapter implements HarnessAdapter {
       playback.approval = null;
     }
   }
+  // A successor attempt of the same task may continue the session; another
+  // task, run or checkout may not.
   async resume(nativeSessionId: string, input: ResumeInput) {
-    const session: ManagedSession = {
-      nativeSessionId,
-      adapter: "fake",
-      input: this.validate(input),
-    };
-    const playback = this.lookup(session);
+    const data = this.validate(input);
+    const playback = this.sessions.get(nativeSessionId);
+    if (!playback) throw new DomainError("NOT_FOUND", "Fake session not found");
+    const original = playback.session.input;
+    if (
+      data.runId !== original.runId ||
+      data.taskId !== original.taskId ||
+      data.cwd !== original.cwd
+    )
+      throw new DomainError(
+        "INVALID_REFERENCE",
+        "Session identity belongs to another assignment",
+      );
     if (playback.active || playback.terminal || playback.cancelled)
       throw new DomainError("CONFLICT", "Fake session cannot resume");
     playback.disconnected = false;
+    playback.session = { ...playback.session, input: data };
     return structuredClone(playback.session);
   }
   async steer(

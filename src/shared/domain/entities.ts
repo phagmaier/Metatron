@@ -41,6 +41,7 @@ export const permissionSchema = z.enum([
   "coordinator",
 ]);
 export const contextPolicySchema = z.enum(["auto", "fresh", "resume"]);
+export type ContextPolicy = z.infer<typeof contextPolicySchema>;
 const metadata = {
   id: idSchema,
   createdAt: timestampSchema,
@@ -351,6 +352,17 @@ export const stopRecordSchema = z.strictObject({
   diagnostic: textSchema.nullable(),
 });
 export type StopRecord = z.infer<typeof stopRecordSchema>;
+// How the engine chose this session's context. The predecessor links keep the
+// earlier attempt and its native transcript reachable from a successor.
+export const sessionContextSchema = z.strictObject({
+  effective: z.enum(["fresh", "resume"]),
+  reason: textSchema,
+  predecessorAttemptId: idSchema.nullable(),
+  predecessorSessionId: idSchema.nullable(),
+  // App-generated summary of the predecessor's recorded evidence, not a transcript.
+  checkpointArtifactId: idSchema.nullable(),
+});
+export type SessionContext = z.infer<typeof sessionContextSchema>;
 export const sessionSchema = z.strictObject({
   ...metadata,
   attemptId: idSchema,
@@ -360,7 +372,11 @@ export const sessionSchema = z.strictObject({
   // Boot ID and kernel start time, so a reused PID is not taken for the worker.
   processIdentity: textSchema.nullable().default(null),
   state: processStateSchema,
+  // The requested policy; `context` records what was actually done. Sessions
+  // recorded before context policies have no context.
   contextPolicy: contextPolicySchema,
+  context: sessionContextSchema.nullable().default(null),
+  transcriptPath: absolutePathSchema.nullable().default(null),
   exitCode: z.int().nullable(),
   recovery: z.enum(["none", "RECOVERY_REQUIRED"]),
   ownerMessages: z.array(workerMessageSchema).default([]),

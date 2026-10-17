@@ -9,6 +9,7 @@ import type {
 } from "../shared/domain/entities.ts";
 import { unverifiedFacts } from "../shared/recovery.ts";
 import { writeApi } from "./api.ts";
+import type { ContextChoiceValue } from "./context-panel.tsx";
 
 const causeLabel: Record<RecoveryCause, string> = {
   interrupted: "Interrupted",
@@ -43,6 +44,7 @@ export function RecoveryPanel({
   session,
   profileId,
   scenario,
+  context,
   onError,
 }: {
   task: Task;
@@ -51,6 +53,7 @@ export function RecoveryPanel({
   session: Session | undefined;
   profileId: string;
   scenario: string;
+  context: ContextChoiceValue;
   onError: (error: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
@@ -170,16 +173,20 @@ export function RecoveryPanel({
               profileId,
               scenario,
               acceptUnverified: accepted,
+              ...context,
             })
           }
         >
-          Retry in a fresh worktree
+          Retry
         </button>
       </div>
       <p className="note">
         Recheck never resubmits, relinks or deletes anything. A retry uses the
-        selected worker, starts a new session in a new worktree and counts
-        against the run's launch budget. Cancel keeps every worktree and record.
+        selected worker and context, starts a new attempt (a native one in a new
+        worktree) and counts against the run's launch budget. Auto resumes only
+        a cleanly ended session the harness can reopen in the same checkout;
+        otherwise it starts fresh with a checkpoint. Cancel keeps every worktree
+        and record.
       </p>
     </div>
   );

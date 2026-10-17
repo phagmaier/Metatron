@@ -9,6 +9,7 @@ import {
   type Dispatch,
   dispatchSchema,
 } from "../../shared/orchestration.ts";
+import { contextPlan } from "../orchestration/context-policy.ts";
 import { authorize } from "../orchestration/policy.ts";
 import { mutate } from "./mutations.ts";
 import { revisionSource } from "./revisions.ts";
@@ -24,7 +25,7 @@ export class Scheduling {
   list() {
     return this.store.db
       .prepare(
-        `SELECT sequence, task_id AS taskId, run_id AS runId, profile_id AS profileId, cwd, scenario, state, attempt_id AS attemptId, diagnostic FROM dispatches ORDER BY sequence`,
+        `SELECT sequence, task_id AS taskId, run_id AS runId, profile_id AS profileId, cwd, scenario, context_policy AS contextPolicy, resume_session_id AS resumeSessionId, state, attempt_id AS attemptId, diagnostic FROM dispatches ORDER BY sequence`,
       )
       .all()
       .map((row) => dispatchSchema.parse(row));
@@ -147,6 +148,24 @@ export class Scheduling {
             "POLICY_DENIED",
             "Supervised assignments require the owner",
           );
+        // Resolving a request never continues work by itself; the owner's
+        // assignment is the explicit continuation, and it rechecks every blocker.
+        if (task.status === "WAITING_HUMAN") {
+          if (actor.role !== "owner")
+            throw new DomainError(
+              "POLICY_DENIED",
+              "Only the owner continues a task after a human wait",
+            );
+          task = this.store.transitionTask(
+            {
+              id: task.id,
+              expectedStatus: task.status,
+              status: "READY",
+              reason: "Owner continued after every human blocker resolved",
+            },
+            `${key}:continue`,
+          );
+        }
         const previous = this.list().find((d) => d.taskId === task.id);
         if (
           previous?.state === "active" ||
@@ -231,17 +250,37 @@ export class Scheduling {
             : profile.permission === "workspace_write"
               ? join(this.directory, "fake-workspaces", task.id)
               : this.store.getProject(run.projectId).repositoryPath;
+        // An explicit resume that cannot be honoured is refused here, before
+        // anything is queued; execution plans again against current facts.
+        contextPlan(this.store, {
+          task,
+          profileId: profile.id,
+          adapter: run.execution === "fake" ? "fake" : profile.harness,
+          cwd,
+          policy: data.contextPolicy,
+          resumeSessionId: data.resumeSessionId,
+          attemptId: null,
+        });
         // The persisted sequence identifies a dispatch generation. Reassignment
         // keeps a queued generation; retries get a fresh FIFO slot and identity.
         this.store.db
           .prepare(
-            `INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,state) VALUES (?,?,?,?,?,'queued')
+            `INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,context_policy,resume_session_id,state) VALUES (?,?,?,?,?,?,?,'queued')
              ON CONFLICT(task_id) DO UPDATE SET
                sequence=CASE WHEN dispatches.state='queued' THEN dispatches.sequence ELSE excluded.sequence END,
                profile_id=excluded.profile_id,cwd=excluded.cwd,scenario=excluded.scenario,
+               context_policy=excluded.context_policy,resume_session_id=excluded.resume_session_id,
                state='queued',attempt_id=NULL,diagnostic=NULL`,
           )
-          .run(task.id, run.id, profile.id, cwd, data.scenario);
+          .run(
+            task.id,
+            run.id,
+            profile.id,
+            cwd,
+            data.scenario,
+            data.contextPolicy,
+            data.resumeSessionId,
+          );
         this.store.recordEvent(
           {
             runId: run.id,
@@ -252,6 +291,8 @@ export class Scheduling {
               profileId: profile.id,
               ownerPinned: task.ownerPinned,
               execution: run.execution,
+              contextPolicy: data.contextPolicy,
+              resumeSessionId: data.resumeSessionId,
             },
           },
           `${key}:event`,
@@ -300,7 +341,8 @@ export class Scheduling {
           );
         this.store.db
           .prepare(
-            "INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,state) VALUES (?,?,?,?,?,'queued')",
+            // The Lead continues its own run thread whenever one exists.
+            "INSERT INTO dispatches(task_id,run_id,profile_id,cwd,scenario,context_policy,state) VALUES (?,?,?,?,?,'auto','queued')",
           )
           .run(
             taskId,

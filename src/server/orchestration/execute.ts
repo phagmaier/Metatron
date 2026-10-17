@@ -7,6 +7,7 @@ import type { SessionEvent } from "../adapters/contract.ts";
 import { FakeAdapter } from "../adapters/fake.ts";
 import { mutate } from "../storage/mutations.ts";
 import { reconcileRevision } from "../storage/revisions.ts";
+import { prepareContext } from "./context-policy.ts";
 import type { Engine } from "./engine.ts";
 import { stopPending } from "./stops.ts";
 import { finishWorkerHelp, pendingWorkerHelp } from "./worker-help.ts";
@@ -61,13 +62,12 @@ export async function executeFakeTurn(
             },
             { type: "turn_completed", nativeStatus: "failed" },
           ];
-  const adapter = new FakeAdapter([events]);
-  const session = store.createSession({ attemptId }, `session:${attemptId}`);
-  store.updateSession(
-    { id: session.id, expectedState: "not_started", state: "starting" },
-    `session:${attemptId}:starting`,
-  );
-  const managed = await adapter.startSession({
+  const planned = await prepareContext(engine, dispatch, attemptId);
+  if ("refused" in planned) {
+    engine.fail(task.id, attemptId, planned.refused);
+    return;
+  }
+  const input = {
     runId: run.id,
     taskId: task.id,
     attemptId,
@@ -76,11 +76,42 @@ export async function executeFakeTurn(
     model: "fake-deterministic",
     thinking: null,
     permission: profile.permission,
-    contextPolicy: "fresh",
-    contextPacket: task.objective,
+    contextPolicy: planned.context.effective,
+    contextPacket: planned.checkpoint
+      ? `${task.objective}\n\n${planned.checkpoint}`.slice(0, 32_768)
+      : task.objective,
     toolEndpoint: null,
     environment: {},
-  });
+  };
+  const { resume } = planned;
+  // The earlier attempt's recorded session seeds the simulation.
+  const adapter = new FakeAdapter(
+    [events],
+    resume
+      ? [
+          {
+            nativeSessionId: resume.nativeSessionId,
+            adapter: "fake",
+            input: { ...input, attemptId: resume.attempt.id },
+          },
+        ]
+      : [],
+  );
+  const session = store.createSession(
+    {
+      attemptId,
+      contextPolicy: dispatch.contextPolicy,
+      context: planned.context,
+    },
+    `session:${attemptId}`,
+  );
+  store.updateSession(
+    { id: session.id, expectedState: "not_started", state: "starting" },
+    `session:${attemptId}:starting`,
+  );
+  const managed = resume
+    ? await adapter.resume(resume.nativeSessionId, input)
+    : await adapter.startSession(input);
   store.updateSession(
     {
       id: session.id,

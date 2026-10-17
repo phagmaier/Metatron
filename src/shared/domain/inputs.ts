@@ -8,6 +8,7 @@ import {
   limitsSchema,
   modeSchema,
   repositorySchema,
+  sessionContextSchema,
   shaSchema,
   teamSnapshotSchema,
   textSchema,
@@ -100,6 +101,7 @@ export const updateAttemptSchema = z.strictObject({
 export const createSessionSchema = z.strictObject({
   attemptId: idSchema,
   contextPolicy: contextPolicySchema.default("fresh"),
+  context: sessionContextSchema.nullable().default(null),
   nativeSessionId: textSchema.nullable().default(null),
 });
 export const updateSessionSchema = z.strictObject({
@@ -109,6 +111,7 @@ export const updateSessionSchema = z.strictObject({
   nativeSessionId: textSchema.optional(),
   processId: z.int().positive().nullable().optional(),
   processIdentity: textSchema.nullable().optional(),
+  transcriptPath: absolutePathSchema.nullable().optional(),
   exitCode: z.int().nullable().optional(),
 });
 export const createHumanRequestSchema = z

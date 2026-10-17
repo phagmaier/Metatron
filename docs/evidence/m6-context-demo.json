@@ -1,0 +1,135 @@
+{
+  "console": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found) http://127.0.0.1:4398/favicon.ico",
+    "Failed to load resource: the server responded with a status of 409 (Conflict) http://127.0.0.1:4398/api/tasks/assign",
+    "Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING http://127.0.0.1:4398/api/events/stream"
+  ],
+  "resumeOption": "resume",
+  "refused": {
+    "alert": "Resume unavailable: This Pi adapter does not reopen native sessions. Nothing was started. Assign with the fresh policy to start a successor session with a generated checkpoint of attempt 8789bd7d-cd5b-43a2-bb48-e22eb18ab4b4.",
+    "state": {
+      "tasks": [
+        "WAITING_HUMAN"
+      ],
+      "attempts": [
+        {
+          "id": "8789bd7d-cd5b-43a2-bb48-e22eb18ab4b4",
+          "status": "interrupted",
+          "worktreePath": "/tmp/claude-1000/-home-phagmaier-Code-metatron/6ce4ab7d-166e-4c67-8c1d-c22fbd6a6932/scratchpad/demo/data/worktrees/7473112c-4c5e-4da7-8b2d-b9bfd7f35200-579a7101-00d3-42a3-bf5f-a19116ec094d/checkout"
+        }
+      ],
+      "sessions": [
+        {
+          "id": "0384dcd4-26e8-46c7-b48d-50ba7279776b",
+          "nativeSessionId": "fixture-887595",
+          "contextPolicy": "auto",
+          "context": {
+            "effective": "fresh",
+            "reason": "auto: no earlier attempt of this task, so new work starts fresh",
+            "predecessorAttemptId": null,
+            "predecessorSessionId": null,
+            "checkpointArtifactId": null
+          },
+          "transcriptPath": "/tmp/claude-1000/-home-phagmaier-Code-metatron/6ce4ab7d-166e-4c67-8c1d-c22fbd6a6932/scratchpad/demo/data/pi-sessions/8789bd7d-cd5b-43a2-bb48-e22eb18ab4b4"
+        }
+      ]
+    }
+  },
+  "piFresh": {
+    "tasks": [
+      "AWAITING_REVIEW"
+    ],
+    "attempts": [
+      {
+        "id": "8789bd7d-cd5b-43a2-bb48-e22eb18ab4b4",
+        "status": "interrupted",
+        "worktreePath": "/tmp/claude-1000/-home-phagmaier-Code-metatron/6ce4ab7d-166e-4c67-8c1d-c22fbd6a6932/scratchpad/demo/data/worktrees/7473112c-4c5e-4da7-8b2d-b9bfd7f35200-579a7101-00d3-42a3-bf5f-a19116ec094d/checkout"
+      },
+      {
+        "id": "a7101a3e-3d5b-4570-892c-ddc03f4b6c9c",
+        "status": "completed",
+        "worktreePath": "/tmp/claude-1000/-home-phagmaier-Code-metatron/6ce4ab7d-166e-4c67-8c1d-c22fbd6a6932/scratchpad/demo/data/worktrees/7473112c-4c5e-4da7-8b2d-b9bfd7f35200-70e1145e-12c7-4e3c-8d2f-b3678283df73/checkout"
+      }
+    ],
+    "sessions": [
+      {
+        "id": "0384dcd4-26e8-46c7-b48d-50ba7279776b",
+        "nativeSessionId": "fixture-887595",
+        "contextPolicy": "auto",
+        "context": {
+          "effective": "fresh",
+          "reason": "auto: no earlier attempt of this task, so new work starts fresh",
+          "predecessorAttemptId": null,
+          "predecessorSessionId": null,
+          "checkpointArtifactId": null
+        },
+        "transcriptPath": "/tmp/claude-1000/-home-phagmaier-Code-metatron/6ce4ab7d-166e-4c67-8c1d-c22fbd6a6932/scratchpad/demo/data/pi-sessions/8789bd7d-cd5b-43a2-bb48-e22eb18ab4b4"
+      },
+      {
+        "id": "2a7b1f9e-2f58-4025-a0b1-9716db1ba5bb",
+        "nativeSessionId": "fixture-887661",
+        "contextPolicy": "auto",
+        "context": {
+          "effective": "fresh",
+          "reason": "auto: This Pi adapter does not reopen native sessions; fresh session with a checkpoint of attempt 8789bd7d-cd5b-43a2-bb48-e22eb18ab4b4",
+          "predecessorAttemptId": "8789bd7d-cd5b-43a2-bb48-e22eb18ab4b4",
+          "predecessorSessionId": "0384dcd4-26e8-46c7-b48d-50ba7279776b",
+          "checkpointArtifactId": "924ad990-ace4-441a-b50f-c303d330b9a7"
+        },
+        "transcriptPath": "/tmp/claude-1000/-home-phagmaier-Code-metatron/6ce4ab7d-166e-4c67-8c1d-c22fbd6a6932/scratchpad/demo/data/pi-sessions/a7101a3e-3d5b-4570-892c-ddc03f4b6c9c"
+      }
+    ]
+  },
+  "piCardText": "Native pi worker · Pi Backend Engineer · exited\nfixture-887661\nContext auto → fresh: auto: This Pi adapter does not reopen native sessions; fresh session with a checkpoint of attempt 8789bd7d-cd5b-43a2-bb48-e22eb18ab4b4\nContinues from session 0384dcd4 · attempt 8789bd7d · checkpoint 924ad990 in View report\nTranscript: /tmp/claude-1000/-home-phagmaier-Code-metatron/6ce4ab7d-166e-4c67-8c1d-c22fbd6a6932/scratchpad/demo/data/pi-sessions/a7101a3e-3d5b-4570-892c-ddc03f4b6c9c",
+  "fakeResume": {
+    "tasks": [
+      "AWAITING_REVIEW"
+    ],
+    "attempts": [
+      {
+        "id": "2e4c0de9-e945-4d22-b007-113fe9a360fe",
+        "status": "failed",
+        "worktreePath": null
+      },
+      {
+        "id": "219dd821-3b22-498f-b27c-2a8523a29cf2",
+        "status": "completed",
+        "worktreePath": null
+      }
+    ],
+    "sessions": [
+      {
+        "id": "865fd4a4-2804-4a03-8936-0d2cfacd6735",
+        "nativeSessionId": "fake-session-4236ceb2-af76-48bc-a649-f37817fc5b22-1",
+        "contextPolicy": "auto",
+        "context": {
+          "effective": "fresh",
+          "reason": "auto: no earlier attempt of this task, so new work starts fresh",
+          "predecessorAttemptId": null,
+          "predecessorSessionId": null,
+          "checkpointArtifactId": null
+        },
+        "transcriptPath": null
+      },
+      {
+        "id": "bf15dd6b-8356-49ef-9680-ced8f6ad5b72",
+        "nativeSessionId": "fake-session-4236ceb2-af76-48bc-a649-f37817fc5b22-1",
+        "contextPolicy": "resume",
+        "context": {
+          "effective": "resume",
+          "reason": "Explicit resume of session 865fd4a4-2804-4a03-8936-0d2cfacd6735",
+          "predecessorAttemptId": "2e4c0de9-e945-4d22-b007-113fe9a360fe",
+          "predecessorSessionId": "865fd4a4-2804-4a03-8936-0d2cfacd6735",
+          "checkpointArtifactId": null
+        },
+        "transcriptPath": null
+      }
+    ]
+  },
+  "restart": {
+    "sessionsUnchanged": true,
+    "transcriptShown": true
+  },
+  "narrowOverflow": false,
+  "result": "PASS"
+}

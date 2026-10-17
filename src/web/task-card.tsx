@@ -11,6 +11,11 @@ import {
 import type { Dispatch } from "../shared/orchestration.ts";
 import { candidateSchema } from "../shared/worktrees.ts";
 import { readApi, writeApi } from "./api.ts";
+import {
+  ContextChoice,
+  type ContextChoiceValue,
+  SessionContext,
+} from "./context-panel.tsx";
 import { IntegrationPanel } from "./integration-panel.tsx";
 import { RecoveryPanel } from "./recovery-panel.tsx";
 import { ReviewPanel, useReviewHistory } from "./review-panel.tsx";
@@ -21,6 +26,7 @@ export function TaskCard({
   prerequisites,
   run,
   session,
+  sessions,
   dispatch,
   attempt,
   evidence,
@@ -34,6 +40,7 @@ export function TaskCard({
   prerequisites: Task[];
   run: Run;
   session: Session | undefined;
+  sessions: Session[];
   dispatch: Dispatch | undefined;
   attempt: Attempt | undefined;
   evidence: Event | undefined;
@@ -76,6 +83,10 @@ export function TaskCard({
     onError,
   );
   const [scenario, setScenario] = useState("success");
+  const [context, setContext] = useState<ContextChoiceValue>({
+    contextPolicy: "auto",
+    resumeSessionId: null,
+  });
   const [priority, setPriority] = useState(task.priority);
   const [report, setReport] = useState("");
   const [busy, setBusy] = useState(false);
@@ -196,6 +207,8 @@ export function TaskCard({
           {session.recovery !== "none" && (
             <span className="warning"> · {session.recovery}</span>
           )}
+          <br />
+          <SessionContext session={session} />
         </p>
       )}
       {session && (
@@ -220,6 +233,11 @@ export function TaskCard({
             ))}
           </select>
         </label>
+        <ContextChoice
+          value={context}
+          sessions={sessions}
+          onChange={setContext}
+        />
         {run.execution === "fake" && (
           <label>
             Simulation
@@ -240,11 +258,20 @@ export function TaskCard({
           disabled={
             busy ||
             run.status !== "active" ||
-            !["BACKLOG", "READY", "QUEUED", "WAITING_DEPENDENCY"].includes(
-              task.status,
-            ) ||
+            ![
+              "BACKLOG",
+              "READY",
+              "QUEUED",
+              "WAITING_DEPENDENCY",
+              "WAITING_HUMAN",
+            ].includes(task.status) ||
             run.mode === "chat_plan" ||
             !profileId
+          }
+          title={
+            task.status === "WAITING_HUMAN"
+              ? "Continue after every Needs You blocker for this task is resolved"
+              : undefined
           }
           onClick={() =>
             void act(() =>
@@ -252,11 +279,12 @@ export function TaskCard({
                 taskId: task.id,
                 profileId,
                 scenario,
+                ...context,
               }),
             )
           }
         >
-          Assign / approve
+          {task.status === "WAITING_HUMAN" ? "Continue" : "Assign / approve"}
         </button>
         {reviewable && (
           <button
@@ -355,6 +383,7 @@ export function TaskCard({
           session={session}
           profileId={profileId}
           scenario={scenario}
+          context={context}
           onError={onError}
         />
       )}

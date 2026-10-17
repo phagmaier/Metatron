@@ -153,7 +153,7 @@ test("SQLite enforces WAL, foreign keys and append-only event history", async ()
   try {
     assert.equal(db.prepare("PRAGMA journal_mode").get()?.journal_mode, "wal");
     assert.equal(db.prepare("PRAGMA foreign_keys").get()?.foreign_keys, 1);
-    assert.equal(db.prepare("PRAGMA user_version").get()?.user_version, 6);
+    assert.equal(db.prepare("PRAGMA user_version").get()?.user_version, 7);
     assert.throws(
       () => db.exec("UPDATE events SET type = 'changed'"),
       /append-only/,
@@ -500,7 +500,7 @@ test("migration v2 preserves v1 runs while correcting legacy mode names and save
     assert.deepEqual(f.store.events(), before);
     assert.equal(
       f.store.db.prepare("PRAGMA user_version").get()?.user_version,
-      6,
+      7,
     );
   } finally {
     await f.close();

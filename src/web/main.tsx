@@ -23,6 +23,7 @@ import {
 import { hasNativeLead } from "../shared/native.ts";
 import { type Dispatch, dispatchSchema } from "../shared/orchestration.ts";
 import { readApi } from "./api.ts";
+import { SessionContext } from "./context-panel.tsx";
 import { LeadPanel } from "./lead-panel.tsx";
 import { NeedsYouPanel } from "./needs-you-panel.tsx";
 import { ProjectForms } from "./project-forms.tsx";
@@ -354,6 +355,13 @@ function App() {
                                       attempt.id === session.attemptId,
                                   )?.taskId === task.id,
                               )}
+                              sessions={runSessions.filter(
+                                (session) =>
+                                  runAttempts.find(
+                                    (attempt) =>
+                                      attempt.id === session.attemptId,
+                                  )?.taskId === task.id,
+                              )}
                               dispatch={dispatches.find(
                                 (d) => d.taskId === task.id,
                               )}
@@ -411,6 +419,7 @@ function App() {
                             {session.nativeSessionId ??
                               "Native identity pending"}
                           </p>
+                          <SessionContext session={session} />
                         </div>
                         <div>
                           <code>{session.state}</code>

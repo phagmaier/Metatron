@@ -534,17 +534,19 @@ export class Engine {
       },
     );
   }
-  // A reference (a reviewer's context packet) is kept beside the attempt's report.
+  // A reference (a context packet or checkpoint) is kept beside the attempt's
+  // report; `name` separates references one attempt may both have.
   async saveReport(
     task: Task,
     attemptId: string,
     report: string,
     reference?: string,
+    name = "reference",
   ) {
     const path = join(
       this.directory,
       "artifacts",
-      reference ? `${attemptId}-reference.txt` : `${attemptId}.txt`,
+      reference ? `${attemptId}-${name}.txt` : `${attemptId}.txt`,
     );
     await mkdir(dirname(path), { recursive: true, mode: 0o700 });
     await writeFile(path, report, { flag: "wx", mode: 0o600 });

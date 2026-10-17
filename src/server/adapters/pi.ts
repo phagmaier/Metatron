@@ -195,12 +195,13 @@ export class PiAdapter implements HarnessAdapter {
       );
     const gateway =
       data.toolEndpoint && token ? { url: data.toolEndpoint, token } : null;
+    const transcriptPath = join(this.directory, "pi-sessions", data.attemptId);
     const rpc = await this.launch(
       data.cwd,
       data.permission === "read_only"
         ? "read,grep,find,ls"
         : "read,grep,find,ls,edit,write",
-      join(this.directory, "pi-sessions", data.attemptId),
+      transcriptPath,
       data.permission,
       data.roleInstructions,
       gateway,
@@ -256,6 +257,7 @@ export class PiAdapter implements HarnessAdapter {
       const managed: ManagedSession = {
         nativeSessionId: state.sessionId,
         adapter: "pi",
+        transcriptPath,
         input: data,
         ...(rpc.child.pid ? { processId: rpc.child.pid } : {}),
       };
