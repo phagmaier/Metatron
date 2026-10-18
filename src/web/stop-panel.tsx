@@ -62,10 +62,10 @@ export function EmergencyStop({ onError }: { onError: (e: string) => void }) {
         </button>
       </div>
       <p className="warning">
-        Best effort: pauses scheduling in every run and closes only the Pi and
-        Codex processes this app started; manual harness sessions are never
-        targeted. External descendant processes and filesystem changes already
-        made may remain. Interrupted work waits for an explicit retry decision.
+        Best effort: pauses scheduling in every run and closes only native
+        processes this app started; manual harness sessions are never targeted.
+        External descendant processes and filesystem changes already made may
+        remain. Interrupted work waits for an explicit retry decision.
       </p>
       {result && <p role="status">{result}</p>}
     </section>

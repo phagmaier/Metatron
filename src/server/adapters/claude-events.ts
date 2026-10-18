@@ -31,7 +31,7 @@ const partial = z.object({
     message: z.object({ id: z.string(), model: z.string() }).optional(),
     content_block: block.optional(),
     delta: z
-      .object({ type: z.string(), text: z.string().optional() })
+      .object({ type: z.string().optional(), text: z.string().optional() })
       .optional(),
   }),
 });
@@ -47,6 +47,7 @@ const result = z.object({
 
 export class ClaudeEvents {
   initialized = false;
+  effortVerified = false;
   result: "success" | "failed" | undefined;
   private failed = false;
   private readonly streamed = new Set<string>();
@@ -72,6 +73,7 @@ export class ClaudeEvents {
     this.cwd = cwd;
     this.models = models;
     this.effort = effort;
+    this.effortVerified = effort === null;
     this.allowedTools = allowedTools;
     this.gateway = gateway;
   }
@@ -81,6 +83,11 @@ export class ClaudeEvents {
           "Unrecognized native event headers were ignored (bounded, contents redacted)",
         ]
       : [];
+  }
+  observeEffort(level: string | null | undefined): boolean {
+    this.effortVerified = this.effort === null || level === this.effort;
+    if (!this.effortVerified) this.failed = true;
+    return this.effortVerified;
   }
   private text(text: string): SessionEvent[] {
     const events: SessionEvent[] = [];
@@ -139,7 +146,9 @@ export class ClaudeEvents {
         if (
           resolve(data.cwd) !== this.cwd ||
           !this.models.has(data.model) ||
-          (this.effort !== null && data.effort !== this.effort) ||
+          (this.effort !== null &&
+            data.effort !== undefined &&
+            data.effort !== this.effort) ||
           data.tools.some((name) => !this.allowedTools.has(name)) ||
           data.skills.length ||
           data.plugins.length ||
@@ -153,6 +162,8 @@ export class ClaudeEvents {
             "Claude native identity or isolated configuration did not match the requested session",
           );
         this.initialized = true;
+        // Headless init may omit effort; native tool/Stop hooks must then prove it.
+        if (data.effort !== undefined) this.observeEffort(data.effort);
         return [];
       }
       const subtype = z.object({ subtype: z.string() }).safeParse(value);
@@ -178,6 +189,16 @@ export class ClaudeEvents {
           "Claude emitted an invalid streaming frame",
         );
       const event = parsed.data.event;
+      // message_delta carries stop metadata without a delta.type; content deltas do not.
+      if (
+        event.type === "content_block_delta" &&
+        (!event.delta?.type ||
+          (event.delta.type === "text_delta" && event.delta.text === undefined))
+      )
+        throw new DomainError(
+          "CONFLICT",
+          "Claude emitted an invalid content delta",
+        );
       if (event.type === "message_start" && event.message) {
         if (!this.models.has(event.message.model))
           throw new DomainError(
@@ -295,6 +316,7 @@ export class ClaudeEvents {
         data.subtype === "success" &&
         !data.is_error &&
         !this.failed &&
+        this.effortVerified &&
         !data.queued_turn_count
           ? "success"
           : "failed";

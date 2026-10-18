@@ -11,8 +11,10 @@ import {
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs, promisify } from "node:util";
+import { query } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { ClaudeAdapter } from "../src/server/adapters/claude.ts";
+import { spawnClaude } from "../src/server/adapters/claude-process.ts";
 import type {
   ManagedSession,
   SessionEvent,
@@ -75,7 +77,80 @@ async function metadata() {
 }
 const before = await metadata();
 const head = await fixture.git("rev-parse", "HEAD");
-const adapter = new ClaudeAdapter(directory);
+let workerLaunch: { executable: string; env: NodeJS.ProcessEnv } | undefined;
+const nativeEvidence: {
+  sessionId: string;
+  type: string;
+  model?: string;
+  effort?: string | null;
+  subtype?: string;
+  tools?: string[];
+  permissionMode?: string;
+  skillCount?: number;
+  pluginCount?: number;
+  mcpCount?: number;
+  plugins?: string[];
+}[] = [];
+const adapter = new ClaudeAdapter(directory, {
+  spawn: (options) => {
+    workerLaunch ??= { executable: options.command, env: { ...options.env } };
+    return spawnClaude(options);
+  },
+  query: (input) => {
+    // Record native effort only; never retain hook inputs or transcript paths.
+    for (const matchers of Object.values(input.options.hooks ?? {}))
+      for (const matcher of matchers ?? [])
+        matcher.hooks = matcher.hooks.map(
+          (hook) => async (event, id, control) => {
+            nativeEvidence.push({
+              sessionId: event.session_id,
+              type: `hook-${event.hook_event_name}`,
+              effort: event.effort?.level ?? null,
+            });
+            return hook(event, id, control);
+          },
+        );
+    const native = query(input);
+    return {
+      supportedModels: () => native.supportedModels(),
+      accountInfo: () => native.accountInfo(),
+      close: () => native.close(),
+      async *[Symbol.asyncIterator]() {
+        for await (const message of native) {
+          if (message.type === "system" && message.subtype === "init")
+            nativeEvidence.push({
+              sessionId: message.session_id,
+              type: "init",
+              model: message.model,
+              effort: message.effort ?? null,
+              tools: message.tools,
+              permissionMode: message.permissionMode,
+              skillCount: message.skills.length,
+              pluginCount: message.plugins.length,
+              mcpCount: message.mcp_servers.length,
+              plugins: message.plugins.map((plugin) => plugin.name),
+            });
+          if (
+            message.type === "stream_event" &&
+            message.event.type === "message_start"
+          )
+            nativeEvidence.push({
+              sessionId: message.session_id,
+              type: "stream-model",
+              model: message.event.message.model,
+            });
+          if (message.type === "result")
+            nativeEvidence.push({
+              sessionId: message.session_id,
+              type: "result",
+              subtype: message.subtype,
+            });
+          yield message;
+        }
+      },
+    };
+  },
+});
 const sessions: ManagedSession[] = [];
 const liveResults: {
   operation: string;
@@ -83,13 +158,22 @@ const liveResults: {
   events: SessionEvent[];
   exit: { code: number | null; signal: string | null };
 }[] = [];
+let failedTurn:
+  | { nativeSessionId: string; mode: string; events: SessionEvent[] }
+  | undefined;
 let success = false;
 try {
   const exec = promisify(execFile);
+  const capabilities = await adapter.discover();
+  assert.ok(
+    workerLaunch,
+    "Discovery did not launch an owned Claude executable",
+  );
+  const executable = workerLaunch.executable;
   const version = (
-    await exec("claude", ["--version"], {
+    await exec(executable, ["--version"], {
       timeout: 10_000,
-      env: { ...process.env, CLAUDE_CONFIG_DIR: join(directory, "cli-probe") },
+      env: workerLaunch.env,
     })
   ).stdout.trim();
   const sdkVersion = z
@@ -105,7 +189,10 @@ try {
         ),
       ),
     ).version;
-  const capabilities = await adapter.discover();
+  assert.equal(
+    workerLaunch.env.CLAUDE_CONFIG_DIR,
+    join(directory, "claude-config"),
+  );
   console.log(JSON.stringify({ version, sdkVersion, capabilities }, null, 2));
   const blocked = values["allow-live"] && capabilities.authenticated === false;
   if (values["allow-live"] && !blocked) {
@@ -137,29 +224,58 @@ try {
     const collect = async (
       managed: ManagedSession,
       text: string,
-      stopOnApproval = false,
+      mode: "read" | "deny" | "approve" | "cancel" = "read",
     ) => {
       const events: SessionEvent[] = [];
-      let requested = false;
+      const requests: string[] = [];
+      let cancelledActive = false;
+      failedTurn = { nativeSessionId: managed.nativeSessionId, mode, events };
       for await (const event of adapter.prompt(managed, text)) {
         events.push(event);
         if (event.type === "approval_requested") {
-          assert.equal(
-            stopOnApproval,
-            true,
-            "A reader cannot gain a mutation approval surface",
+          assert.ok(
+            mode === "deny" || mode === "approve",
+            "Unexpected permission surface",
           );
-          requested = true;
+          requests.push(event.nativeRequestId);
           assert.equal(
             await readFile(join(fixture.directory, "README.md"), "utf8"),
             "# Disposable fixture\n",
           );
-          await adapter.respondToApproval(
-            managed,
-            event.nativeRequestId,
-            "deny",
-          );
-          await adapter.cancel(managed);
+          if (mode === "approve" && requests.length === 1) {
+            await assert.rejects(
+              access(join(fixture.directory, "approved.txt")),
+            );
+            await adapter.respondToApproval(
+              managed,
+              event.nativeRequestId,
+              "approve",
+            );
+          } else {
+            assert.ok(
+              requests.length <= 2,
+              "Model attempted an unauthorized retry",
+            );
+            if (mode === "approve") {
+              assert.equal(
+                await readFile(join(fixture.directory, "approved.txt"), "utf8"),
+                "Approved once\n",
+              );
+              await assert.rejects(
+                adapter.respondToApproval(
+                  managed,
+                  requests[0] ?? "",
+                  "approve",
+                ),
+              );
+            }
+            await adapter.respondToApproval(
+              managed,
+              event.nativeRequestId,
+              "deny",
+            );
+            if (mode === "deny") await adapter.cancel(managed);
+          }
           await assert.rejects(
             adapter.respondToApproval(
               managed,
@@ -168,19 +284,61 @@ try {
             ),
           );
         }
+        if (
+          mode === "cancel" &&
+          event.type === "text_delta" &&
+          !cancelledActive
+        ) {
+          assert.ok(
+            !nativeEvidence.some(
+              (entry) =>
+                entry.sessionId === managed.nativeSessionId &&
+                entry.type === "result",
+            ),
+            "Generation already completed before cancellation",
+          );
+          assert.ok(managed.processId);
+          process.kill(managed.processId, 0);
+          cancelledActive = true;
+          await adapter.cancel(managed);
+        }
       }
-      if (stopOnApproval)
+      if (mode === "deny" || mode === "cancel") {
         assert.equal(
-          requested,
+          mode === "deny" ? requests.length === 1 : cancelledActive,
           true,
-          "Native model did not exercise the requested permission callback; do not claim it was verified",
         );
-      else {
-        const text = events
-          .filter((event) => event.type === "text_delta")
-          .map((event) => event.text)
-          .join("");
-        assert.ok(text.includes("Disposable fixture"));
+        assert.deepEqual(events.at(-1), {
+          type: "turn_completed",
+          nativeStatus: "interrupted",
+        });
+        await assert.rejects(
+          adapter.resume(managed.nativeSessionId, {
+            ...managed.input,
+            contextPolicy: "resume",
+          }),
+          { code: "POLICY_DENIED" },
+        );
+      } else {
+        if (mode === "read") {
+          const text = events
+            .flatMap((event) =>
+              event.type === "text_delta" ? [event.text] : [],
+            )
+            .join("");
+          assert.ok(text.includes("Disposable fixture"));
+        } else {
+          assert.equal(
+            requests.length,
+            2,
+            "Both independent native Write callbacks must be observed",
+          );
+          assert.equal(
+            await readFile(join(fixture.directory, "approved.txt"), "utf8"),
+            "Approved once\n",
+          );
+          await assert.rejects(access(join(fixture.directory, "denied.txt")));
+        }
         assert.ok(
           events.some(
             (event) =>
@@ -189,7 +347,36 @@ try {
           ),
         );
         assert.ok(!events.some((event) => event.type === "session_error"));
+        assert.deepEqual(await adapter.exit(managed), {
+          code: 0,
+          signal: null,
+        });
       }
+      const init = nativeEvidence.findLast(
+        (entry) =>
+          entry.sessionId === managed.nativeSessionId && entry.type === "init",
+      );
+      assert.ok(init?.model);
+      if (init.effort !== null) assert.equal(init.effort, base.thinking);
+      else if (mode !== "cancel")
+        assert.ok(
+          nativeEvidence.some(
+            (entry) =>
+              entry.sessionId === managed.nativeSessionId &&
+              entry.type.startsWith("hook-") &&
+              entry.effort === base.thinking,
+          ),
+          "Requested effort was not proven by native initialization or a native hook",
+        );
+      assert.ok(
+        nativeEvidence.some(
+          (entry) =>
+            entry.sessionId === managed.nativeSessionId &&
+            entry.type === "stream-model" &&
+            entry.model === init.model,
+        ),
+      );
+      failedTurn = undefined;
       return events;
     };
     const first = await adapter.startSession(base);
@@ -235,7 +422,7 @@ try {
     const writerEvents = await collect(
       writer,
       writer.input.contextPacket,
-      true,
+      "deny",
     );
     liveResults.push({
       operation: "native-permission-denial-and-cancel",
@@ -245,8 +432,56 @@ try {
     });
     await adapter.dispose(writer);
     sessions.pop();
+    const approvedWriter = await adapter.startSession({
+      ...base,
+      taskId: crypto.randomUUID(),
+      attemptId: crypto.randomUUID(),
+      permission: "workspace_write",
+      roleInstructions:
+        "Use only Write. First Write approved.txt with exactly 'Approved once\\n'. After it succeeds, Write denied.txt with 'Must not exist\\n'. No other tools, edits, retries, shell or delegation. Report completion/denial concisely.",
+      contextPacket:
+        "Perform the two sequential Writes. The owner approves only the first, and denies the second.",
+    });
+    sessions.push(approvedWriter);
+    const approvedEvents = await collect(
+      approvedWriter,
+      approvedWriter.input.contextPacket,
+      "approve",
+    );
+    liveResults.push({
+      operation: "native-approved-write-and-independent-denial",
+      nativeSessionId: approvedWriter.nativeSessionId,
+      events: approvedEvents,
+      exit: await adapter.exit(approvedWriter),
+    });
+    await adapter.dispose(approvedWriter);
+    sessions.pop();
+    const active = await adapter.startSession({
+      ...base,
+      taskId: crypto.randomUUID(),
+      attemptId: crypto.randomUUID(),
+      roleInstructions:
+        "Do not use tools. Produce a long numbered list of 1000 distinct sentences about sorting algorithms, one sentence per line. Begin immediately; do not summarize.",
+      contextPacket:
+        "Generate the numbered list now. The owner will interrupt generation.",
+    });
+    sessions.push(active);
+    const activeEvents = await collect(
+      active,
+      active.input.contextPacket,
+      "cancel",
+    );
+    liveResults.push({
+      operation: "active-generation-cancellation",
+      nativeSessionId: active.nativeSessionId,
+      events: activeEvents,
+      exit: await adapter.exit(active),
+    });
+    await adapter.dispose(active);
+    sessions.pop();
   }
-  assert.equal(await fixture.git("status", "--porcelain"), "");
+  const expectedStatus = liveResults.length ? "?? approved.txt" : "";
+  assert.equal(await fixture.git("status", "--porcelain"), expectedStatus);
   assert.equal(await fixture.git("rev-parse", "HEAD"), head);
   assert.equal(
     await readFile(join(fixture.directory, "README.md"), "utf8"),
@@ -258,12 +493,54 @@ try {
     "Personal harness configuration metadata changed",
   );
   await fixture.verify(async () =>
-    assert.equal(await fixture.git("status", "--porcelain"), ""),
+    assert.equal(await fixture.git("status", "--porcelain"), expectedStatus),
   );
   await rm(directory, { recursive: true });
   await writeFile(
     output,
-    `${JSON.stringify({ status: blocked ? "BLOCKED" : values["allow-live"] ? "LIVE_PASS" : "PROBE_ONLY", version, sdkVersion, capabilities, liveReadiness: capabilities.authenticated === false ? "BLOCKED: privately configure ANTHROPIC_API_KEY or an approved SDK cloud-provider environment; personal subscription/login credentials are not copied or reused" : "Unknown until an authorized provider turn succeeds", ownerCommand: blocked ? "mise x -- pnpm test:live:claude --allow-live --model sonnet --thinking low --output /tmp/m8-claude-live-evidence.json" : undefined, modelPromptsSubmitted: liveResults.length, liveResults, checks: { nativeSdkControlHandshake: capabilities.installed && capabilities.models.length > 0, ownerCheckoutUnchanged: true, personalConfigMetadataUnchanged: true, fixtureRemovedAfterChecks: true }, limits: { probeDoesNotEstablishModelEntitlement: true, noPersonalSubscriptionCredentialReuse: true, sameCheckoutResumeOnly: true, noClaudeLeadClaim: true, noOsSandboxClaim: true } }, null, 2)}\n`,
+    `${JSON.stringify(
+      {
+        status: blocked
+          ? "BLOCKED"
+          : values["allow-live"]
+            ? "LIVE_PASS"
+            : "PROBE_ONLY",
+        executable,
+        version,
+        sdkVersion,
+        capabilities,
+        nativeEvidence,
+        liveReadiness:
+          capabilities.authenticated === false
+            ? "BLOCKED: privately supply the selected setup-token to the app process, or explicitly select an approved API/cloud route. No personal credential extraction."
+            : "Configured route is unverified until an authorized model turn succeeds",
+        ownerCommand: blocked
+          ? "mise x -- pnpm test:live:claude --allow-live --model sonnet --thinking low --output /tmp/m8-claude-live-evidence-new.json"
+          : undefined,
+        modelPromptsSubmitted: liveResults.length,
+        liveResults,
+        checks: {
+          nativeSdkControlHandshake:
+            capabilities.installed && capabilities.models.length > 0,
+          fixtureHeadAndReadmeUnchanged: true,
+          personalConfigMetadataUnchanged: true,
+          fixtureRemovedAfterChecks: true,
+          approvedDisposableWrite: liveResults.length
+            ? "approved.txt: Approved once\\n"
+            : undefined,
+        },
+        limits: {
+          probeDoesNotEstablishModelEntitlement: true,
+          noPersonalCredentialExtraction: true,
+          subscriptionProductPolicyNotResolvedByProbe: true,
+          sameCheckoutResumeOnly: true,
+          noClaudeLeadClaim: true,
+          noOsSandboxClaim: true,
+        },
+      },
+      null,
+      2,
+    )}\n`,
     { flag: "wx", mode: 0o600 },
   );
   console.log(
@@ -271,6 +548,25 @@ try {
   );
   if (blocked) process.exitCode = 2;
   success = true;
+} catch (error) {
+  await writeFile(
+    output,
+    `${JSON.stringify(
+      {
+        status: "FAILED",
+        nativeEvidence,
+        liveResults,
+        failedTurn,
+        retainedAppState: directory,
+        retainedFixture: fixture.directory,
+        noAutomaticReplay: true,
+      },
+      null,
+      2,
+    )}\n`,
+    { flag: "wx", mode: 0o600 },
+  );
+  throw error;
 } finally {
   for (const session of sessions) await adapter.dispose(session);
   if (!success)

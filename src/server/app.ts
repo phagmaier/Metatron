@@ -21,6 +21,7 @@ export async function startApp(options: {
     pi?: HarnessAdapter;
     codex?: HarnessAdapter;
     claude?: HarnessAdapter;
+    opencode?: HarnessAdapter;
   };
 }) {
   const store = new Store(options.databasePath ?? appLocations().database);
@@ -162,6 +163,9 @@ export async function startApp(options: {
     engine = new Engine(store, directory, options.adapters?.pi, {
       ...(options.adapters?.codex ? { codex: options.adapters.codex } : {}),
       ...(options.adapters?.claude ? { claude: options.adapters.claude } : {}),
+      ...(options.adapters?.opencode
+        ? { opencode: options.adapters.opencode }
+        : {}),
       gatewayUrl: `${origin}/mcp`,
     });
     // Observation only, before any owner action can reach a recovered task.

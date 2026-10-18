@@ -12,13 +12,24 @@ import {
 import { fakeSessionInput } from "./helpers/domain-fixture.ts";
 import { createGitFixture } from "./helpers/git-fixture.ts";
 
-const originalKey = process.env.ANTHROPIC_API_KEY;
+const authKeys = [
+  "ANTHROPIC_API_KEY",
+  "CLAUDE_CODE_OAUTH_TOKEN",
+  "CLAUDE_CODE_USE_BEDROCK",
+  "CLAUDE_CODE_USE_VERTEX",
+  "CLAUDE_CODE_USE_FOUNDRY",
+  "ANTHROPIC_AUTH_TOKEN",
+] as const;
+const originalAuth = new Map(authKeys.map((key) => [key, process.env[key]]));
 before(() => {
+  for (const key of authKeys) delete process.env[key];
   process.env.ANTHROPIC_API_KEY = "inert-sdk-consumer-fixture-not-a-real-key";
 });
 after(() => {
-  if (originalKey === undefined) delete process.env.ANTHROPIC_API_KEY;
-  else process.env.ANTHROPIC_API_KEY = originalKey;
+  for (const [key, value] of originalAuth) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
 });
 async function collect(
   events: AsyncIterable<SessionEvent>,
@@ -247,6 +258,167 @@ for (const identity of ["cwd", "model", "session", "effort"] as const) {
         type: "turn_completed",
         nativeStatus: "failed",
       });
+      await f.adapter.dispose(session);
+    });
+  });
+}
+
+test("Claude accepts native message-delta metadata between tool use and authoritative completion", async () => {
+  const f = await fixture({
+    script: async function* (context) {
+      yield context.header("assistant", {
+        message: {
+          id: "tool-message",
+          model: context.model,
+          content: [{ type: "tool_use", id: "read-1", name: "Read" }],
+        },
+      });
+      yield context.header("stream_event", {
+        event: {
+          type: "message_delta",
+          delta: { stop_reason: "tool_use", stop_sequence: null },
+        },
+      });
+      await context.tool("Read", { file_path: join(context.cwd, "README.md") });
+      yield context.header("user", {
+        message: {
+          content: [
+            {
+              type: "tool_result",
+              tool_use_id: "read-1",
+              content: "# Disposable fixture",
+            },
+          ],
+        },
+      });
+      yield context.header("assistant", {
+        message: {
+          id: "answer-message",
+          model: context.model,
+          content: [{ type: "text", text: "# Disposable fixture" }],
+        },
+      });
+      yield context.header("stream_event", {
+        event: {
+          type: "message_delta",
+          delta: { stop_reason: "end_turn", stop_sequence: null },
+        },
+      });
+      yield context.result();
+    },
+  });
+  await f.git.verify(async () => {
+    const session = await f.adapter.startSession(f.input);
+    const events = await collect(
+      f.adapter.prompt(session, "Read the fixture heading"),
+    );
+    assert.deepEqual(
+      events.filter((event) => event.type === "text_delta"),
+      [{ type: "text_delta", text: "# Disposable fixture" }],
+    );
+    assert.ok(
+      events.some(
+        (event) => event.type === "tool_finished" && event.toolId === "read-1",
+      ),
+    );
+    assert.deepEqual(events.at(-1), {
+      type: "turn_completed",
+      nativeStatus: "completed",
+    });
+    await f.adapter.dispose(session);
+  });
+});
+
+for (const delta of [{ text: "must not escape" }, { type: "text_delta" }]) {
+  test(`Claude refuses malformed content deltas: ${"type" in delta ? "missing text" : "missing type"}`, async () => {
+    const f = await fixture({
+      script: async function* (context) {
+        yield context.header("stream_event", {
+          event: { type: "content_block_delta", delta },
+        });
+        yield context.result();
+      },
+    });
+    await f.git.verify(async () => {
+      const session = await f.adapter.startSession(f.input);
+      const events = await collect(f.adapter.prompt(session, "Inspect"));
+      assert.equal(
+        events.some((event) => event.type === "text_delta"),
+        false,
+      );
+      assert.deepEqual(events.at(-1), {
+        type: "turn_completed",
+        nativeStatus: "failed",
+      });
+      await f.adapter.dispose(session);
+    });
+  });
+}
+
+for (const mode of [
+  "valid-read",
+  "wrong-write",
+  "missing-write",
+  "unproven-result",
+  "verified-stop",
+] as const) {
+  test(`Claude headless effort evidence: ${mode}`, async () => {
+    const f = await fixture({
+      omitInitEffort: true,
+      hookEffort:
+        mode === "wrong-write"
+          ? "low"
+          : mode === "missing-write"
+            ? null
+            : "high",
+      script: async function* (context) {
+        if (mode === "valid-read")
+          await context.tool("Read", {
+            file_path: join(context.cwd, "README.md"),
+          });
+        if (mode === "wrong-write" || mode === "missing-write")
+          await context.tool("Write", {
+            file_path: join(context.cwd, "unapproved.txt"),
+            content: "Must not exist",
+          });
+        if (mode === "verified-stop")
+          for (const matcher of context.options.hooks?.Stop ?? [])
+            for (const hook of matcher.hooks)
+              await hook(
+                {
+                  hook_event_name: "Stop",
+                  session_id: context.sessionId,
+                  cwd: context.cwd,
+                  transcript_path: "fixture-owned",
+                  stop_hook_active: false,
+                  effort: { level: "high" },
+                },
+                undefined,
+                { signal: new AbortController().signal },
+              );
+        yield context.result();
+      },
+    });
+    await f.git.verify(async () => {
+      const session = await f.adapter.startSession({
+        ...f.input,
+        permission: "workspace_write",
+      });
+      const events = await collect(f.adapter.prompt(session, "Inspect"));
+      assert.deepEqual(events.at(-1), {
+        type: "turn_completed",
+        nativeStatus:
+          mode === "valid-read" || mode === "verified-stop"
+            ? "completed"
+            : "failed",
+      });
+      assert.equal(
+        events.some((event) => event.type === "approval_requested"),
+        false,
+      );
+      await assert.rejects(access(join(f.git.directory, "unapproved.txt")));
+      if (mode === "wrong-write" || mode === "missing-write")
+        assert.equal(f.sdk.decisions[0]?.behavior, "deny");
       await f.adapter.dispose(session);
     });
   });
@@ -596,7 +768,7 @@ test("Claude exposes typed provider authentication failures without native error
   });
 });
 
-test("Claude no-prompt discovery reports absent approved API authentication and refuses model submission", async () => {
+test("Claude no-prompt discovery reports absent authentication and refuses model submission", async () => {
   const f = await fixture();
   await f.git.verify(async () => {
     delete process.env.ANTHROPIC_API_KEY;
@@ -612,6 +784,129 @@ test("Claude no-prompt discovery reports absent approved API authentication and 
       process.env.ANTHROPIC_API_KEY =
         "inert-sdk-consumer-fixture-not-a-real-key";
     }
+  });
+});
+
+for (const mode of [
+  "token",
+  "key-over-token",
+  "cloud-over-token",
+  "rejected-token",
+  "unsupported-bearer",
+  "metadata-failure",
+  "host-changed",
+] as const) {
+  test(`Claude authentication boundary: ${mode}`, async () => {
+    const secret = "inert-private-route-fixture";
+    const envBefore = new Map(authKeys.map((key) => [key, process.env[key]]));
+    for (const key of authKeys) delete process.env[key];
+    if (mode === "unsupported-bearer")
+      process.env.ANTHROPIC_AUTH_TOKEN = secret;
+    else process.env.CLAUDE_CODE_OAUTH_TOKEN = secret;
+    if (mode === "key-over-token") process.env.ANTHROPIC_API_KEY = secret;
+    if (mode === "cloud-over-token") process.env.CLAUDE_CODE_USE_BEDROCK = "1";
+    try {
+      let accountCalls = 0;
+      const f = await fixture({
+        account: async (options) => {
+          assert.equal(options.env?.ANTHROPIC_AUTH_TOKEN, undefined);
+          assert.equal(
+            options.env?.CLAUDE_CONFIG_DIR,
+            join(f.directory, "claude-config"),
+          );
+          if (mode !== "unsupported-bearer")
+            assert.equal(options.env?.CLAUDE_CODE_OAUTH_TOKEN, secret);
+          if (mode === "host-changed" && ++accountCalls === 1)
+            delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
+          if (mode === "metadata-failure") throw new Error(secret);
+          if (mode === "cloud-over-token") return { apiProvider: "bedrock" };
+          if (mode === "key-over-token")
+            return {
+              apiProvider: "firstParty",
+              apiKeySource: "ANTHROPIC_API_KEY",
+              tokenSource: "CLAUDE_CODE_OAUTH_TOKEN",
+            };
+          return {
+            apiProvider: "firstParty",
+            apiKeySource: "none",
+            tokenSource:
+              mode === "rejected-token" ? "none" : "CLAUDE_CODE_OAUTH_TOKEN",
+          };
+        },
+      });
+      await f.git.verify(async () => {
+        const caps = await f.adapter.discover();
+        const denied =
+          mode === "rejected-token" || mode === "unsupported-bearer";
+        assert.equal(caps.authenticated, denied ? false : "unknown");
+        assert.equal(JSON.stringify(caps).includes(secret), false);
+        if (mode === "unsupported-bearer")
+          assert.ok(
+            caps.diagnostics.some((line) =>
+              line.startsWith("AUTH_POLICY_UNSUPPORTED:"),
+            ),
+          );
+        if (denied || mode === "metadata-failure") {
+          await assert.rejects(f.adapter.startSession(f.input));
+        } else {
+          if (mode === "host-changed")
+            process.env.CLAUDE_CODE_OAUTH_TOKEN = secret;
+          const session = await f.adapter.startSession(f.input);
+          await f.adapter.dispose(session);
+        }
+        assert.equal(f.sdk.prompts.length, 0);
+        if (mode === "key-over-token")
+          assert.ok(
+            caps.diagnostics.some((line) => line.includes("selects api-key")),
+          );
+        if (mode === "cloud-over-token")
+          assert.ok(
+            caps.diagnostics.some((line) => line.includes("selects bedrock")),
+          );
+      });
+    } finally {
+      for (const [key, value] of envBefore) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  });
+}
+
+test("Claude final launch refuses changed authentication metadata without submitting a model", async () => {
+  let accounts = 0;
+  const f = await fixture({
+    account: async () =>
+      ++accounts === 1
+        ? { apiProvider: "firstParty", apiKeySource: "ANTHROPIC_API_KEY" }
+        : { apiProvider: "firstParty", apiKeySource: "none" },
+  });
+  await f.git.verify(async () => {
+    await assert.rejects(f.adapter.startSession(f.input), {
+      code: "UNSUPPORTED",
+    });
+    assert.equal(f.sdk.prompts.length, 0);
+  });
+});
+
+test("Claude initialization failure never submits a model or leaks native credentials", async () => {
+  const f = await fixture();
+  const secret = "inert-initialization-secret";
+  await f.git.verify(async () => {
+    const adapter = new ClaudeAdapter(f.directory, {
+      ...f.options,
+      query: () => {
+        throw new Error(secret);
+      },
+    });
+    const caps = await adapter.discover();
+    assert.equal(caps.authenticated, false);
+    assert.equal(JSON.stringify(caps).includes(secret), false);
+    await assert.rejects(
+      adapter.startSession(f.input),
+      (error: Error) => !error.message.includes(secret),
+    );
+    assert.equal(f.sdk.prompts.length, 0);
   });
 });
 

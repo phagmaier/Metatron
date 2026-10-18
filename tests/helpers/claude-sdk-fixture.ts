@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import type {
+  AccountInfo,
   ModelInfo,
   Options,
   PermissionResult,
@@ -37,6 +38,9 @@ export type ClaudeSdkFixtureOptions = {
   models?: ModelInfo[];
   stubborn?: boolean;
   earlyTool?: (context: ClaudeFixtureContext) => Promise<PermissionResult>;
+  account?: (options: Options) => Promise<AccountInfo>;
+  omitInitEffort?: boolean;
+  hookEffort?: string | null;
 };
 export function claudeSdkFixture(config: ClaudeSdkFixtureOptions = {}) {
   const decisions: PermissionResult[] = [];
@@ -91,10 +95,13 @@ export function claudeSdkFixture(config: ClaudeSdkFixtureOptions = {}) {
     ];
     return {
       supportedModels: async () => models,
-      accountInfo: async () => ({
-        apiProvider: "firstParty",
-        apiKeySource: "ANTHROPIC_API_KEY",
-      }),
+      accountInfo: async () =>
+        config.account
+          ? config.account(options)
+          : {
+              apiProvider: "firstParty",
+              apiKeySource: "ANTHROPIC_API_KEY",
+            },
       close: () => {},
       async *[Symbol.asyncIterator]() {
         for await (const message of prompt) {
@@ -142,6 +149,14 @@ export function claudeSdkFixture(config: ClaudeSdkFixtureOptions = {}) {
                     tool_name: name,
                     tool_input: input,
                     tool_use_id: toolUseID,
+                    ...(config.hookEffort !== null &&
+                    (config.hookEffort ?? options.effort)
+                      ? {
+                          effort: {
+                            level: config.hookEffort ?? options.effort ?? "",
+                          },
+                        }
+                      : {}),
                   },
                   toolUseID,
                   {
@@ -213,7 +228,9 @@ export function claudeSdkFixture(config: ClaudeSdkFixtureOptions = {}) {
             cwd,
             model,
             permissionMode: "default",
-            effort: options.effort ?? null,
+            ...(config.omitInitEffort
+              ? {}
+              : { effort: options.effort ?? null }),
             tools: Array.isArray(options.tools) ? options.tools : [],
             skills: [],
             plugins: [],

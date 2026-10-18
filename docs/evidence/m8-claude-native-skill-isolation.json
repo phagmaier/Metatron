@@ -1,0 +1,50 @@
+{
+  "status": "FAILED",
+  "nativeEvidence": [
+    {
+      "sessionId": "b6c84e76-a5c0-42b0-bbcb-47ba857d0e36",
+      "type": "init",
+      "model": "claude-sonnet-5-5",
+      "effort": null,
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read"
+      ],
+      "permissionMode": "default",
+      "skillCount": 0,
+      "pluginCount": 3,
+      "mcpCount": 0,
+      "plugins": [
+        "cc-plugin-agents-md",
+        "cc-plugin-telemetry",
+        "cc-plugin-plugin-authoring"
+      ]
+    }
+  ],
+  "liveResults": [],
+  "failedTurn": {
+    "nativeSessionId": "b6c84e76-a5c0-42b0-bbcb-47ba857d0e36",
+    "mode": "read",
+    "events": [
+      {
+        "type": "session_error",
+        "code": "protocol",
+        "recoverable": false,
+        "message": "Claude native stream failed; no automatic replay; native details are redacted"
+      },
+      {
+        "type": "process_state",
+        "state": "crashed",
+        "exitCode": 143
+      },
+      {
+        "type": "turn_completed",
+        "nativeStatus": "failed"
+      }
+    ]
+  },
+  "retainedAppState": "/tmp/lao-claude-smoke-sOhWmC",
+  "retainedFixture": "/tmp/lao-git-fixture-HLKdIr/repo with spaces",
+  "noAutomaticReplay": true
+}

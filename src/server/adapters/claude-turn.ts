@@ -7,18 +7,12 @@ import type {
 } from "@anthropic-ai/claude-agent-sdk";
 import { textSchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import { checkoutIdentity } from "../git/checkout-identity.ts";
 import type { ClaudeEvents } from "./claude-events.ts";
-import {
-  claudeCheckoutIdentity,
-  type Manifest,
-  saveClaudeManifest,
-} from "./claude-manifest.ts";
-import type {
-  ClaudeExit,
-  ClaudeInput,
-  ClaudeProcess,
-} from "./claude-process.ts";
+import { type Manifest, saveClaudeManifest } from "./claude-manifest.ts";
+import type { ClaudeExit, ClaudeProcess } from "./claude-process.ts";
 import type { ManagedSession, SessionEvent } from "./contract.ts";
+import type { AdapterQueue } from "./queue.ts";
 
 export type ClaudeQuery = AsyncIterable<unknown> &
   Pick<Query, "supportedModels" | "accountInfo" | "close">;
@@ -30,8 +24,8 @@ type Pending = { finish: (approved: boolean) => void };
 export type Active = {
   query: ClaudeQuery;
   process: ClaudeProcess;
-  input: ClaudeInput<SDKUserMessage>;
-  events: ClaudeInput<SessionEvent>;
+  input: AdapterQueue<SDKUserMessage>;
+  events: AdapterQueue<SessionEvent>;
   mapper: ClaudeEvents;
   abort: AbortController;
   managed: ManagedSession;
@@ -79,7 +73,7 @@ export async function claudeInitialized(
 }
 export async function sameClaudeCheckout(current: Active): Promise<boolean> {
   try {
-    const identity = await claudeCheckoutIdentity(current.manifest.cwd);
+    const identity = await checkoutIdentity(current.manifest.cwd);
     return (
       JSON.stringify(identity) === JSON.stringify(current.manifest.identity)
     );
@@ -177,7 +171,7 @@ export async function* promptClaudeTurn(
     );
   const content = textSchema.parse(text);
   current.used = true;
-  const identity = await claudeCheckoutIdentity(session.input.cwd);
+  const identity = await checkoutIdentity(session.input.cwd);
   if (
     JSON.stringify(identity) !== JSON.stringify(current.manifest.identity) ||
     current.cancelled ||

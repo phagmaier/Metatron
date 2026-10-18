@@ -10,9 +10,7 @@ import {
 } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { DomainError } from "../../shared/domain/states.ts";
-import { checkClaudeTool } from "./claude-policy.ts";
 import {
-  ClaudeInput,
   ClaudeProcess,
   type ClaudeSpawn,
   claudeExecutable,
@@ -26,6 +24,8 @@ import {
   sameClaudeCheckout,
 } from "./claude-turn.ts";
 import type { StartSessionInput } from "./contract.ts";
+import { checkFileTool } from "./file-policy.ts";
+import { AdapterQueue } from "./queue.ts";
 
 export type ClaudeAdapterOptions = {
   query?: ClaudeQueryFactory;
@@ -35,9 +35,10 @@ export type ClaudeAdapterOptions = {
 export type Launched = {
   query: ClaudeQuery;
   process: ClaudeProcess;
-  input: ClaudeInput<SDKUserMessage>;
+  input: AdapterQueue<SDKUserMessage>;
   abort: AbortController;
   allTools: string[];
+  excludedAuthentication: boolean;
   bind: (current: Active) => void;
 };
 const gatewayTools = [
@@ -50,8 +51,8 @@ const gatewayTools = [
 
 function claudeEnvironment(directory: string): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
-  // Do not inherit Claude personal-session selectors, OAuth tokens, git
-  // selectors, arbitrary Node preload hooks, or caller-supplied overlays.
+  // Do not inherit personal-session selectors, git selectors, arbitrary Node
+  // preload hooks or caller overlays. Only the owner-supplied setup-token is admitted.
   for (const [key, value] of Object.entries(process.env))
     if (
       [
@@ -68,6 +69,7 @@ function claudeEnvironment(directory: string): NodeJS.ProcessEnv {
         "HTTP_PROXY",
         "NO_PROXY",
         "ANTHROPIC_API_KEY",
+        "CLAUDE_CODE_OAUTH_TOKEN",
         "CLAUDE_CODE_USE_BEDROCK",
         "CLAUDE_CODE_USE_VERTEX",
         "CLAUDE_CODE_USE_FOUNDRY",
@@ -96,8 +98,12 @@ export async function launchClaude(
     mode: 0o700,
   });
   const executable = await claudeExecutable(options.executable);
+  // Presence only; excluded secret values never leave the host.
+  const excludedAuthentication =
+    !!globalThis.process.env.ANTHROPIC_AUTH_TOKEN ||
+    !!globalThis.process.env.ANTHROPIC_PROFILE;
   const process = new ClaudeProcess(options.spawn ?? spawnClaude);
-  const input = new ClaudeInput<SDKUserMessage>();
+  const input = new AdapterQueue<SDKUserMessage>();
   const abort = new AbortController();
   const tools = data
     ? [
@@ -116,6 +122,7 @@ export async function launchClaude(
     spawnClaudeCodeProcess: process.spawn,
     abortController: abort,
     settingSources: [],
+    extraArgs: { "disable-slash-commands": null },
     plugins: [],
     skills: [],
     agents: {},
@@ -141,7 +148,17 @@ export async function launchClaude(
     systemPrompt:
       data?.roleInstructions ??
       "Discover native capabilities only. Do not make a model request.",
-    settings: { autoMemoryEnabled: false },
+    settings: {
+      autoMemoryEnabled: false,
+      disableBundledSkills: true,
+      syncClaudeAiSkills: false,
+      syncClaudeAiPlugins: false,
+      enabledPlugins: {
+        "cc-plugin-agents-md@builtin": false,
+        "cc-plugin-telemetry@builtin": false,
+        "cc-plugin-plugin-authoring@builtin": false,
+      },
+    },
     mcpServers: data?.toolEndpoint
       ? {
           lao: {
@@ -196,11 +213,26 @@ export async function launchClaude(
                       "App-owned native initialization or original checkout identity was not confirmed",
                   },
                 };
+              if (
+                hook.effort
+                  ? !active.mapper.observeEffort(hook.effort.level)
+                  : !active.mapper.effortVerified
+              ) {
+                active.fault = true;
+                return {
+                  hookSpecificOutput: {
+                    hookEventName: "PreToolUse",
+                    permissionDecision: "deny",
+                    permissionDecisionReason:
+                      "Native effort did not match the requested worker configuration",
+                  },
+                };
+              }
               const input = z
                 .record(z.string(), z.unknown())
                 .safeParse(hook.tool_input);
               const denied = input.success
-                ? await checkClaudeTool(
+                ? await checkFileTool(
                     cwd,
                     data.permission,
                     { toolName: hook.tool_name, input: input.data },
@@ -239,6 +271,30 @@ export async function launchClaude(
           ],
         },
       ],
+      Stop: [
+        {
+          hooks: [
+            async (hook, _toolUseId, control) => {
+              if (
+                !active ||
+                hook.agent_id ||
+                hook.session_id !== sessionId ||
+                resolve(hook.cwd) !== cwd ||
+                control.signal.aborted ||
+                !(await claudeInitialized(active, control.signal))
+              )
+                return {};
+              if (
+                hook.effort
+                  ? !active.mapper.observeEffort(hook.effort.level)
+                  : !active.mapper.effortVerified
+              )
+                active.fault = true;
+              return {};
+            },
+          ],
+        },
+      ],
     },
     canUseTool: async (toolName, input, native) => {
       const denied: PermissionResult = {
@@ -266,7 +322,7 @@ export async function launchClaude(
         !(await sameClaudeCheckout(active))
       )
         return denied;
-      const blocked = await checkClaudeTool(
+      const blocked = await checkFileTool(
         cwd,
         data.permission,
         { toolName, input },
@@ -311,7 +367,7 @@ export async function launchClaude(
           });
       });
       if (!approved || !(await sameClaudeCheckout(current))) return denied;
-      const changed = await checkClaudeTool(
+      const changed = await checkFileTool(
         cwd,
         data.permission,
         { toolName, input },
@@ -350,6 +406,7 @@ export async function launchClaude(
     input,
     abort,
     allTools,
+    excludedAuthentication,
     bind: (current: Active) => {
       active = current;
     },

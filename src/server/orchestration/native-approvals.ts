@@ -25,7 +25,7 @@ type Pending = {
 };
 const pending = new WeakMap<Engine, Map<string, Pending>>();
 
-export function recordClaudeApproval(
+export function recordNativeApproval(
   engine: Engine,
   sessionId: string,
   adapter: HarnessAdapter,
@@ -37,8 +37,8 @@ export function recordClaudeApproval(
   const attempt = store.getAttempt(session.attemptId);
   const task = store.getTask(attempt.taskId);
   if (
-    session.adapter !== "claude-code" ||
-    managed.adapter !== "claude-code" ||
+    !["claude-code", "opencode"].includes(session.adapter) ||
+    managed.adapter !== session.adapter ||
     session.nativeSessionId !== managed.nativeSessionId ||
     attempt.status !== "running" ||
     !["RUNNING", "WAITING_HUMAN"].includes(task.status) ||
@@ -46,13 +46,13 @@ export function recordClaudeApproval(
   )
     throw new DomainError(
       "CONFLICT",
-      "Native approval does not belong to an executing Claude worker",
+      "Native approval does not belong to an executing supported worker",
     );
-  const key = `claude-approval:${session.id}:${event.nativeRequestId}`;
+  const key = `native-approval:${session.id}:${event.nativeRequestId}`;
   const request = mutate(
     store.db,
     key,
-    "recordClaudeApproval",
+    "recordNativeApproval",
     { sessionId, nativeRequestId: event.nativeRequestId },
     humanRequestSchema,
     () => {
@@ -82,7 +82,7 @@ export function recordClaudeApproval(
       const bound = humanRequestSchema.parse({
         ...created,
         nativeApproval: {
-          adapter: "claude-code",
+          adapter: session.adapter,
           nativeRequestId: event.nativeRequestId,
           decision: null,
           state: "pending",
@@ -177,7 +177,7 @@ function saveDecisionState(
   );
 }
 
-export async function decideClaudeApproval(
+export async function decideNativeApproval(
   engine: Engine,
   input: unknown,
   key: string,
@@ -187,7 +187,7 @@ export async function decideClaudeApproval(
   const request = mutate(
     store.db,
     key,
-    "decideClaudeApproval",
+    "decideNativeApproval",
     data,
     humanRequestSchema,
     () => {
@@ -210,7 +210,8 @@ export async function decideClaudeApproval(
       const task = store.getTask(attempt.taskId);
       const run = store.getRun(task.runId);
       if (
-        session.adapter !== "claude-code" ||
+        session.adapter !== previous.nativeApproval.adapter ||
+        session.adapter !== binding.managed.adapter ||
         session.nativeSessionId !== binding.managed.nativeSessionId ||
         session.state !== "waiting_permission" ||
         session.recovery !== "none" ||
@@ -357,7 +358,7 @@ export async function decideClaudeApproval(
   }
 }
 
-export function endClaudeApprovals(engine: Engine, sessionId?: string) {
+export function endNativeApprovals(engine: Engine, sessionId?: string) {
   const { store } = engine;
   for (const request of store.listHumanRequests()) {
     if (

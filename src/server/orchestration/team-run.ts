@@ -42,6 +42,9 @@ export async function createTeamRun(
           claude: profiles.some((profile) => profile.harness === "claude-code")
             ? await engine.profiles.discover({ harness: "claude-code" })
             : null,
+          opencode: profiles.some((profile) => profile.harness === "opencode")
+            ? await engine.profiles.discover({ harness: "opencode" })
+            : null,
         }
       : null;
   return mutate(store.db, key, "startTeamRun", data, runSchema, () => {
@@ -65,7 +68,9 @@ export async function createTeamRun(
             ? catalogs.codex
             : profile.harness === "claude-code"
               ? catalogs.claude
-              : catalogs.pi;
+              : profile.harness === "opencode"
+                ? catalogs.opencode
+                : catalogs.pi;
         if (!catalog)
           throw new DomainError(
             "UNSUPPORTED",

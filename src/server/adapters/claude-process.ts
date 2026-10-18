@@ -46,46 +46,11 @@ export async function claudeExecutable(explicit?: string): Promise<string> {
   );
 }
 
-export class ClaudeInput<T> implements AsyncIterable<T> {
-  private readonly values: T[] = [];
-  private wake: (() => void) | undefined;
-  private ended = false;
-  push(value: T): void {
-    if (this.ended) throw new DomainError("CONFLICT", "Claude input is closed");
-    if (this.values.length >= 4096) {
-      this.values.length = 0;
-      throw new DomainError(
-        "CONFLICT",
-        "Claude event queue exceeded its bounded capacity",
-      );
-    }
-    this.values.push(value);
-    this.wake?.();
-  }
-  close(): void {
-    this.ended = true;
-    this.wake?.();
-  }
-  async *[Symbol.asyncIterator](): AsyncGenerator<T> {
-    while (true) {
-      const value = this.values.shift();
-      if (value !== undefined) {
-        yield value;
-        continue;
-      }
-      if (this.ended) return;
-      await new Promise<void>((resolve) => {
-        this.wake = resolve;
-      });
-      this.wake = undefined;
-    }
-  }
-}
-
 export class ClaudeProcess {
   private child: ClaudeChild | undefined;
   private evidence: ClaudeExit | undefined;
   private settle: ((exit: ClaudeExit) => void) | undefined;
+  private childEnvironment: Readonly<NodeJS.ProcessEnv> = {};
   readonly exit = new Promise<ClaudeExit>((resolve) => {
     this.settle = resolve;
   });
@@ -97,12 +62,16 @@ export class ClaudeProcess {
   get pid(): number | undefined {
     return this.child?.pid;
   }
+  get environment(): Readonly<NodeJS.ProcessEnv> {
+    return this.childEnvironment;
+  }
   readonly spawn = (options: SpawnOptions): SpawnedProcess => {
     if (this.child)
       throw new DomainError(
         "CONFLICT",
         "Claude attempted to replace its owned subprocess",
       );
+    this.childEnvironment = { ...options.env };
     const child = this.factory(options);
     this.child = child;
     child.on("error", () => {

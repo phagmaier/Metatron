@@ -220,12 +220,6 @@ test("owner profile HTTP CRUD uses native protocol discovery, protects mutation 
       "bad-codex",
       409,
     );
-    await write(
-      { ...content, roleId: changedRole.id, harness: "opencode" },
-      "POST",
-      "missing-opencode",
-      409,
-    );
     const query = await fetch(
       `${app.origin}/api/agent-profiles/discover?harness=pi&permission=coordinator`,
     );

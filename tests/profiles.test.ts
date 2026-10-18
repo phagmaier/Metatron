@@ -167,8 +167,6 @@ test("profile writes use fresh server discovery and reject unsupported selection
       { model: "invented" },
       { thinking: "ultra" },
       { model: "fixture/plain", thinking: "low" },
-      { harness: "claude-code" },
-      { harness: "opencode" },
       { permission: "coordinator" },
       { harness: "codex", permission: "read_only" },
       { harness: "codex", permission: "workspace_write" },

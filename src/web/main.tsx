@@ -220,11 +220,11 @@ function App() {
   );
   return (
     <main>
-      <p className="eyebrow">LOCAL WORKSPACE · M4</p>
+      <p className="eyebrow">LOCAL WORKSPACE · DEVELOPMENT</p>
       <h1>Local Agent Orchestrator</h1>
       <p className="intro">
         Coordinate saved tasks, simulated teams, a native Codex Lead and native
-        Pi workers in isolated worktrees.
+        Pi, Claude Code or OpenCode workers in isolated worktrees.
       </p>
       <p className="status" role="status">
         {status}
@@ -255,8 +255,8 @@ function App() {
             demo command.
           </p>
           <p className="note">
-            Choose a fake team demonstration or explicitly start a real Pi
-            worker after discovering its models.
+            Choose a fake team demonstration or configure native workers through
+            discovered agent profiles and saved teams.
           </p>
         </section>
       ) : (
@@ -302,8 +302,8 @@ function App() {
                     {selectedRun.execution === "fake"
                       ? "FAKE · NO MODEL TOKENS"
                       : nativeLead
-                        ? "LIVE CODEX LEAD · PI WORKERS"
-                        : "LIVE PI · OWNER-DIRECTED"}
+                        ? "LIVE CODEX LEAD · NATIVE WORKERS"
+                        : "NATIVE WORKERS · OWNER-DIRECTED"}
                   </span>
                 </div>
                 <p>{selectedRun.initialPrompt}</p>

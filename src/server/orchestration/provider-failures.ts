@@ -11,7 +11,7 @@ import type { Engine } from "./engine.ts";
 import { notifyLead } from "./lead-run.ts";
 
 const errorTypes =
-  "'pi.session_error','codex.session_error','claude-code.session_error','fake.session_error'";
+  "'pi.session_error','codex.session_error','claude-code.session_error','opencode.session_error','fake.session_error'";
 const kinds = "'auth','rate_limit','credits_exhausted','usage_limit'";
 
 // Native events commit before shutdown. After a crash they still explain the
@@ -56,7 +56,7 @@ export function finishProviderFailure(
   const row = store.db
     .prepare(`
     SELECT payload FROM events WHERE attempt_id=? AND type IN
-      ('pi.usage','codex.usage','claude-code.usage','fake.usage') ORDER BY sequence DESC LIMIT 1
+      ('pi.usage','codex.usage','claude-code.usage','opencode.usage','fake.usage') ORDER BY sequence DESC LIMIT 1
   `)
     .get(attemptId);
   const usage = z

@@ -144,13 +144,18 @@ function RequestCard({
       {request.nativeApproval && (
         <div className="warning">
           <p>
-            Claude Code native permission · {request.nativeApproval.state}.
-            Approval applies to this one policy-checked operation in the
-            isolated worktree, never to shell, delegation or integration.
+            {request.nativeApproval.adapter === "opencode"
+              ? "OpenCode"
+              : "Claude Code"}{" "}
+            native permission · {request.nativeApproval.state}. Approval applies
+            to this one policy-checked operation in the isolated worktree, never
+            to shell, delegation or integration.
           </p>
           <p>
             A saved decision or adapter receipt is not proof that the tool ran.
             Ended/restarted sessions cannot receive this approval.
+            {request.nativeApproval.adapter === "opencode" &&
+              " OpenCode denial rejects all pending requests in this session and stops its turn."}
           </p>
           {nativePending && (
             <div className="actions">
@@ -168,7 +173,9 @@ function RequestCard({
                 disabled={busy}
                 onClick={() => void decideNative("deny")}
               >
-                Deny once
+                {request.nativeApproval.adapter === "opencode"
+                  ? "Deny and stop"
+                  : "Deny once"}
               </button>
             </div>
           )}
@@ -357,10 +364,10 @@ export function NeedsYouPanel({
       </div>
       <p className="note">
         Decisions are saved here. Codex coordinator permission denials are
-        notifications; acknowledging them grants no access. Claude worker
-        permissions use the one-shot controls below. Other replies and safe
-        continuation are not delivered to workers yet. Marking completed records
-        your action; it does not verify that it worked.
+        notifications; acknowledging them grants no access. Claude Code and
+        OpenCode worker permissions use the one-shot controls below. Other
+        replies and safe continuation are not delivered to workers yet. Marking
+        completed records your action; it does not verify that it worked.
       </p>
       {error && (
         <p className="error" role="alert">

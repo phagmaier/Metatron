@@ -1,0 +1,61 @@
+{
+  "status": "FAILED",
+  "nativeEvidence": [
+    {
+      "sessionId": "15c34c87-cc33-4bb8-a77f-851d27a8f91d",
+      "type": "init",
+      "model": "claude-sonnet-5-5",
+      "effort": null,
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read"
+      ],
+      "permissionMode": "default",
+      "skillCount": 0,
+      "pluginCount": 0,
+      "mcpCount": 0,
+      "plugins": []
+    },
+    {
+      "sessionId": "15c34c87-cc33-4bb8-a77f-851d27a8f91d",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "15c34c87-cc33-4bb8-a77f-851d27a8f91d",
+      "type": "hook-PreToolUse",
+      "effort": "low"
+    }
+  ],
+  "liveResults": [],
+  "failedTurn": {
+    "nativeSessionId": "15c34c87-cc33-4bb8-a77f-851d27a8f91d",
+    "mode": "read",
+    "events": [
+      {
+        "type": "tool_started",
+        "toolId": "toolu_01HkviGkM18YpJXw7bTngxdC",
+        "summary": "Read"
+      },
+      {
+        "type": "session_error",
+        "code": "protocol",
+        "recoverable": false,
+        "message": "Claude native stream failed; no automatic replay; native details are redacted"
+      },
+      {
+        "type": "process_state",
+        "state": "exited",
+        "exitCode": 0
+      },
+      {
+        "type": "turn_completed",
+        "nativeStatus": "failed"
+      }
+    ]
+  },
+  "retainedAppState": "/tmp/lao-claude-smoke-h2tFmW",
+  "retainedFixture": "/tmp/lao-git-fixture-e80KKa/repo with spaces",
+  "noAutomaticReplay": true
+}

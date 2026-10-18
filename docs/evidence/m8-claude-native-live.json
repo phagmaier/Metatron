@@ -1,0 +1,1050 @@
+{
+  "status": "LIVE_PASS",
+  "executable": "/home/phagmaier/.local/share/mise/installs/claude/2.1.302/claude",
+  "version": "2.1.302 (Claude Code)",
+  "sdkVersion": "0.3.302",
+  "capabilities": {
+    "adapter": "claude-code",
+    "installed": true,
+    "authenticated": "unknown",
+    "models": [
+      {
+        "id": "default",
+        "label": "Default (recommended)",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      },
+      {
+        "id": "sonnet",
+        "label": "Sonnet",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      },
+      {
+        "id": "fable",
+        "label": "Fable",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      },
+      {
+        "id": "opus",
+        "label": "Opus",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      },
+      {
+        "id": "haiku",
+        "label": "Haiku",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      }
+    ],
+    "supportsResume": true,
+    "supportsLiveSteer": false,
+    "supportsCancel": true,
+    "supportsPermissionPrompts": true,
+    "supportsToolGateway": true,
+    "diagnostics": [
+      "Official Agent SDK with the installed Claude Code CLI and app-owned configuration. Owner-supplied setup-token, API key or supported cloud provider route; no personal credential files copied. Subscription SDK-product policy applicability requires owner/vendor resolution. Catalog presence does not prove entitlement.",
+      "Exact file tools and optional app gateway only; no shell, delegation, discovered settings, plugins, skills or MCP servers. This is an application guard, not an OS sandbox. Resume accepts only clean app-owned same-checkout sessions; interrupted work is never replayed.",
+      "AUTH_UNVERIFIED: native metadata selects setup-token; model entitlement and quota remain untested. Provider selection precedes API key; API key precedes setup-token. No credentials were removed to change billing."
+    ]
+  },
+  "nativeEvidence": [
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "init",
+      "model": "claude-sonnet-5-5",
+      "effort": null,
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read"
+      ],
+      "permissionMode": "default",
+      "skillCount": 0,
+      "pluginCount": 0,
+      "mcpCount": 0,
+      "plugins": []
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "hook-PreToolUse",
+      "effort": "low"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "hook-Stop",
+      "effort": "low"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "result",
+      "subtype": "success"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "init",
+      "model": "claude-sonnet-5-5",
+      "effort": null,
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read"
+      ],
+      "permissionMode": "default",
+      "skillCount": 0,
+      "pluginCount": 0,
+      "mcpCount": 0,
+      "plugins": []
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "hook-PreToolUse",
+      "effort": "low"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "hook-Stop",
+      "effort": "low"
+    },
+    {
+      "sessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "type": "result",
+      "subtype": "success"
+    },
+    {
+      "sessionId": "059b3e69-91ed-4842-8d1e-2f397e6744f4",
+      "type": "init",
+      "model": "claude-sonnet-5-5",
+      "effort": null,
+      "tools": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write"
+      ],
+      "permissionMode": "default",
+      "skillCount": 0,
+      "pluginCount": 0,
+      "mcpCount": 0,
+      "plugins": []
+    },
+    {
+      "sessionId": "059b3e69-91ed-4842-8d1e-2f397e6744f4",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "059b3e69-91ed-4842-8d1e-2f397e6744f4",
+      "type": "hook-PreToolUse",
+      "effort": "low"
+    },
+    {
+      "sessionId": "059b3e69-91ed-4842-8d1e-2f397e6744f4",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "059b3e69-91ed-4842-8d1e-2f397e6744f4",
+      "type": "result",
+      "subtype": "success"
+    },
+    {
+      "sessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "type": "init",
+      "model": "claude-sonnet-5-5",
+      "effort": null,
+      "tools": [
+        "Edit",
+        "Glob",
+        "Grep",
+        "Read",
+        "Write"
+      ],
+      "permissionMode": "default",
+      "skillCount": 0,
+      "pluginCount": 0,
+      "mcpCount": 0,
+      "plugins": []
+    },
+    {
+      "sessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "type": "hook-PreToolUse",
+      "effort": "low"
+    },
+    {
+      "sessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "type": "hook-PreToolUse",
+      "effort": "low"
+    },
+    {
+      "sessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    },
+    {
+      "sessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "type": "hook-Stop",
+      "effort": "low"
+    },
+    {
+      "sessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "type": "result",
+      "subtype": "success"
+    },
+    {
+      "sessionId": "455336b8-f9a4-401d-b85b-abc444aa6f91",
+      "type": "init",
+      "model": "claude-sonnet-5-5",
+      "effort": null,
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read"
+      ],
+      "permissionMode": "default",
+      "skillCount": 0,
+      "pluginCount": 0,
+      "mcpCount": 0,
+      "plugins": []
+    },
+    {
+      "sessionId": "455336b8-f9a4-401d-b85b-abc444aa6f91",
+      "type": "stream-model",
+      "model": "claude-sonnet-5-5"
+    }
+  ],
+  "liveReadiness": "Configured route is unverified until an authorized model turn succeeds",
+  "modelPromptsSubmitted": 5,
+  "liveResults": [
+    {
+      "operation": "read",
+      "nativeSessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "events": [
+        {
+          "type": "tool_started",
+          "toolId": "toolu_015ja74DdnyNFZ9FygsbA3SQ",
+          "summary": "Read"
+        },
+        {
+          "type": "tool_finished",
+          "toolId": "toolu_015ja74DdnyNFZ9FygsbA3SQ",
+          "summary": "Claude tool finished"
+        },
+        {
+          "type": "text_delta",
+          "text": "The he"
+        },
+        {
+          "type": "text_delta",
+          "text": "ading in"
+        },
+        {
+          "type": "text_delta",
+          "text": " README.md is: \"#"
+        },
+        {
+          "type": "text_delta",
+          "text": " Disposable fixture\""
+        },
+        {
+          "type": "text_delta",
+          "text": "\n\nIt's on"
+        },
+        {
+          "type": "text_delta",
+          "text": " line 1,"
+        },
+        {
+          "type": "text_delta",
+          "text": " and the file has n"
+        },
+        {
+          "type": "text_delta",
+          "text": "othing else in"
+        },
+        {
+          "type": "text_delta",
+          "text": " it."
+        },
+        {
+          "type": "usage",
+          "inputTokens": 4,
+          "outputTokens": 140,
+          "source": "Claude native root-turn result"
+        },
+        {
+          "type": "process_state",
+          "state": "exited",
+          "exitCode": 0
+        },
+        {
+          "type": "turn_completed",
+          "nativeStatus": "completed"
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "operation": "same-checkout-resume",
+      "nativeSessionId": "f7eebdbb-3201-4610-8c46-893b5a241aad",
+      "events": [
+        {
+          "type": "tool_started",
+          "toolId": "toolu_01W2DcKQurw6UFKwbj62j938",
+          "summary": "Read"
+        },
+        {
+          "type": "tool_finished",
+          "toolId": "toolu_01W2DcKQurw6UFKwbj62j938",
+          "summary": "Claude tool finished"
+        },
+        {
+          "type": "text_delta",
+          "text": "The heading is"
+        },
+        {
+          "type": "text_delta",
+          "text": " still \"# Disposable f"
+        },
+        {
+          "type": "text_delta",
+          "text": "ixture\","
+        },
+        {
+          "type": "text_delta",
+          "text": " on line 1. I didn"
+        },
+        {
+          "type": "text_delta",
+          "text": "'t mod"
+        },
+        {
+          "type": "text_delta",
+          "text": "ify anything."
+        },
+        {
+          "type": "usage",
+          "inputTokens": 6,
+          "outputTokens": 131,
+          "source": "Claude native root-turn result"
+        },
+        {
+          "type": "process_state",
+          "state": "exited",
+          "exitCode": 0
+        },
+        {
+          "type": "turn_completed",
+          "nativeStatus": "completed"
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "operation": "native-permission-denial-and-cancel",
+      "nativeSessionId": "059b3e69-91ed-4842-8d1e-2f397e6744f4",
+      "events": [
+        {
+          "type": "tool_started",
+          "toolId": "toolu_01CVMZmDQdrxeofA5qTrQ4ur",
+          "summary": "Write"
+        },
+        {
+          "type": "approval_requested",
+          "nativeRequestId": "a8200c32-5e48-4e88-ae76-75687410a52d",
+          "details": "Claude requests one-shot approval for safe Write in the assigned worktree; tool input is redacted"
+        },
+        {
+          "type": "tool_finished",
+          "toolId": "toolu_01CVMZmDQdrxeofA5qTrQ4ur",
+          "summary": "Claude tool failed"
+        },
+        {
+          "type": "text_delta",
+          "text": "The Write to"
+        },
+        {
+          "type": "text_delta",
+          "text": " README.md did"
+        },
+        {
+          "type": "text_delta",
+          "text": "n't go"
+        },
+        {
+          "type": "text_delta",
+          "text": " through. The perm"
+        },
+        {
+          "type": "text_delta",
+          "text": "ission request failed with \""
+        },
+        {
+          "type": "text_delta",
+          "text": "A"
+        },
+        {
+          "type": "text_delta",
+          "text": "bortError: Tool perm"
+        },
+        {
+          "type": "text_delta",
+          "text": "ission stream closed before response received"
+        },
+        {
+          "type": "text_delta",
+          "text": "\", so the"
+        },
+        {
+          "type": "text_delta",
+          "text": " perm"
+        },
+        {
+          "type": "text_delta",
+          "text": "ission st"
+        },
+        {
+          "type": "text_delta",
+          "text": "ream clos"
+        },
+        {
+          "type": "text_delta",
+          "text": "ed before the owner answ"
+        },
+        {
+          "type": "text_delta",
+          "text": "ered. It was not"
+        },
+        {
+          "type": "text_delta",
+          "text": " an explicit denial, but"
+        },
+        {
+          "type": "text_delta",
+          "text": " the"
+        },
+        {
+          "type": "text_delta",
+          "text": " file was"
+        },
+        {
+          "type": "text_delta",
+          "text": " not written. I did"
+        },
+        {
+          "type": "text_delta",
+          "text": " not retry or"
+        },
+        {
+          "type": "text_delta",
+          "text": " use any other tool, and I"
+        },
+        {
+          "type": "text_delta",
+          "text": "'m stopping here"
+        },
+        {
+          "type": "text_delta",
+          "text": " as"
+        },
+        {
+          "type": "text_delta",
+          "text": " inst"
+        },
+        {
+          "type": "text_delta",
+          "text": "ructed."
+        },
+        {
+          "type": "usage",
+          "inputTokens": 4,
+          "outputTokens": 203,
+          "source": "Claude native root-turn result"
+        },
+        {
+          "type": "process_state",
+          "state": "exited",
+          "exitCode": 0
+        },
+        {
+          "type": "turn_completed",
+          "nativeStatus": "interrupted"
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "operation": "native-approved-write-and-independent-denial",
+      "nativeSessionId": "2951b2d8-6cfb-4ab3-9147-0d4b7e030543",
+      "events": [
+        {
+          "type": "tool_started",
+          "toolId": "toolu_014MmfbT5wJMpoLqPq4hoKQD",
+          "summary": "Write"
+        },
+        {
+          "type": "approval_requested",
+          "nativeRequestId": "678c8d2f-d6a0-46ae-8957-f162efd696d8",
+          "details": "Claude requests one-shot approval for safe Write in the assigned worktree; tool input is redacted"
+        },
+        {
+          "type": "tool_finished",
+          "toolId": "toolu_014MmfbT5wJMpoLqPq4hoKQD",
+          "summary": "Claude tool finished"
+        },
+        {
+          "type": "tool_started",
+          "toolId": "toolu_01GAq7wRYayD6DZbckF2RDXK",
+          "summary": "Write"
+        },
+        {
+          "type": "approval_requested",
+          "nativeRequestId": "ee098c3c-1951-4eea-9a55-5bebc859b4df",
+          "details": "Claude requests one-shot approval for safe Write in the assigned worktree; tool input is redacted"
+        },
+        {
+          "type": "tool_finished",
+          "toolId": "toolu_01GAq7wRYayD6DZbckF2RDXK",
+          "summary": "Claude tool failed"
+        },
+        {
+          "type": "text_delta",
+          "text": "The first Write succeeded"
+        },
+        {
+          "type": "text_delta",
+          "text": ":"
+        },
+        {
+          "type": "text_delta",
+          "text": " `approved.txt` now"
+        },
+        {
+          "type": "text_delta",
+          "text": " ex"
+        },
+        {
+          "type": "text_delta",
+          "text": "ists and"
+        },
+        {
+          "type": "text_delta",
+          "text": " contains \"Approved once\"."
+        },
+        {
+          "type": "text_delta",
+          "text": " The second Write was denied by"
+        },
+        {
+          "type": "text_delta",
+          "text": " the"
+        },
+        {
+          "type": "text_delta",
+          "text": " safety policy, so `den"
+        },
+        {
+          "type": "text_delta",
+          "text": "ied.txt` was not"
+        },
+        {
+          "type": "text_delta",
+          "text": " created. I didn't retry"
+        },
+        {
+          "type": "text_delta",
+          "text": " it"
+        },
+        {
+          "type": "text_delta",
+          "text": "."
+        },
+        {
+          "type": "usage",
+          "inputTokens": 6,
+          "outputTokens": 275,
+          "source": "Claude native root-turn result"
+        },
+        {
+          "type": "process_state",
+          "state": "exited",
+          "exitCode": 0
+        },
+        {
+          "type": "turn_completed",
+          "nativeStatus": "completed"
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    {
+      "operation": "active-generation-cancellation",
+      "nativeSessionId": "455336b8-f9a4-401d-b85b-abc444aa6f91",
+      "events": [
+        {
+          "type": "text_delta",
+          "text": "1. Sorting algor"
+        },
+        {
+          "type": "text_delta",
+          "text": "ithms arrange el"
+        },
+        {
+          "type": "text_delta",
+          "text": "ements of"
+        },
+        {
+          "type": "text_delta",
+          "text": " a list"
+        },
+        {
+          "type": "text_delta",
+          "text": " into a def"
+        },
+        {
+          "type": "text_delta",
+          "text": "ined order,"
+        },
+        {
+          "type": "text_delta",
+          "text": " such as ascending or descending"
+        },
+        {
+          "type": "text_delta",
+          "text": ".\n2. Bubble"
+        },
+        {
+          "type": "text_delta",
+          "text": " sort repeatedly sw"
+        },
+        {
+          "type": "text_delta",
+          "text": "aps adjacent elements"
+        },
+        {
+          "type": "text_delta",
+          "text": " that are out of order.\n3"
+        },
+        {
+          "type": "text_delta",
+          "text": ". B"
+        },
+        {
+          "type": "text_delta",
+          "text": "ubble sort has a"
+        },
+        {
+          "type": "text_delta",
+          "text": " worst-case time complexity"
+        },
+        {
+          "type": "text_delta",
+          "text": " of O(n²).\n4"
+        },
+        {
+          "type": "text_delta",
+          "text": ". Selection sort rep"
+        },
+        {
+          "type": "text_delta",
+          "text": "eatedly sel"
+        },
+        {
+          "type": "text_delta",
+          "text": "ects the smallest rem"
+        },
+        {
+          "type": "text_delta",
+          "text": "aining element and places it in"
+        },
+        {
+          "type": "text_delta",
+          "text": " position"
+        },
+        {
+          "type": "text_delta",
+          "text": ".\n5. Sel"
+        },
+        {
+          "type": "text_delta",
+          "text": "ection sort perform"
+        },
+        {
+          "type": "text_delta",
+          "text": "s at most n"
+        },
+        {
+          "type": "text_delta",
+          "text": "−"
+        },
+        {
+          "type": "text_delta",
+          "text": "1 swaps,"
+        },
+        {
+          "type": "text_delta",
+          "text": " which mak"
+        },
+        {
+          "type": "text_delta",
+          "text": "es it useful when writes"
+        },
+        {
+          "type": "text_delta",
+          "text": " are costly.\n6."
+        },
+        {
+          "type": "text_delta",
+          "text": " Insertion sort builds a"
+        },
+        {
+          "type": "text_delta",
+          "text": " sorted pr"
+        },
+        {
+          "type": "text_delta",
+          "text": "efix one element at a time."
+        },
+        {
+          "type": "text_delta",
+          "text": "\n7. Insertion s"
+        },
+        {
+          "type": "text_delta",
+          "text": "ort runs in n"
+        },
+        {
+          "type": "text_delta",
+          "text": "early linear time on data"
+        },
+        {
+          "type": "text_delta",
+          "text": " that is already alm"
+        },
+        {
+          "type": "text_delta",
+          "text": "ost sorted.\n8."
+        },
+        {
+          "type": "text_delta",
+          "text": " Merge sort div"
+        },
+        {
+          "type": "text_delta",
+          "text": "ides the"
+        },
+        {
+          "type": "text_delta",
+          "text": " input"
+        },
+        {
+          "type": "text_delta",
+          "text": " into hal"
+        },
+        {
+          "type": "text_delta",
+          "text": "ves,"
+        },
+        {
+          "type": "text_delta",
+          "text": " sorts each half,"
+        },
+        {
+          "type": "text_delta",
+          "text": " and merges the results"
+        },
+        {
+          "type": "text_delta",
+          "text": ".\n9. Merge s"
+        },
+        {
+          "type": "text_delta",
+          "text": "ort guarantees O(n"
+        },
+        {
+          "type": "text_delta",
+          "text": " log n) time in"
+        },
+        {
+          "type": "text_delta",
+          "text": " every"
+        },
+        {
+          "type": "text_delta",
+          "text": " case.\n10. Merge"
+        },
+        {
+          "type": "text_delta",
+          "text": " sort is"
+        },
+        {
+          "type": "text_delta",
+          "text": " stable when"
+        },
+        {
+          "type": "text_delta",
+          "text": " its"
+        },
+        {
+          "type": "text_delta",
+          "text": " merge step tak"
+        },
+        {
+          "type": "text_delta",
+          "text": "es equ"
+        },
+        {
+          "type": "text_delta",
+          "text": "al elements from the left half"
+        },
+        {
+          "type": "text_delta",
+          "text": " first.\n11. Stand"
+        },
+        {
+          "type": "text_delta",
+          "text": "ard array"
+        },
+        {
+          "type": "text_delta",
+          "text": "-"
+        },
+        {
+          "type": "text_delta",
+          "text": "based merge sort needs O"
+        },
+        {
+          "type": "text_delta",
+          "text": "(n) au"
+        },
+        {
+          "type": "text_delta",
+          "text": "xiliary space.\n12"
+        },
+        {
+          "type": "text_delta",
+          "text": ". Quicksort part"
+        },
+        {
+          "type": "text_delta",
+          "text": "itions the data around"
+        },
+        {
+          "type": "text_delta",
+          "text": " a pivot element"
+        },
+        {
+          "type": "text_delta",
+          "text": ".\n13. Quicks"
+        },
+        {
+          "type": "text_delta",
+          "text": "ort aver"
+        },
+        {
+          "type": "text_delta",
+          "text": "ages O(n log n) time"
+        },
+        {
+          "type": "text_delta",
+          "text": "."
+        },
+        {
+          "type": "text_delta",
+          "text": "\n14. Quicksort"
+        },
+        {
+          "type": "text_delta",
+          "text": " can"
+        },
+        {
+          "type": "text_delta",
+          "text": " degrade to O(n²"
+        },
+        {
+          "type": "text_delta",
+          "text": ") when p"
+        },
+        {
+          "type": "session_error",
+          "code": "protocol",
+          "recoverable": false,
+          "message": "Claude native stream failed; no automatic replay; native details are redacted"
+        },
+        {
+          "type": "process_state",
+          "state": "crashed",
+          "exitCode": 143
+        },
+        {
+          "type": "turn_completed",
+          "nativeStatus": "interrupted"
+        }
+      ],
+      "exit": {
+        "code": 143,
+        "signal": null
+      }
+    }
+  ],
+  "checks": {
+    "nativeSdkControlHandshake": true,
+    "fixtureHeadAndReadmeUnchanged": true,
+    "personalConfigMetadataUnchanged": true,
+    "fixtureRemovedAfterChecks": true,
+    "approvedDisposableWrite": "approved.txt: Approved once\\n"
+  },
+  "limits": {
+    "probeDoesNotEstablishModelEntitlement": true,
+    "noPersonalCredentialExtraction": true,
+    "subscriptionProductPolicyNotResolvedByProbe": true,
+    "sameCheckoutResumeOnly": true,
+    "noClaudeLeadClaim": true,
+    "noOsSandboxClaim": true
+  }
+}

@@ -40,7 +40,8 @@ export class Profiles {
   private readonly adapters: {
     pi: HarnessAdapter;
     codex: HarnessAdapter;
-    "claude-code"?: HarnessAdapter;
+    "claude-code": HarnessAdapter;
+    opencode: HarnessAdapter;
   };
   readonly demoProfileIds = fakeTeamSnapshot.profiles.map(
     (profile) => profile.id,
@@ -51,7 +52,8 @@ export class Profiles {
     adapters: {
       pi: HarnessAdapter;
       codex: HarnessAdapter;
-      "claude-code"?: HarnessAdapter;
+      "claude-code": HarnessAdapter;
+      opencode: HarnessAdapter;
     },
   ) {
     this.store = store;
@@ -68,19 +70,7 @@ export class Profiles {
   }
   async discover(input: unknown): Promise<ProfileCapabilities> {
     const { harness } = profileDiscoverySchema.parse(input);
-    const adapter = harness === "opencode" ? undefined : this.adapters[harness];
-    if (!adapter)
-      return profileCapabilitiesSchema.parse({
-        harness,
-        implemented: false,
-        installed: "unknown",
-        authenticated: "unknown",
-        models: [],
-        permissions: [],
-        diagnostics: [
-          "This app's adapter is not implemented yet (M8); CLI installation and login have not been checked.",
-        ],
-      });
+    const adapter = this.adapters[harness];
     let capability: AdapterCapabilities;
     try {
       capability = capabilitiesSchema.parse(await adapter.discover());

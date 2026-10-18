@@ -1,0 +1,8 @@
+{
+  "surface": "Actual browser, inert native HTTP/SSE fixture; not live OpenCode/model evidence",
+  "approveOnce": "keyboard activated owner approval; accepted durable receipt; task reached AWAITING_REVIEW",
+  "denyAndStop": "keyboard activated denial; declined request and accepted native decision receipt; persisted after reload, no stale controls",
+  "scopeCopy": "OpenCode denial rejects all pending requests and stops the turn; not an OS sandbox",
+  "nativeCalls": 0,
+  "limits": "Initial long-idle fixture callbacks expired on stream loss; fresh callbacks used. Browser navigation/HMR aborted some fetches. Disclosure set open in DOM after browser helper interaction failed; receipt content was not modified."
+}

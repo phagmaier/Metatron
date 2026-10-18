@@ -153,9 +153,10 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 
 ## M8 - Complete the remaining harnesses [spec §5, 13.3]
 
-- [ ] Implement Claude Code adapter via official Agent SDK; validate auth with installed CLI, streaming, session ID/resume, model choice, hooks/permission prompts and cancellation.
-  - Adapter, fixtures and no-model SDK/installed-CLI probe implemented; authenticated native streaming/model/resume/hooks/cancellation validation is **BLOCKED** on supported SDK authentication. See [current evidence and owner command](docs/adapter-recon.md#m8-item-1--claude-sdk-worker-implementation-2026-10-17); do not mark the item complete from scripted results.
-- [ ] Implement OpenCode adapter via documented SDK/server; bind local server to loopback and protect it; validate session/prompt/events/abort/permissions.
+- [x] Implement Claude Code adapter via official Agent SDK; validate auth with installed CLI, streaming, session ID/resume, model choice, hooks/permission prompts and cancellation.
+  - Verified owner-supplied setup-token with CLI 2.1.302/SDK 0.3.302: native streamed read, same-ID resume, Sonnet 5.5/low hook evidence, deny/cancel, approved Write plus independent denial/stale-grant refusal, and active cancellation/owned exit 143. [Actual native receipt and limitations](docs/adapter-recon.md#m8-item-1--native-claude-validation-completed-2026-10-17). Temporary token removed; durable receipts/checkout guards/no replay remain covered by fixture regressions. Direct adapter validation only; later worker/Lead/gateway/four-harness checklist items remain incomplete.
+- [x] Implement OpenCode adapter via documented SDK/server; bind local server to loopback and protect it; validate session/prompt/events/abort/permissions.
+  - Verified official v2.0.29 client/native server with private loopback authentication/configuration, five native DeepSeek/low prompts (read, same-ID resume, denied/approved writes, stale-grant refusal, active cancellation), and owned shutdown 130. [Native evidence and limitations](docs/adapter-recon.md#m8-item-2--native-opencode-validation-2026-10-17). Default tests 421/421; GUI/receipt integration uses separately labeled inert fixtures. Native gateway/Lead/four-harness gates remain subsequent.
 - [ ] Revisit Pi and Codex adapter capabilities after discovering real SDK/version differences; surface unavailable controls accurately.
 - [ ] Show installed/missing/auth-required/available state in GUI, with actionable diagnostics for each harness.
 - [ ] Verify all four can act as **workers** on read-only task and make their chosen model/think settings effective where supported.

@@ -20,7 +20,8 @@ const resumeUnsupported: Record<Attempt["adapter"], string | null> = {
   codex: "Codex is not a worker harness in this build",
   "claude-code":
     "Claude SDK resume requires the original checkout; assignments create a fresh isolated worktree",
-  opencode: "OpenCode workers are not implemented yet",
+  opencode:
+    "OpenCode native resume requires the original checkout; assignments create a fresh isolated worktree",
 };
 
 type Earlier = { attempt: Attempt; session: Session | undefined };

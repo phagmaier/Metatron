@@ -32,6 +32,7 @@ import {
 import { ClaudeAdapter } from "../adapters/claude.ts";
 import { CodexAdapter } from "../adapters/codex.ts";
 import type { HarnessAdapter } from "../adapters/contract.ts";
+import { OpenCodeAdapter } from "../adapters/opencode.ts";
 import { PiAdapter } from "../adapters/pi.ts";
 import { Gateway } from "../gateway/mcp.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
@@ -49,7 +50,7 @@ import { executeFakeTurn } from "./execute.ts";
 import { Integrations } from "./integration.ts";
 import { executeLeadTurn } from "./lead-execute.ts";
 import { createLeadRun, notifyLead, ownerLeadMessage } from "./lead-run.ts";
-import { endClaudeApprovals } from "./native-approvals.ts";
+import { endNativeApprovals } from "./native-approvals.ts";
 import { executeNativeTurn } from "./native-execute.ts";
 import { createNativeRun } from "./native-run.ts";
 import { recoverProviderFailures } from "./provider-failures.ts";
@@ -71,6 +72,7 @@ export class Engine {
   readonly pi: HarnessAdapter;
   readonly codex: HarnessAdapter;
   readonly claude: HarnessAdapter;
+  readonly opencode: HarnessAdapter;
   readonly profiles: Profiles;
   readonly gateway: Gateway;
   // Loopback MCP endpoint; null when no app server hosts the gateway.
@@ -94,6 +96,7 @@ export class Engine {
     options: {
       codex?: HarnessAdapter;
       claude?: HarnessAdapter;
+      opencode?: HarnessAdapter;
       gatewayUrl?: string | null;
     } = {},
   ) {
@@ -102,10 +105,12 @@ export class Engine {
     this.pi = pi;
     this.codex = options.codex ?? new CodexAdapter(directory);
     this.claude = options.claude ?? new ClaudeAdapter(directory);
+    this.opencode = options.opencode ?? new OpenCodeAdapter(directory);
     this.profiles = new Profiles(store, {
       pi: this.pi,
       codex: this.codex,
       "claude-code": this.claude,
+      opencode: this.opencode,
     });
     this.gatewayUrl = options.gatewayUrl ?? null;
     this.gateway = new Gateway(this);
@@ -114,7 +119,7 @@ export class Engine {
     this.scheduling = new Scheduling(store, directory);
     this.workerMessages = new WorkerMessages(this);
     this.workflows = new Workflows(this);
-    endClaudeApprovals(this);
+    endNativeApprovals(this);
     recoverWorkerHelp(this);
     recoverProviderFailures(this);
     recoverStops(store);
@@ -605,7 +610,7 @@ export class Engine {
         reference ??
         (this.store.getRun(task.runId).execution === "fake"
           ? "FAKE worker report"
-          : "Native Pi worker report"),
+          : "Native worker report"),
     });
     return artifact;
   }

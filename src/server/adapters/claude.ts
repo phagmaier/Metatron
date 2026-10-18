@@ -4,9 +4,9 @@ import { join, resolve } from "node:path";
 import type { AccountInfo, ModelInfo } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { DomainError } from "../../shared/domain/states.ts";
+import { checkoutIdentity } from "../git/checkout-identity.ts";
 import { ClaudeEvents } from "./claude-events.ts";
 import {
-  claudeCheckoutIdentity,
   type Manifest,
   manifestSchema,
   saveClaudeManifest,
@@ -16,7 +16,7 @@ import {
   type Launched,
   launchClaude,
 } from "./claude-options.ts";
-import { type ClaudeExit, ClaudeInput } from "./claude-process.ts";
+import type { ClaudeExit } from "./claude-process.ts";
 import {
   type Active,
   cancelClaudeTurn,
@@ -34,6 +34,7 @@ import {
   type SteeringOptions,
   startSessionSchema,
 } from "./contract.ts";
+import { AdapterQueue } from "./queue.ts";
 
 export class ClaudeAdapter implements HarnessAdapter {
   private readonly directory: string;
@@ -83,7 +84,7 @@ export class ClaudeAdapter implements HarnessAdapter {
       supportsPermissionPrompts: true,
       supportsToolGateway: true,
       diagnostics: [
-        "Official Agent SDK with the installed Claude Code CLI and app-owned configuration. API key or supported cloud provider configuration required; personal subscription/OAuth credentials are not copied. Catalog presence does not prove entitlement.",
+        "Official Agent SDK with the installed Claude Code CLI and app-owned configuration. Owner-supplied setup-token, API key or supported cloud provider route; no personal credential files copied. Subscription SDK-product policy applicability requires owner/vendor resolution. Catalog presence does not prove entitlement.",
         "Exact file tools and optional app gateway only; no shell, delegation, discovered settings, plugins, skills or MCP servers. This is an application guard, not an OS sandbox. Resume accepts only clean app-owned same-checkout sessions; interrupted work is never replayed.",
       ],
     };
@@ -104,19 +105,15 @@ export class ClaudeAdapter implements HarnessAdapter {
           label: id,
         })),
       }));
-      result.authenticated = this.routeConfigured(
-        account.apiProvider,
-        account.apiKeySource,
-      )
-        ? "unknown"
-        : false;
-      if (result.authenticated === false)
-        result.diagnostics.push(
-          "BLOCKED: configure ANTHROPIC_API_KEY or a supported Bedrock, Vertex or Foundry API flow for the app; no model prompt was submitted.",
-        );
+      const auth = this.authentication(launched, account);
+      result.authenticated = auth.authenticated;
+      result.diagnostics.push(auth.diagnostic);
     } catch {
+      const auth = launched ? this.authentication(launched) : undefined;
+      result.authenticated = auth?.authenticated ?? false;
+      if (auth) result.diagnostics.push(auth.diagnostic);
       result.diagnostics.push(
-        "Claude no-prompt discovery failed; verify the installed CLI and supported API authentication configuration. Native error contents are redacted.",
+        "AUTH_METADATA_UNAVAILABLE: Claude no-prompt discovery failed; verify the installed CLI and selected authentication route. Native error contents are redacted; no model prompt was submitted.",
       );
     } finally {
       if (launched) {
@@ -133,19 +130,50 @@ export class ClaudeAdapter implements HarnessAdapter {
     }
     return result;
   }
-  private routeConfigured(
-    provider: string | undefined,
-    source: string | undefined,
-  ): boolean {
-    return (
-      (!!process.env.ANTHROPIC_API_KEY &&
-        provider === "firstParty" &&
-        !!source &&
-        source !== "none") ||
-      (process.env.CLAUDE_CODE_USE_BEDROCK === "1" && provider === "bedrock") ||
-      (process.env.CLAUDE_CODE_USE_VERTEX === "1" && provider === "vertex") ||
-      (process.env.CLAUDE_CODE_USE_FOUNDRY === "1" && provider === "foundry")
-    );
+  private authentication(
+    launched: Launched,
+    account?: AccountInfo,
+  ): { authenticated: false | "unknown"; diagnostic: string } {
+    // Classify the owned child's launch snapshot, never mutable host state.
+    const env = launched.process.environment;
+    const cloud = [
+      ["CLAUDE_CODE_USE_BEDROCK", "bedrock"],
+      ["CLAUDE_CODE_USE_VERTEX", "vertex"],
+      ["CLAUDE_CODE_USE_FOUNDRY", "foundry"],
+    ].find(([key]) => key && env[key] === "1")?.[1];
+    const route =
+      cloud ??
+      (env.ANTHROPIC_API_KEY
+        ? "api-key"
+        : env.CLAUDE_CODE_OAUTH_TOKEN
+          ? "setup-token"
+          : undefined);
+    if (!route)
+      return {
+        authenticated: false,
+        diagnostic: launched.excludedAuthentication
+          ? "AUTH_POLICY_UNSUPPORTED: an ambient bearer/profile route was excluded from the worker environment. Select owner-supplied setup-token or an approved API/cloud route; no model prompt was submitted."
+          : "AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+      };
+    const precedence =
+      "Provider selection precedes API key; API key precedes setup-token. No credentials were removed to change billing.";
+    if (!account)
+      return {
+        authenticated: "unknown",
+        diagnostic: `AUTH_UNVERIFIED: configured ${route}; native account metadata unavailable. ${precedence}`,
+      };
+    const matches = cloud
+      ? account.apiProvider === cloud
+      : account.apiProvider === "firstParty" &&
+        (route === "api-key"
+          ? account.apiKeySource === "ANTHROPIC_API_KEY"
+          : account.tokenSource === "CLAUDE_CODE_OAUTH_TOKEN");
+    return {
+      authenticated: matches ? "unknown" : false,
+      diagnostic: matches
+        ? `AUTH_UNVERIFIED: native metadata selects ${route}; model entitlement and quota remain untested. ${precedence}`
+        : `AUTH_ROUTE_REJECTED: native metadata did not confirm configured ${route}; no model prompt was submitted. ${precedence}`,
+    };
   }
   private async create(
     input: StartSessionInput,
@@ -176,7 +204,7 @@ export class ClaudeAdapter implements HarnessAdapter {
         "UNSUPPORTED",
         "Claude supports isolated file-tool workers with only the app loopback gateway overlay",
       );
-    const identity = await claudeCheckoutIdentity(data.cwd);
+    const identity = await checkoutIdentity(data.cwd);
     const sessionId = resumeId ? z.uuid().parse(resumeId) : randomUUID();
     await mkdir(join(this.directory, "claude-sessions"), {
       recursive: true,
@@ -248,11 +276,9 @@ export class ClaudeAdapter implements HarnessAdapter {
           "UNSUPPORTED",
           "Requested Claude effort is unsupported by this exact model",
         );
-      if (!this.routeConfigured(account.apiProvider, account.apiKeySource))
-        throw new DomainError(
-          "UNSUPPORTED",
-          "BLOCKED: Claude requires configured API-key or supported cloud-provider authentication; no prompt was submitted",
-        );
+      const auth = this.authentication(launched, account);
+      if (auth.authenticated === false)
+        throw new DomainError("UNSUPPORTED", auth.diagnostic);
       launched.input.close();
       await launched.process.stop();
       launched.query.close();
@@ -273,14 +299,11 @@ export class ClaudeAdapter implements HarnessAdapter {
         !configured ||
         configured.resolvedModel !== model.resolvedModel ||
         (effort && !configured.supportedEffortLevels?.includes(effort)) ||
-        !this.routeConfigured(
-          final.account.apiProvider,
-          final.account.apiKeySource,
-        )
+        this.authentication(launched, final.account).authenticated === false
       )
         throw new DomainError(
           "UNSUPPORTED",
-          "Claude final no-prompt configuration did not match the validated model, effort or configured API route",
+          "Claude final no-prompt configuration did not match the validated model, effort or configured authentication route",
         );
       const managed: ManagedSession = {
         adapter: "claude-code",
@@ -310,7 +333,7 @@ export class ClaudeAdapter implements HarnessAdapter {
         process: launched.process,
         input: launched.input,
         abort: launched.abort,
-        events: new ClaudeInput(),
+        events: new AdapterQueue(),
         mapper: new ClaudeEvents(
           sessionId,
           data.cwd,

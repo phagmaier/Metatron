@@ -20,8 +20,18 @@ export async function createNativeRun(
     project.repository.commonDirectory !== repository.commonDirectory
   )
     throw new DomainError("CONFLICT", "Project identity changed; reopen it");
-  const adapter = data.harness === "claude-code" ? engine.claude : engine.pi;
-  const label = data.harness === "claude-code" ? "Claude Code" : "Pi";
+  const adapter =
+    data.harness === "claude-code"
+      ? engine.claude
+      : data.harness === "opencode"
+        ? engine.opencode
+        : engine.pi;
+  const label =
+    data.harness === "claude-code"
+      ? "Claude Code"
+      : data.harness === "opencode"
+        ? "OpenCode"
+        : "Pi";
   const capabilities = await adapter.discover();
   const model = capabilities.models.find((m) => m.id === data.model);
   if (

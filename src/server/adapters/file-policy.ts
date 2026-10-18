@@ -16,7 +16,13 @@ const gatewayTools = [
 function sensitive(path: string) {
   return (
     sensitivePath(path) ||
-    path.split(/[\\/]/).some((part) => part.toLowerCase() === ".claude")
+    path
+      .split(/[\\/]/)
+      .some((part) =>
+        [".claude", ".opencode", "opencode.json", "opencode.jsonc"].includes(
+          part.toLowerCase(),
+        ),
+      )
   );
 }
 
@@ -43,7 +49,7 @@ async function inspect(directory: string): Promise<boolean> {
   return true;
 }
 
-export async function checkClaudeTool(
+export async function checkFileTool(
   root: string,
   permission: string,
   event: ToolCall,

@@ -178,18 +178,12 @@ test("team writes enforce roster policy atomically, are version checked, replay 
     const first = createTeam(f.store, f.content, "create");
     assert.equal(first.version, 1);
     const before = f.store.events().length;
-    // An unimplemented native harness can only exist as a pre-discovery row.
-    const legacy = { ...f.reader, id: randomUUID(), harness: "opencode" };
-    f.store.db
-      .prepare("INSERT INTO agent_profiles VALUES (?,?,?)")
-      .run(legacy.id, legacy.roleId, JSON.stringify(legacy));
     const outside = saveWorkflow(f, f.writer.id);
     const refused: [Record<string, unknown>, string][] = [
       [{ leadProfileId: f.reader.id }, "POLICY_DENIED"],
       [{ workerProfileIds: [f.reader.id, f.lead.id] }, "POLICY_DENIED"],
       [{ workerProfileIds: [fakeReader.id] }, "POLICY_DENIED"],
       [{ leadProfileId: fakeLead.id }, "POLICY_DENIED"],
-      [{ workerProfileIds: [legacy.id] }, "UNSUPPORTED"],
       [{ workerProfileIds: [randomUUID()] }, "NOT_FOUND"],
       [{ workflowTemplateIds: [randomUUID()] }, "NOT_FOUND"],
       [{ workflowTemplateIds: [outside.id] }, "INVALID_REFERENCE"],

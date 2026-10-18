@@ -31,7 +31,7 @@ import { workflowsResponseSchema } from "../shared/workflows.ts";
 import { capabilitiesSchema } from "./adapters/contract.ts";
 import { inspectRepository } from "./git/inspect.ts";
 import type { Engine } from "./orchestration/engine.ts";
-import { decideClaudeApproval } from "./orchestration/native-approvals.ts";
+import { decideNativeApproval } from "./orchestration/native-approvals.ts";
 import {
   decideRecovery,
   recheckRecovery,
@@ -438,7 +438,7 @@ export function createApi(store: Store, engine: Engine) {
             "PATCH /api/human-requests": (input, key) =>
               store.updateHumanRequest(input, key),
             "POST /api/native-approvals": (input, key) =>
-              decideClaudeApproval(engine, input, key),
+              decideNativeApproval(engine, input, key),
           };
         const write = writes[`${method} ${url.pathname}`];
         if (!write) {

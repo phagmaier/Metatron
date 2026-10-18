@@ -35,79 +35,11 @@
 - Completed all 11 items: deterministic candidates, independent reviews, revisions, isolated previews, owner-confirmed local integration and retained evidence. Final tests 163/163; typecheck/lint/fixtures/build/smoke and protocol integration gate passed.
 - [Original entries, review fixes, retained summaries and evidence](progress-m4-m5-history.md); live cost-bearing calls omitted; next was M6.
 
-## 2026-10-16 — M6 item 1: durable human requests and transitions (archived)
+## 2026-10-16 — M6: human requests, steering, stop and recovery (archived)
 
-- Completed durable HumanRequest storage, same-run blocker links, urgency, transactional waits and owner replies that never dispatch or resume work.
-- Tests 173/173; typecheck/lint/fixtures/build/smoke and backend/API demo passed; live calls omitted.
-- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 item 2: Needs You inbox (archived)
-
-- Completed the run inbox with respond/decline/complete/defer, evidence and durable history; stale decisions refused without retry; no native reply delivery claimed.
-- Tests 175/175; typecheck/lint/fixtures/build/smoke and CDP GUI/restart demo passed; live calls omitted.
-- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 item 3: worker help and issues (archived)
-
-- Completed `request_human_action`/`report_issue`: durable session-bound signals stop only the reporting worker after confirmed shutdown, then wait with a retained session, worktree and blocker.
-- Tests 185/185; typecheck/lint/fixtures/build/smoke and CDP gateway/inbox demo passed; live calls omitted.
-- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 item 4: dependency waits (archived)
-
-- Completed WAITING_DEPENDENCY handling: downstream tasks wait until prerequisites are DONE, unrelated work continues, and saved assignments resume in FIFO order without replaying ambiguous work.
-- Tests 193/193; typecheck/lint/fixtures/build/smoke and FAKE engine demo passed; live calls omitted.
-- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 item 5: native permission denial notices (archived)
-
-- Completed Codex denial notices: typed native denials become nonblocking, idempotent Needs You records with session evidence; no native approval or continuation; Pi has no per-tool callback.
-- Tests 195/195; typecheck/lint/fixtures/build/smoke, schema generation and no-model Codex probe passed; live calls omitted.
-- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 item 6: direct owner worker messages (archived)
-
-- Completed owner steer/follow-up with delivered/queued/unsupported/unconfirmed states; Pi queues at native boundaries, nothing is resubmitted, resumed or dispatched.
-- Tests 203/203; typecheck/lint/fixtures/build/smoke, offline Pi probe and CDP demo passed; live calls omitted.
-- [Original commands, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 planning: triaged recovery findings (archived)
-
-- Docs only: extended M6 stop/recovery/reconciliation/fault-test items and confirmed provider-failure blockers; spec §§9–10 and the recovery-evidence ADR updated. `git diff --check` passed; tests not run (docs only).
-- [Original entry](progress-m4-m5-history.md); next was M6 item 7.
-
-## 2026-10-16 — M6 item 7: pause, stop run and emergency stop (archived)
-
-- Completed durable owner stop intent/outcomes, scoped app-owned cancellation and GUI history; direct children only, descendants untracked. ADR and original evidence retained in history.
-- Tests 212/212; typecheck/lint/fixtures/build/smoke and protocol/browser demo passed; live calls omitted.
-- [Original commands, ADRs, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 item 8: explicit recovery causes and identity-gated retry (archived)
-
-- Completed explicit recovery causes, worktree identity observations and an owner-gated fresh retry; recheck never resubmits, relinks or deletes. Native resume remained item 10.
-- Tests 223/223; typecheck/lint/fixtures/build/smoke and FAKE/browser demo passed; live calls omitted.
-- [Original commands, ADRs, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 item 9: restart reconciliation by observation (archived)
-
-- Completed startup observation of pending recovery decisions: process identity, native session match, worktree Git state and unfinished tools; no replay. Lead attempts and descendants remained untracked.
-- Tests 228/228; typecheck/lint/fixtures/build/smoke and protocol/browser demo passed; live calls omitted.
-- [Original commands, ADRs, evidence and limitations](progress-m4-m5-history.md); next checklist item is recorded there.
-
-## 2026-10-16 — M6 item 10: per-assignment context policies (archived)
-
-- Completed auto/fresh/resume context policies with lineage, checkpoints and refused explicit resumes; Pi never resumes (adapter limit). Tests 232/232, 12/12 mutations; typecheck/lint/fixtures/build/smoke and CDP browser demo passed; live calls omitted.
-- [Original commands, ADR, evidence and limitations](progress-m4-m5-history.md); next was M6 item 11.
-
-## 2026-10-16 — M6 item 11: confirmed provider failure blockers (archived)
-
-- Completed confirmed auth/rate-limit/credit/usage blockers linked to native evidence, holding Lead wake-ups until a new owner turn. Tests 250/250; typecheck/lint/fixtures/build/smoke and HTTP demo passed; GUI capture failed (NSS), live calls omitted.
-- [Original commands, ADR, evidence and limitations](progress-m4-m5-history.md); next was M6 item 12.
-
-## 2026-10-16 — M6 item 12: deterministic fault-test gate (archived)
-
-- Completed the FAKE/protocol fault gate: delayed tools/approvals, recovery/worktree identity, durable stops, provider failures and explicit continuation. Tests 258/258, focused 47/47, mutations 10/10; typecheck/lint/fixtures/build/smoke passed.
-- [Original commands, matrix, evidence and limits](progress-m4-m5-history.md); live calls omitted, visual checks remain M9; next was M7 item 1.
+- Completed all 12 items: durable requests/inbox/dependencies, owner steering/stops, observation-only restart and identity-gated recovery, context policy and provider blockers; no automatic replay.
+- Final gate: tests 258/258, focused 47/47, mutations 10/10 and standard checks passed; native cost-bearing calls omitted. Limits: direct-child stops only, Pi fresh successors/no resume, Codex permission denials only; visible recovery checks remain M9.
+- [Original per-item commands, ADRs, evidence, failures and limitations](progress-m4-m5-history.md); next was M7 item 1.
 
 ## 2026-10-17 — M7 item 1: reusable role library (archived)
 
@@ -181,3 +113,41 @@
 - Chromium production UI PASS with explicit SCRIPTED fixture: Approve once changed only its worker README/candidate; Deny once preserved its worker README/no candidate; both receipts survived reload, 0 page errors, no owner integration/checkout changes; disposable app/Git fixtures removed. [Receipt](evidence/m8-claude-approve-once.png), [runtime checks](evidence/m8-claude-ui.json). Not a live Claude turn.
 - [ADR](adr/2026-10-17-claude-worker-permissions.md), README and adapter reconnaissance record authority, auth/cost prerequisite, resume and sandbox limits. Toolchain pins/spec/other M8 items unchanged. Native model streaming/effectiveness/resume/hooks/active cancellation are blocked, not passed; no paid Pi/Codex or four-harness checks were run in this slice.
 - Next remains M8 item 1 live gate, not item 2: privately configure supported SDK auth, then `mise x -- pnpm test:live:claude --allow-live --model sonnet --thinking low --output /tmp/m8-claude-live-evidence.json` (fresh output/settings; provider cost). Keep item 1 unchecked until observed. Resume: “Complete M8 item 1 live validation only”.
+
+## 2026-10-17 — M8 item 1 Slice A: setup-token compatibility; native model gate BLOCKED
+
+- Used `harness-next-steps.md` §§4/5 Slice A immediately; owner selected setup-token compatibility and authorized bounded sonnet/low native smoke after private authentication. [ADR](adr/2026-10-17-claude-setup-token.md) supersedes API/provider-only policy, not vendor restrictions; no claimed personal-use exemption, free usage or Anthropic approval.
+- Changed `claude-options.ts`, `claude-process.ts`, `claude.ts`: narrow token forwarding, actual child-environment snapshot classification, effective cloud/key/token precedence and safe absent/unverified/rejected/unsupported diagnostics; no entitlement inferred from presence. Profile gates, hooks, approval receipts, checkout identity, completion and no replay unchanged.
+- `tests/claude.test.ts` / SDK fixture add nine regressions: token, conflicting routes, rejected metadata, unsupported bearer, metadata/init failure, host-env drift and final-launch revalidation. No secrets in diagnostics; blocked paths submit no model prompt.
+- `scripts/live-claude.ts` now versions the actual worker executable/environment and prepares five scenarios including approved Write + independent denied Write/stale grant, active-generation cancel before native result and interrupted-resume refusal; records native init/stream model/effort evidence. Additional model scenarios remain unexecuted, not fixture-proven native behavior.
+- PASS: `mise x -- pnpm typecheck`; `mise x -- pnpm lint`; `mise x -- pnpm test` **392/392**; `mise x -- pnpm test:fixtures` **3/3**; `mise x -- pnpm build`; `mise x -- pnpm smoke` development/production. Focused Biome formatting applied to six changed code files before checks.
+- Native no-model PASS: `mise x -- pnpm test:live:claude --output /tmp/m8-claude-selected-route-probe-new.json`; CLI **2.1.302**, SDK **0.3.302**, sonnet/low rediscovered; [receipt](evidence/m8-claude-selected-route-probe.json). Actual environment has no real token/key/cloud route; auth **false**, zero prompts, fixture/checked config metadata preserved and disposable state removed.
+- Explicitly inert-token no-model PASS: `env CLAUDE_CODE_OAUTH_TOKEN=inert-route-probe-not-a-credential mise x -- pnpm test:live:claude --output /tmp/m8-claude-inert-token-probe-new.json`; [receipt](evidence/m8-claude-inert-token-probe.json) reports **unknown**. Separate inert native metadata checks confirmed token/key source spellings; no model access proven. An initial scratch probe had an invalid factory/no child; its empty temporary state was removed before the successful real probes.
+- BLOCKED real native streaming/resume/permissions/approved-write/active-cancellation: no private credential supplied to this process. No paid calls or other-harness changes; no personal config/credential extraction or session attachment. README/recon/todo updated; item 1 stays unchecked.
+- Exact next remains M8 item 1 native validation: privately generate/load the permitted setup-token as described in [recon](adapter-recon.md#m8-item-1--claude-authentication-slice-a-2026-10-17), rediscover, then `mise x -- pnpm test:live:claude --allow-live --model sonnet --thinking low --output /tmp/m8-claude-live-evidence-new.json` from that environment. Only after it passes: item 2 OpenCode.
+- Remaining Slice B placement recorded in recon: diagnostics/version at M8 item 4, observed per-adapter lifecycle/compatibility issues at items 3/8, broader stop/recovery/privacy at existing M9 gates; nonrequired usage/UI/optimization work deferred, not inserted ahead of OpenCode. No spec/dependency/toolchain changes.
+- Final explicit unsupported-route refinement PASS: preserve only a host presence boolean, never forward bearer/profile values; native [inert bearer probe](evidence/m8-claude-unsupported-bearer-probe.json) returns **AUTH_POLICY_UNSUPPORTED**, false auth, zero prompts and cleanup. After this refinement, `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, and `mise x -- node --test tests/claude.test.ts tests/claude-engine.test.ts tests/claude-policy.test.ts` **61/61** passed.
+
+## 2026-10-17 — M8 item 1 native gate completed
+
+- Owner-authorized private token handoff worked; actual-worker no-model discovery selected setup-token. File/directory removed after use, token never printed/argument-passed; preserved receipts passed exact-secret exclusion checks. No application credential-file loader or personal credential extraction.
+- Native PASS: `mise x -- pnpm test:live:claude --allow-live --model sonnet --thinking low --output /tmp/m8-claude-owner-native-t7k_tk1g/live-stream-fix.json`; [receipt](evidence/m8-claude-native-live.json), [no-model discovery](evidence/m8-claude-owner-token-probe.json). Five prompts: streamed read, same-ID resume, deny/cancel, approved Write + independent denial/stale-grant refusal, active-generation cancellation. Only approved disposable file changed; clean successful turns exited 0, active cancel interrupted/143, no replay.
+- Fixed observed CLI 2.1.302/SDK 0.3.302 incompatibilities in `claude-options.ts`/`claude-events.ts`: explicitly disable bundled skills/observed builtin plugins; keep zero-customization guard. Headless init omits effort: require real PreToolUse/Stop proof (low observed), never authorize unproven tools/success. Parse native message-delta stop metadata while rejecting malformed content deltas.
+- `scripts/live-claude.ts` now retains selected failure events/init/hook evidence. Four earlier fresh reader diagnostics failed closed before writes; [failure chain and retained paths](adapter-recon.md#m8-item-1--native-claude-validation-completed-2026-10-17). They consumed native usage; no ambiguous mutation was replayed. Generic stream error accompanying active cancellation remains recorded, not suppressed.
+- Eight added behavioral regressions in `tests/claude.test.ts`/SDK fixture; message-delta regression reproduced failing-before. PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, focused Claude **69/69**, `mise x -- pnpm test` **400/400**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production.
+- README/recon/authentication ADR/permission ADR/todo updated; M8 item 1 checked. Token mechanism/native success is not vendor approval/free usage/future entitlement. Unconditional hooks, durable receipts, checkout identity and no replay preserved; GUI receipt evidence remains fixture-based, native gateway/Lead/four-harness gates remain later. No Pi/OpenCode changes, new dependencies, spec or toolchain changes.
+- Next **M8 item 2 OpenCode only**; resume: “Implement M8 item 2 via the installed documented SDK/server; retain loopback/API safety.” Slice B placement unchanged (M8 diagnostics/capability/smoke and M9 recovery/privacy, otherwise deferred). Consolidated already-archived M6 summaries to keep this progress file under 200 lines; original entries remain linked.
+
+## 2026-10-17 — M8 item 2: OpenCode v2 native adapter
+
+- Dependency justification: exact `@opencode/client@2.0.29` matches installed OpenCode v2.0.29 and supplies the official typed native HTTP/session/event/permission client; stdlib fetch or the v1 SDK would duplicate or use the wrong protocol. No global install or toolchain change.
+- Implemented `adapters/opencode*.ts` with private native v2 HTTP/SSE lifecycle and safe manifests; connected Engine/profile/team/worktree, recovery/stop evidence and generic native approvals. Extracted the existing Claude queue/file/checkout guards instead of duplicating them; Claude auth/hooks unchanged, no Pi source changes.
+- Owner separately authorized the existing DeepSeek environment route and bounded native calls. PASS: `mise x -- pnpm test:live:opencode --allow-live --model deepseek/deepseek-flash --thinking low --output /tmp/m8-opencode-native-transient-stream-new.json`; [receipt](evidence/m8-opencode-native-live.json). Five prompts: read, same-ID resume, deny/cancel, approve once plus independent denial/stale refusal, active generation cancel with interrupt acknowledgement; native low model refs, owned exits 130, only approved disposable file changed.
+- Final no-model PASS: `mise x -- pnpm test:live:opencode --output /tmp/m8-opencode-no-model-final-new.json`; [receipt](evidence/m8-opencode-discovery.json). Private Basic auth/PID/loopback, unauthenticated mutation 401, hostile project plugin never loaded, effective policy before prompts. Auth stays unknown; native authenticated GET is not Origin protection.
+- Observed/fixed v2 readiness, prompt wake and stream differences: HTTP/catalog precedes plugin activation, `resume:false` only queues, transient text deltas are absent from generated V2Event. Earlier fresh read-only diagnostics retained at paths in [recon](adapter-recon.md#m8-item-2--native-opencode-validation-2026-10-17); one completed read consumed model execution before stream mapping was corrected. No ambiguous mutation replay.
+- Two read-only reviews found/fixed fragmented password framing, canceled stream-start/late-read grants and double-release of a successor's lease. Four focused regressions plus native stream, identity, one-shot approval, recovery and HTTP integration cases pass; no coding workers shared this branch.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **421/421**, OpenCode-focused **21/21**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production. No additional Pi/Codex/Claude cost-bearing calls in this item.
+- Actual scratch-browser approval/denial/reload [receipt](evidence/m8-opencode-ui-fixture.json) uses inert HTTP/SSE/Git fixtures, not native model/gateway proof. Stale controls absent; no browser exceptions observed, navigation/HMR aborted fetches. Actual mise-runtime exact-secret exclusion passed for all three evidence files; no credential values printed.
+- Expanded the existing [OpenCode v2 ADR](adr/2026-10-15-opencode-v2-interface.md), README/recon/next-steps; checked only M8 item 2. Live steering/usage and native gateway/Lead/four-harness validation remain unclaimed, with no spec/toolchain changes. Safety is application policy, not an OS sandbox.
+- Environment note: a permitted `mise x` invocation itself auto-purged old Claude **2.1.301** and `oh-my-pi` **18.11.1** installations/cache entries. No global config edits or manual-session attachment were performed; this is not proof about unrelated session health.
+- Exact next **M8 item 3 only**: revisit installed Pi/Codex capabilities and surface unavailable controls accurately. Resume with `mise current`, the M8 header/recon and those adapters; retain later diagnostics, worker/Lead and matrix gates in checklist order. Slice B placement stays unchanged.

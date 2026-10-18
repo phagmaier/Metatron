@@ -1,0 +1,171 @@
+{
+  "status": "PROBE_ONLY",
+  "executable": "/home/phagmaier/.local/share/mise/installs/claude/2.1.302/claude",
+  "version": "2.1.302 (Claude Code)",
+  "sdkVersion": "0.3.302",
+  "capabilities": {
+    "adapter": "claude-code",
+    "installed": true,
+    "authenticated": "unknown",
+    "models": [
+      {
+        "id": "default",
+        "label": "Default (recommended)",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      },
+      {
+        "id": "sonnet",
+        "label": "Sonnet",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      },
+      {
+        "id": "fable",
+        "label": "Fable",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      },
+      {
+        "id": "opus",
+        "label": "Opus",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      },
+      {
+        "id": "haiku",
+        "label": "Haiku",
+        "thinking": [
+          {
+            "id": "low",
+            "label": "low"
+          },
+          {
+            "id": "medium",
+            "label": "medium"
+          },
+          {
+            "id": "high",
+            "label": "high"
+          },
+          {
+            "id": "xhigh",
+            "label": "xhigh"
+          },
+          {
+            "id": "max",
+            "label": "max"
+          }
+        ]
+      }
+    ],
+    "supportsResume": true,
+    "supportsLiveSteer": false,
+    "supportsCancel": true,
+    "supportsPermissionPrompts": true,
+    "supportsToolGateway": true,
+    "diagnostics": [
+      "Official Agent SDK with the installed Claude Code CLI and app-owned configuration. Owner-supplied setup-token, API key or supported cloud provider route; no personal credential files copied. Subscription SDK-product policy applicability requires owner/vendor resolution. Catalog presence does not prove entitlement.",
+      "Exact file tools and optional app gateway only; no shell, delegation, discovered settings, plugins, skills or MCP servers. This is an application guard, not an OS sandbox. Resume accepts only clean app-owned same-checkout sessions; interrupted work is never replayed.",
+      "AUTH_UNVERIFIED: native metadata selects setup-token; model entitlement and quota remain untested. Provider selection precedes API key; API key precedes setup-token. No credentials were removed to change billing."
+    ]
+  },
+  "nativeEvidence": [],
+  "liveReadiness": "Configured route is unverified until an authorized model turn succeeds",
+  "modelPromptsSubmitted": 0,
+  "liveResults": [],
+  "checks": {
+    "nativeSdkControlHandshake": true,
+    "fixtureHeadAndReadmeUnchanged": true,
+    "personalConfigMetadataUnchanged": true,
+    "fixtureRemovedAfterChecks": true
+  },
+  "limits": {
+    "probeDoesNotEstablishModelEntitlement": true,
+    "noPersonalCredentialExtraction": true,
+    "subscriptionProductPolicyNotResolvedByProbe": true,
+    "sameCheckoutResumeOnly": true,
+    "noClaudeLeadClaim": true,
+    "noOsSandboxClaim": true
+  }
+}

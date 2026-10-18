@@ -182,7 +182,7 @@ function unfinishedTools(store: Store, attemptId: string) {
   const open = new Map<string, string>();
   for (const row of store.db
     .prepare(
-      "SELECT type, payload FROM events WHERE attempt_id=? AND type IN ('pi.tool_started','pi.tool_finished','codex.tool_started','codex.tool_finished','claude-code.tool_started','claude-code.tool_finished') ORDER BY sequence",
+      "SELECT type, payload FROM events WHERE attempt_id=? AND type IN ('pi.tool_started','pi.tool_finished','codex.tool_started','codex.tool_finished','claude-code.tool_started','claude-code.tool_finished','opencode.tool_started','opencode.tool_finished') ORDER BY sequence",
     )
     .all(attemptId)) {
     const tool = toolEventSchema.parse(JSON.parse(String(row.payload)));

@@ -9,7 +9,7 @@ import {
 } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
-import { checkClaudeTool } from "../src/server/adapters/claude-policy.ts";
+import { checkFileTool } from "../src/server/adapters/file-policy.ts";
 import { createGitFixture } from "./helpers/git-fixture.ts";
 
 test("Claude policy permits explicit safe reads, searches and workspace mutations", async () => {
@@ -23,7 +23,7 @@ test("Claude policy permits explicit safe reads, searches and workspace mutation
         join(f.directory, "src", "safe.ts"),
       ])
         assert.equal(
-          await checkClaudeTool(f.directory, permission, {
+          await checkFileTool(f.directory, permission, {
             toolName: "Read",
             input: { file_path },
           }),
@@ -32,7 +32,7 @@ test("Claude policy permits explicit safe reads, searches and workspace mutation
       for (const toolName of ["Grep", "Glob"])
         for (const path of [undefined, ".", "src", "src/safe.ts"])
           assert.equal(
-            await checkClaudeTool(f.directory, permission, {
+            await checkFileTool(f.directory, permission, {
               toolName,
               input: {
                 ...(path === undefined ? {} : { path }),
@@ -44,7 +44,7 @@ test("Claude policy permits explicit safe reads, searches and workspace mutation
     }
     for (const toolName of ["Edit", "Write"])
       assert.equal(
-        await checkClaudeTool(f.directory, "workspace_write", {
+        await checkFileTool(f.directory, "workspace_write", {
           toolName,
           input: { file_path: "README.md" },
         }),
@@ -52,7 +52,7 @@ test("Claude policy permits explicit safe reads, searches and workspace mutation
       );
     for (const file_path of ["new.txt", "new/sub/file.txt"])
       assert.equal(
-        await checkClaudeTool(f.directory, "workspace_write", {
+        await checkFileTool(f.directory, "workspace_write", {
           toolName: "Write",
           input: { file_path },
         }),
@@ -63,7 +63,7 @@ test("Claude policy permits explicit safe reads, searches and workspace mutation
     await symlink(f.directory, alias);
     assert.equal(
       (
-        await checkClaudeTool(alias, "read_only", {
+        await checkFileTool(alias, "read_only", {
           toolName: "Read",
           input: { file_path: "README.md" },
         })
@@ -79,7 +79,7 @@ test("Claude policy denies writer tools for readers and all tools for invalid pr
     for (const toolName of ["Edit", "Write"])
       assert.equal(
         (
-          await checkClaudeTool(f.directory, "read_only", {
+          await checkFileTool(f.directory, "read_only", {
             toolName,
             input: { file_path: "README.md" },
           })
@@ -97,7 +97,7 @@ test("Claude policy denies writer tools for readers and all tools for invalid pr
       ])
         assert.equal(
           (
-            await checkClaudeTool(
+            await checkFileTool(
               f.directory,
               permission,
               { toolName, input: { file_path: "README.md" } },
@@ -128,7 +128,7 @@ test("Claude policy requires valid file paths and distinguishes absent new files
       ])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "workspace_write", {
+            await checkFileTool(f.directory, "workspace_write", {
               toolName,
               input,
             })
@@ -138,7 +138,7 @@ test("Claude policy requires valid file paths and distinguishes absent new files
     for (const toolName of ["Read", "Edit"])
       assert.equal(
         (
-          await checkClaudeTool(f.directory, "workspace_write", {
+          await checkFileTool(f.directory, "workspace_write", {
             toolName,
             input: { file_path: "missing/sub/file.txt" },
           })
@@ -149,7 +149,7 @@ test("Claude policy requires valid file paths and distinguishes absent new files
       for (const path of [null, false, 1, {}, [], "", "src\0", "missing"])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "read_only", {
+            await checkFileTool(f.directory, "read_only", {
               toolName,
               input: { path },
             })
@@ -172,7 +172,7 @@ test("Claude policy blocks traversal, absolute escapes and search scope override
       for (const toolName of ["Read", "Edit", "Write", "Grep", "Glob"])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "workspace_write", {
+            await checkFileTool(f.directory, "workspace_write", {
               toolName,
               input: { path, file_path: path },
             })
@@ -198,7 +198,7 @@ test("Claude policy blocks traversal, absolute escapes and search scope override
       ])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "read_only", {
+            await checkFileTool(f.directory, "read_only", {
               toolName,
               input: { [toolName === "Glob" ? "pattern" : "glob"]: selector },
             })
@@ -231,7 +231,7 @@ test("Claude policy denies symlinked files and parents, including safe and dangl
       for (const toolName of ["Read", "Edit", "Write", "Grep", "Glob"])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "workspace_write", {
+            await checkFileTool(f.directory, "workspace_write", {
               toolName,
               input: { path, file_path: path },
             })
@@ -241,7 +241,7 @@ test("Claude policy denies symlinked files and parents, including safe and dangl
     for (const toolName of ["Grep", "Glob"])
       assert.equal(
         (
-          await checkClaudeTool(f.directory, "read_only", {
+          await checkFileTool(f.directory, "read_only", {
             toolName,
             input: {},
           })
@@ -288,7 +288,7 @@ test("Claude policy blocks sensitive files, config trees and recursive secret de
       for (const toolName of ["Read", "Edit", "Write", "Grep", "Glob"])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "workspace_write", {
+            await checkFileTool(f.directory, "workspace_write", {
               toolName,
               input: {
                 path: `${scope}/nested/${name}`,
@@ -302,7 +302,7 @@ test("Claude policy blocks sensitive files, config trees and recursive secret de
         for (const toolName of ["Grep", "Glob"])
           assert.equal(
             (
-              await checkClaudeTool(f.directory, "read_only", {
+              await checkFileTool(f.directory, "read_only", {
                 toolName,
                 input: { path: scope },
               })
@@ -324,7 +324,7 @@ test("Claude policy blocks sensitive files, config trees and recursive secret de
       ])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "workspace_write", {
+            await checkFileTool(f.directory, "workspace_write", {
               toolName,
               input: { path, file_path: path },
             })
@@ -334,7 +334,7 @@ test("Claude policy blocks sensitive files, config trees and recursive secret de
     for (const toolName of ["Grep", "Glob"]) {
       assert.equal(
         (
-          await checkClaudeTool(f.directory, "read_only", {
+          await checkFileTool(f.directory, "read_only", {
             toolName,
             input: {},
           })
@@ -342,7 +342,7 @@ test("Claude policy blocks sensitive files, config trees and recursive secret de
         true,
       );
       assert.equal(
-        await checkClaudeTool(f.directory, "read_only", {
+        await checkFileTool(f.directory, "read_only", {
           toolName,
           input: { path: "isolated" },
         }),
@@ -365,11 +365,11 @@ test("Claude policy permits only the five gateway worker tools, never lead or ot
       for (const permission of ["read_only", "workspace_write"]) {
         const event = { toolName: `mcp__lao__${name}`, input: {} };
         assert.equal(
-          (await checkClaudeTool(f.directory, permission, event))?.block,
+          (await checkFileTool(f.directory, permission, event))?.block,
           true,
         );
         assert.equal(
-          await checkClaudeTool(f.directory, permission, event, true),
+          await checkFileTool(f.directory, permission, event, true),
           undefined,
         );
       }
@@ -400,7 +400,7 @@ test("Claude policy permits only the five gateway worker tools, never lead or ot
       for (const gateway of [false, true])
         assert.equal(
           (
-            await checkClaudeTool(
+            await checkFileTool(
               f.directory,
               "workspace_write",
               { toolName, input: { file_path: "README.md" } },
@@ -427,7 +427,7 @@ test("Claude policy fails closed for missing, non-directory and unverifiable ass
       for (const toolName of ["Read", "Grep", "Glob", "Edit", "Write"])
         assert.equal(
           (
-            await checkClaudeTool(root, "workspace_write", {
+            await checkFileTool(root, "workspace_write", {
               toolName,
               input: { file_path: "README.md" },
             })
@@ -450,7 +450,7 @@ test("Claude policy rejects an assigned checkout replaced by a symlink to anothe
           for (const toolName of ["Read", "Write", "Glob"])
             assert.equal(
               (
-                await checkClaudeTool(assigned.directory, "workspace_write", {
+                await checkFileTool(assigned.directory, "workspace_write", {
                   toolName,
                   input: {
                     file_path: "README.md",
@@ -485,7 +485,7 @@ test("Claude policy fails closed on inaccessible roots, files and recursive desc
     try {
       assert.equal(
         (
-          await checkClaudeTool(locked, "read_only", {
+          await checkFileTool(locked, "read_only", {
             toolName: "Read",
             input: { file_path: "file.txt" },
           })
@@ -495,7 +495,7 @@ test("Claude policy fails closed on inaccessible roots, files and recursive desc
       for (const toolName of ["Read", "Edit", "Write"])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "workspace_write", {
+            await checkFileTool(f.directory, "workspace_write", {
               toolName,
               input: { file_path: "unreadable.txt" },
             })
@@ -505,7 +505,7 @@ test("Claude policy fails closed on inaccessible roots, files and recursive desc
       for (const toolName of ["Grep", "Glob"])
         assert.equal(
           (
-            await checkClaudeTool(f.directory, "read_only", {
+            await checkFileTool(f.directory, "read_only", {
               toolName,
               input: {},
             })
@@ -514,7 +514,7 @@ test("Claude policy fails closed on inaccessible roots, files and recursive desc
         );
       assert.equal(
         (
-          await checkClaudeTool(f.directory, "workspace_write", {
+          await checkFileTool(f.directory, "workspace_write", {
             toolName: "Write",
             input: { file_path: "locked/new/file.txt" },
           })
@@ -545,11 +545,7 @@ test("Claude policy reasons never echo raw paths, payloads or filesystem errors"
       { toolName: "Glob", input: { pattern: `../${marker}` } },
       { toolName: "Read", input: { file_path: marker } },
     ]) {
-      const result = await checkClaudeTool(
-        f.directory,
-        "workspace_write",
-        event,
-      );
+      const result = await checkFileTool(f.directory, "workspace_write", event);
       assert.equal(result?.block, true);
       assert.ok(result);
       assert.equal(result.reason.includes(marker), false);

@@ -2,6 +2,8 @@
 
 Date: 2026-10-17. Scope: M8 item 1 only.
 
+Authentication policy/prerequisite below is historical and superseded by [owner-supplied setup-token compatibility](2026-10-17-claude-setup-token.md). Permission, checkout, completion and recovery decisions remain in force.
+
 ## Context
 
 Claude Code 2.1.302 is installed. Official Agent SDK 0.3.302 declares that exact CLI version. Native `canUseTool` is not an unconditional policy hook: earlier native allow rules can bypass it. Existing Codex coordinator denials are notifications, not permission grants. M8 needs real worker permission callbacks without relaxing that policy or generic human-wait recovery.
@@ -21,4 +23,4 @@ The [official quickstart](https://code.claude.com/docs/en/agent-sdk/quickstart) 
 
 Codex denial notices and Pi controls are unchanged. Default regressions use deterministic SDK-boundary fixtures, real inert subprocesses, HTTP and disposable Git repositories. The real CLI/SDK no-model control/catalog probe passed with isolated configuration and zero model prompts; the opt-in smoke exits 2 without submitting a model when supported authentication is absent. Actual Chromium approval/denial/reload checks used an explicitly scripted fixture, not a Claude model.
 
-Authenticated native streaming, effective model/effort, same-checkout resume, permission callbacks and active-turn cancellation remain **BLOCKED**, not passed. The owner must privately configure a supported SDK API/provider environment, then run the explicit cost-bearing smoke in README. M8 item 1 stays unchecked until that gate is observed; no four-harness or beta completion is claimed.
+The later [owner-token native validation](../evidence/m8-claude-native-live.json) passed streaming, Sonnet 5.5/low hook evidence, same-checkout resume, denied/approved/independently denied native Write callbacks and active cancellation. [Authentication/compatibility decision](2026-10-17-claude-setup-token.md) records the supported launch changes and temporary secret handoff. M8 item 1 is complete; no native GUI/gateway/four-harness or beta completion is claimed.

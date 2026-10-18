@@ -161,7 +161,7 @@ function classify(
 ): Pick<StopRecord, "status" | "evidence" | "diagnostic"> {
   const exit = store.db
     .prepare(
-      "SELECT payload FROM events WHERE attempt_id=? AND type IN ('pi.process_exit','codex.process_exit','claude-code.process_exit') ORDER BY sequence DESC LIMIT 1",
+      "SELECT payload FROM events WHERE attempt_id=? AND type IN ('pi.process_exit','codex.process_exit','claude-code.process_exit','opencode.process_exit') ORDER BY sequence DESC LIMIT 1",
     )
     .get(session.attemptId);
   if (exit) {
