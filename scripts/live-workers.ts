@@ -304,22 +304,61 @@ try {
       ownerClean &&
       personalUnchanged;
     if (passed && values["verify-cancel"]) {
-      const cancelRun = await engine.startNativeRun(
+      const cancellationPrompt =
+        "Exercise active cancellation, not repository review. After read_assignment, immediately start an interim text message with a numbered explanation of read-only repository inspection: at least 500 sentences, one sentence per numbered item. Keep generating the explanation until the owner interrupts. Do not use file tools or change files. The explanation is the assigned work, not a final report; only after all 500 sentences could the task be complete and submit_result be appropriate.";
+      const team = nativeTeam(model, thinking, harness);
+      const reader = team.profiles.find(
+        (p) =>
+          p.permission === "read_only" &&
+          team.roles.some((r) => r.id === p.roleId && r.name === "Reader"),
+      );
+      assert.ok(reader);
+      // The generic launcher selects Reviewer and asks for a concise report.
+      // Keep this exercise's narration guidance in its immutable run snapshot;
+      // the normal worker policy and final-report requirement are unchanged.
+      const roles = engine.presets().roles.map((role) =>
+        role.id === reader.roleId
+          ? {
+              ...role,
+              instructions:
+                "Perform the owner's read-only cancellation exercise. Stream the requested long, numbered interim explanation before completing the task. Do not replace that explanation with repository review findings or submit a report before the explanation is finished.",
+              expectedOutput:
+                "At least 500 numbered explanatory sentences as in-progress text, followed only on completion by the usual structured final report. An owner interruption ends the exercise without a completion report.",
+            }
+          : role,
+      );
+      const cancelRun = store.createRun(
         {
           projectId: project.id,
-          harness,
           title: "M8 Pi active cancellation",
-          initialPrompt:
-            "Active cancellation smoke: do not call submit_result or change any file. Start emitting a long numbered explanation of read-only repository inspection (at least 500 numbered sentences). Keep generating until the owner interrupts this turn.",
-          model,
-          thinking,
-          permission: "read_only",
+          initialPrompt: cancellationPrompt,
+          mode: "supervised",
+          execution: "native",
+          repository: project.repository,
+          teamSnapshot: { ...team, roles },
         },
         randomUUID(),
       );
+      const cancelTask = engine.createTask(
+        {
+          runId: cancelRun.id,
+          title: "Stream interim explanation until owner cancellation",
+          objective: cancellationPrompt,
+        },
+        randomUUID(),
+      );
+      engine.scheduling.enqueue(
+        { role: "owner" },
+        { taskId: cancelTask.id, profileId: reader.id },
+        randomUUID(),
+      );
+      receipt.cancellationScenario = {
+        profileId: reader.id,
+        role: roles.find((r) => r.id === reader.roleId),
+        permission: reader.permission,
+        objective: cancellationPrompt,
+      };
       receipt.submittedPrompts = 2;
-      const [cancelTask] = store.listTasks(cancelRun.id);
-      assert.ok(cancelTask);
       const request = await cancelAfterText(
         engine,
         cancelRun.id,

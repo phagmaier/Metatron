@@ -1,0 +1,228 @@
+{
+  "harness": "pi",
+  "liveAuthorized": true,
+  "selected": {
+    "model": "openai/gpt-6-luna",
+    "thinking": "low"
+  },
+  "requestedChecks": {
+    "streamedReader": true,
+    "activeCancellation": true,
+    "crossAssignmentGatewayDenial": false
+  },
+  "maximumRequestedTurns": 2,
+  "discovery": {
+    "state": "available",
+    "version": "1.3.0",
+    "authenticated": "unknown",
+    "nextStep": null,
+    "selectionAvailable": true,
+    "thinkingChoices": [
+      "off",
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ]
+  },
+  "submittedPrompts": 2,
+  "gatewayScopeProbe": null,
+  "run": {
+    "taskStatus": "AWAITING_REVIEW",
+    "attemptStatus": "completed",
+    "adapter": "pi",
+    "nativeSessionId": "01a14e59-cf86-757c-a5d8-18bdaea66f54",
+    "sessionState": "exited",
+    "exitCode": 0,
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": false
+      }
+    ]
+  },
+  "settingsVerified": [
+    {
+      "type": "settings_verified",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low",
+      "source": "Pi get_state after set_model/set_thinking_level"
+    }
+  ],
+  "stream": {
+    "deltaCount": 37,
+    "firstDeltaSequence": 29,
+    "lastDeltaSequence": 65,
+    "samples": [
+      {
+        "sequence": 29,
+        "text": "Completed"
+      },
+      {
+        "sequence": 30,
+        "text": "."
+      },
+      {
+        "sequence": 31,
+        "text": " Exact"
+      }
+    ],
+    "terminals": [
+      {
+        "sequence": 68,
+        "nativeStatus": "completed"
+      }
+    ],
+    "streamedBeforeTerminal": true
+  },
+  "gatewayDenials": [],
+  "nonceReported": true,
+  "report": {
+    "outcome": "completed",
+    "summary": "Read native-proof.txt. Exact nonce: 187c4242-c013-4578-a2d5-5418373e88ef.",
+    "changedFiles": [],
+    "tests": [
+      {
+        "command": "Shell unavailable; no tests run.",
+        "result": "not_run"
+      }
+    ],
+    "findings": [
+      {
+        "severity": "info",
+        "location": "native-proof.txt",
+        "text": "Contains nonce 187c4242-c013-4578-a2d5-5418373e88ef."
+      }
+    ],
+    "knownRisks": [],
+    "questions": [],
+    "artifactRefs": [],
+    "revisionOrCommit": null
+  },
+  "gatewayTools": [
+    {
+      "tool": "read_assignment",
+      "outcome": "ok"
+    },
+    {
+      "tool": "submit_result",
+      "outcome": "ok"
+    }
+  ],
+  "nativeTools": [
+    "mcp__lao__read_assignment",
+    "read",
+    "mcp__lao__submit_result"
+  ],
+  "sessionErrors": [],
+  "usage": [
+    {
+      "type": "usage",
+      "inputTokens": 1526,
+      "outputTokens": 20,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 1790,
+      "outputTokens": 27,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 184,
+      "outputTokens": 129,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 941,
+      "outputTokens": 41,
+      "source": "pi native assistant message (may be partial)"
+    }
+  ],
+  "worktree": {
+    "changedFiles": [],
+    "headUnchanged": true
+  },
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "cancellationScenario": {
+    "profileId": "00000000-0000-4000-8000-000000000013",
+    "role": {
+      "id": "00000000-0000-4000-8000-000000000004",
+      "createdAt": "2026-10-15T00:00:00.000Z",
+      "updatedAt": "2026-10-15T00:00:00.000Z",
+      "version": 1,
+      "name": "Reader",
+      "instructions": "Perform the owner's read-only cancellation exercise. Stream the requested long, numbered interim explanation before completing the task. Do not replace that explanation with repository review findings or submit a report before the explanation is finished.",
+      "expectedOutput": "At least 500 numbered explanatory sentences as in-progress text, followed only on completion by the usual structured final report. An owner interruption ends the exercise without a completion report."
+    },
+    "permission": "read_only",
+    "objective": "Exercise active cancellation, not repository review. After read_assignment, immediately start an interim text message with a numbered explanation of read-only repository inspection: at least 500 sentences, one sentence per numbered item. Keep generating the explanation until the owner interrupts. Do not use file tools or change files. The explanation is the assigned work, not a final report; only after all 500 sentences could the task be complete and submit_result be appropriate."
+  },
+  "cancellation": {
+    "checks": {
+      "textBeforeRequest": true,
+      "nativeInterruptedAfterRequest": true,
+      "taskCancelled": true,
+      "ownedShutdown": true,
+      "noSessionError": true,
+      "noSuccessReport": true
+    },
+    "request": {
+      "afterTextSequence": 94,
+      "requestSequence": 95
+    },
+    "stream": {
+      "deltaCount": 1,
+      "firstDeltaSequence": 94,
+      "lastDeltaSequence": 94,
+      "samples": [
+        {
+          "sequence": 94,
+          "text": "1"
+        }
+      ],
+      "terminals": [
+        {
+          "sequence": 99,
+          "nativeStatus": "interrupted"
+        }
+      ],
+      "streamedBeforeTerminal": true
+    },
+    "nativeSessionId": "01a14e59-fcab-775e-b28b-6a723aaa20d7",
+    "taskStatus": "CANCELLED",
+    "sessionState": "exited",
+    "exitCode": 0,
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": true
+      }
+    ],
+    "sessionErrors": []
+  },
+  "cancellationWorktree": {
+    "attemptId": "ea7536ac-d6ef-45d9-8215-b9a5a63a4444",
+    "path": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/58d966f9-8cce-48fd-8aa8-63ce28b1b87e-c9b7e69c-0380-414d-bb6f-51f6ac4002b0/checkout",
+    "baseSha": "9025a90dcb3623eaf1311d41bc03446438c658f4",
+    "headSha": "9025a90dcb3623eaf1311d41bc03446438c658f4",
+    "files": [],
+    "stagedDiffStat": "",
+    "unstagedDiffStat": "",
+    "diffCheck": "passed",
+    "tests": "not_run: shell tools are disabled in M3"
+  },
+  "passed": true,
+  "retained": null,
+  "limitations": [
+    "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+    "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+    "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+  ]
+}

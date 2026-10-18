@@ -1,0 +1,578 @@
+{
+  "evidenceKind": "INERT protocol CLI verification; not native model evidence",
+  "nativeModelPrompts": 0,
+  "technique": "Throwaway Node import hook injects actual PiAdapter/PiRpc backed solely by a deterministic subprocess; real engine/gateway/Git/smoke checks. Native model behavior is not simulated proof of prompt compliance.",
+  "initialFixtureIssue": "The first fixture launch produced no receipt. It used an unsupported nested disposable XDG path; subsequent fixture-only paths are directly under /tmp, without changing application validation.",
+  "cases": [
+    {
+      "scenario": "normal",
+      "xdg": "/tmp/metatron-m8-narration-normal-16DS6z",
+      "command": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-narration-normal-16DS6z NARRATION_CASE=normal node --import /tmp/metatron-m8-narration-6jOSy2/hooks.mjs scripts/live-workers.ts --harness pi --model fixture/model --thinking low --verify-cancel --allow-live --output /tmp/metatron-m8-narration-normal-16DS6z/receipt.json",
+      "exitCode": 0,
+      "stdout": "PASS: Pi read-only worker; evidence /tmp/metatron-m8-narration-normal-16DS6z/receipt.json\n",
+      "stderr": "",
+      "receipt": {
+        "harness": "pi",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture/model",
+          "thinking": "low"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": true,
+          "crossAssignmentGatewayDenial": false
+        },
+        "maximumRequestedTurns": 2,
+        "discovery": {
+          "state": "available",
+          "version": null,
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "off",
+            "low"
+          ]
+        },
+        "submittedPrompts": 2,
+        "gatewayScopeProbe": null,
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "pi",
+          "nativeSessionId": "inert-261034",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "low",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "1. Read-only inspection begins with repository boundaries."
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 21,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "6a62c779-df92-4737-a025-83f8d3a314b7",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "cancellationScenario": {
+          "profileId": "00000000-0000-4000-8000-000000000013",
+          "role": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "createdAt": "2026-10-15T00:00:00.000Z",
+            "updatedAt": "2026-10-15T00:00:00.000Z",
+            "version": 1,
+            "name": "Reader",
+            "instructions": "Perform the owner's read-only cancellation exercise. Stream the requested long, numbered interim explanation before completing the task. Do not replace that explanation with repository review findings or submit a report before the explanation is finished.",
+            "expectedOutput": "At least 500 numbered explanatory sentences as in-progress text, followed only on completion by the usual structured final report. An owner interruption ends the exercise without a completion report."
+          },
+          "permission": "read_only",
+          "objective": "Exercise active cancellation, not repository review. After read_assignment, immediately start an interim text message with a numbered explanation of read-only repository inspection: at least 500 sentences, one sentence per numbered item. Keep generating the explanation until the owner interrupts. Do not use file tools or change files. The explanation is the assigned work, not a final report; only after all 500 sentences could the task be complete and submit_result be appropriate."
+        },
+        "cancellation": {
+          "checks": {
+            "textBeforeRequest": true,
+            "nativeInterruptedAfterRequest": true,
+            "taskCancelled": true,
+            "ownedShutdown": true,
+            "noSessionError": true,
+            "noSuccessReport": true
+          },
+          "request": {
+            "afterTextSequence": 43,
+            "requestSequence": 44
+          },
+          "stream": {
+            "deltaCount": 1,
+            "firstDeltaSequence": 43,
+            "lastDeltaSequence": 43,
+            "samples": [
+              {
+                "sequence": 43,
+                "text": "1. Read-only inspection begins with repository boundaries."
+              }
+            ],
+            "terminals": [
+              {
+                "sequence": 47,
+                "nativeStatus": "interrupted"
+              }
+            ],
+            "streamedBeforeTerminal": true
+          },
+          "nativeSessionId": "inert-261082",
+          "taskStatus": "CANCELLED",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": true
+            }
+          ],
+          "sessionErrors": []
+        },
+        "cancellationWorktree": {
+          "attemptId": "67f52adb-6b97-470a-8816-7a75c3b22153",
+          "path": "/tmp/metatron-m8-narration-normal-16DS6z/local-agent-orchestrator/worktrees/a5dca3ae-e23f-4cdd-8b4c-57731e903580-199f2f2b-cf4f-4fc8-a729-bae2a4983cf5/checkout",
+          "baseSha": "072fc18668c5b5a1ddf84871704c6d38d263bcdf",
+          "headSha": "072fc18668c5b5a1ddf84871704c6d38d263bcdf",
+          "files": [],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": "",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        },
+        "passed": true,
+        "retained": null,
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ]
+      },
+      "launches": [
+        {
+          "system": "Independently inspect evidence and context. Return actionable findings with file references.\n\nExpected output:\nConcise structured report with outcome, evidence and limitations.\n\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.",
+          "permission": "read_only"
+        },
+        {
+          "system": "Perform the owner's read-only cancellation exercise. Stream the requested long, numbered interim explanation before completing the task. Do not replace that explanation with repository review findings or submit a report before the explanation is finished.\n\nExpected output:\nAt least 500 numbered explanatory sentences as in-progress text, followed only on completion by the usual structured final report. An owner interruption ends the exercise without a completion report.\n\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.",
+          "permission": "read_only"
+        }
+      ]
+    },
+    {
+      "scenario": "early-result",
+      "xdg": "/tmp/metatron-m8-narration-early-result-tvJ17X",
+      "command": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-narration-early-result-tvJ17X NARRATION_CASE=early-result node --import /tmp/metatron-m8-narration-6jOSy2/hooks.mjs scripts/live-workers.ts --harness pi --model fixture/model --thinking low --verify-cancel --allow-live --output /tmp/metatron-m8-narration-early-result-tvJ17X/receipt.json",
+      "exitCode": 1,
+      "stdout": "FAIL: Pi read-only worker; evidence /tmp/metatron-m8-narration-early-result-tvJ17X/receipt.json\n",
+      "stderr": "",
+      "receipt": {
+        "harness": "pi",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture/model",
+          "thinking": "low"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": true,
+          "crossAssignmentGatewayDenial": false
+        },
+        "maximumRequestedTurns": 2,
+        "discovery": {
+          "state": "available",
+          "version": null,
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "off",
+            "low"
+          ]
+        },
+        "submittedPrompts": 2,
+        "gatewayScopeProbe": null,
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "pi",
+          "nativeSessionId": "inert-261195",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "low",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "1. Read-only inspection begins with repository boundaries."
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 21,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "16f01633-7f52-4068-9399-2c8f0ee7463e",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "cancellationScenario": {
+          "profileId": "00000000-0000-4000-8000-000000000013",
+          "role": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "createdAt": "2026-10-15T00:00:00.000Z",
+            "updatedAt": "2026-10-15T00:00:00.000Z",
+            "version": 1,
+            "name": "Reader",
+            "instructions": "Perform the owner's read-only cancellation exercise. Stream the requested long, numbered interim explanation before completing the task. Do not replace that explanation with repository review findings or submit a report before the explanation is finished.",
+            "expectedOutput": "At least 500 numbered explanatory sentences as in-progress text, followed only on completion by the usual structured final report. An owner interruption ends the exercise without a completion report."
+          },
+          "permission": "read_only",
+          "objective": "Exercise active cancellation, not repository review. After read_assignment, immediately start an interim text message with a numbered explanation of read-only repository inspection: at least 500 sentences, one sentence per numbered item. Keep generating the explanation until the owner interrupts. Do not use file tools or change files. The explanation is the assigned work, not a final report; only after all 500 sentences could the task be complete and submit_result be appropriate."
+        },
+        "cancellation": {
+          "checks": {
+            "textBeforeRequest": true,
+            "nativeInterruptedAfterRequest": true,
+            "taskCancelled": true,
+            "ownedShutdown": true,
+            "noSessionError": true,
+            "noSuccessReport": false
+          },
+          "request": {
+            "afterTextSequence": 45,
+            "requestSequence": 46
+          },
+          "stream": {
+            "deltaCount": 1,
+            "firstDeltaSequence": 45,
+            "lastDeltaSequence": 45,
+            "samples": [
+              {
+                "sequence": 45,
+                "text": "1. Read-only inspection begins with repository boundaries."
+              }
+            ],
+            "terminals": [
+              {
+                "sequence": 49,
+                "nativeStatus": "interrupted"
+              }
+            ],
+            "streamedBeforeTerminal": true
+          },
+          "nativeSessionId": "inert-261237",
+          "taskStatus": "CANCELLED",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": true
+            }
+          ],
+          "sessionErrors": []
+        },
+        "cancellationWorktree": {
+          "attemptId": "cbd9e3a8-dffe-4c6a-a1fd-2fe91a2b5661",
+          "path": "/tmp/metatron-m8-narration-early-result-tvJ17X/local-agent-orchestrator/worktrees/6bb36bb3-7cef-41db-8ae4-a7e6416b983e-b8f5908c-bf0c-4782-9d59-dec8f954ff15/checkout",
+          "baseSha": "644c9cc48d49eeed087cf0aef18879a95a9281fb",
+          "headSha": "644c9cc48d49eeed087cf0aef18879a95a9281fb",
+          "files": [],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": "",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        },
+        "passed": false,
+        "retained": {
+          "database": "/tmp/metatron-m8-narration-early-result-tvJ17X/local-agent-orchestrator/live-workers-d5ef5e35-c4c2-4795-a838-d9a3e8aa5855.sqlite",
+          "fixture": "/tmp/lao-git-fixture-d8tl3W/repo with spaces",
+          "worktrees": [
+            "/tmp/metatron-m8-narration-early-result-tvJ17X/local-agent-orchestrator/worktrees/60d59845-3d71-4907-bcce-f8b9339172f4-209544a4-f8ac-425f-bfb1-5501d9b42495",
+            "/tmp/metatron-m8-narration-early-result-tvJ17X/local-agent-orchestrator/worktrees/6bb36bb3-7cef-41db-8ae4-a7e6416b983e-b8f5908c-bf0c-4782-9d59-dec8f954ff15"
+          ]
+        },
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ]
+      },
+      "launches": [
+        {
+          "system": "Independently inspect evidence and context. Return actionable findings with file references.\n\nExpected output:\nConcise structured report with outcome, evidence and limitations.\n\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.",
+          "permission": "read_only"
+        },
+        {
+          "system": "Perform the owner's read-only cancellation exercise. Stream the requested long, numbered interim explanation before completing the task. Do not replace that explanation with repository review findings or submit a report before the explanation is finished.\n\nExpected output:\nAt least 500 numbered explanatory sentences as in-progress text, followed only on completion by the usual structured final report. An owner interruption ends the exercise without a completion report.\n\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.",
+          "permission": "read_only"
+        }
+      ]
+    },
+    {
+      "scenario": "already-completed",
+      "xdg": "/tmp/metatron-m8-narration-already-completed-XTtRB7",
+      "command": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-narration-already-completed-XTtRB7 NARRATION_CASE=already-completed node --import /tmp/metatron-m8-narration-6jOSy2/hooks.mjs scripts/live-workers.ts --harness pi --model fixture/model --thinking low --verify-cancel --allow-live --output /tmp/metatron-m8-narration-already-completed-XTtRB7/receipt.json",
+      "exitCode": 1,
+      "stdout": "FAIL: Pi read-only worker; evidence /tmp/metatron-m8-narration-already-completed-XTtRB7/receipt.json\n",
+      "stderr": "",
+      "receipt": {
+        "harness": "pi",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture/model",
+          "thinking": "low"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": true,
+          "crossAssignmentGatewayDenial": false
+        },
+        "maximumRequestedTurns": 2,
+        "discovery": {
+          "state": "available",
+          "version": null,
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "off",
+            "low"
+          ]
+        },
+        "submittedPrompts": 2,
+        "gatewayScopeProbe": null,
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "pi",
+          "nativeSessionId": "inert-261349",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "low",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "1. Read-only inspection begins with repository boundaries."
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 21,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "65d74f9e-0dc0-4657-a470-230afc663c72",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "cancellationScenario": {
+          "profileId": "00000000-0000-4000-8000-000000000013",
+          "role": {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "createdAt": "2026-10-15T00:00:00.000Z",
+            "updatedAt": "2026-10-15T00:00:00.000Z",
+            "version": 1,
+            "name": "Reader",
+            "instructions": "Perform the owner's read-only cancellation exercise. Stream the requested long, numbered interim explanation before completing the task. Do not replace that explanation with repository review findings or submit a report before the explanation is finished.",
+            "expectedOutput": "At least 500 numbered explanatory sentences as in-progress text, followed only on completion by the usual structured final report. An owner interruption ends the exercise without a completion report."
+          },
+          "permission": "read_only",
+          "objective": "Exercise active cancellation, not repository review. After read_assignment, immediately start an interim text message with a numbered explanation of read-only repository inspection: at least 500 sentences, one sentence per numbered item. Keep generating the explanation until the owner interrupts. Do not use file tools or change files. The explanation is the assigned work, not a final report; only after all 500 sentences could the task be complete and submit_result be appropriate."
+        },
+        "failure": {
+          "code": "SMOKE_FAILED",
+          "message": "Worker probe failed; inspect retained app-owned state, never replay automatically"
+        },
+        "passed": false,
+        "retained": {
+          "database": "/tmp/metatron-m8-narration-already-completed-XTtRB7/local-agent-orchestrator/live-workers-5a2f94ab-4801-4b3b-a0c9-445f734e0a3d.sqlite",
+          "fixture": "/tmp/lao-git-fixture-Bn3WdN/repo with spaces",
+          "worktrees": [
+            "/tmp/metatron-m8-narration-already-completed-XTtRB7/local-agent-orchestrator/worktrees/1255d3c6-c23f-413d-bb9c-a6ff99e00c28-831db8e9-03c1-432d-a7e2-2640eb99e667",
+            "/tmp/metatron-m8-narration-already-completed-XTtRB7/local-agent-orchestrator/worktrees/197bfe94-513b-4d5b-a9bb-6346097f905e-01d76fda-38da-488a-ac62-2c6f3fdf4b9e"
+          ]
+        },
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ]
+      },
+      "launches": [
+        {
+          "system": "Independently inspect evidence and context. Return actionable findings with file references.\n\nExpected output:\nConcise structured report with outcome, evidence and limitations.\n\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.",
+          "permission": "read_only"
+        },
+        {
+          "system": "Perform the owner's read-only cancellation exercise. Stream the requested long, numbered interim explanation before completing the task. Do not replace that explanation with repository review findings or submit a report before the explanation is finished.\n\nExpected output:\nAt least 500 numbered explanatory sentences as in-progress text, followed only on completion by the usual structured final report. An owner interruption ends the exercise without a completion report.\n\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.\nCall mcp__lao__read_assignment first. Finish by calling mcp__lao__submit_result once. Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.",
+          "permission": "read_only"
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "readerRunUnmodified": true,
+    "cancellationRunUsesScopedReaderSnapshot": true,
+    "bothSessionsReadOnly": true,
+    "finalReportRequirementRetained": true,
+    "earlyReportStillFails": true,
+    "alreadyCompletedStillFails": true,
+    "noAutomaticReplay": true
+  },
+  "scratchStateDisposition": "Owned inert fixtures and throwaway hooks will be removed after preserving this evidence; retained paths here are historical fixture paths, not native failures."
+}

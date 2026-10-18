@@ -1,0 +1,113 @@
+{
+  "evidenceKind": "Fresh authorized native Pi cancellation verification; failed strict gate, no replay",
+  "date": "2026-10-18",
+  "ownerAuthorization": {
+    "choice": "Authorize up to two Pi turns",
+    "harness": "pi",
+    "model": "openai/gpt-6-luna",
+    "thinking": "low",
+    "maximumTurns": 2,
+    "scenarios": [
+      "read-only reader prerequisite",
+      "active cancellation"
+    ],
+    "retriesAuthorized": false,
+    "sourceWritesAuthorized": false,
+    "otherHarnessTurnsAuthorized": false,
+    "writerReviewerAuthorized": false,
+    "integrationAuthorized": false,
+    "remainingTurns": 0
+  },
+  "nativeAuthCheck": {
+    "command": "mise x -- env PI_CODING_AGENT_DIR=/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi PI_OFFLINE=1 PI_TELEMETRY=0 pi auth check --provider openai --json --no-refresh",
+    "exitCode": 0,
+    "nativeResult": {
+      "status": "ready",
+      "provider": "openai",
+      "authType": "oauth"
+    },
+    "credentialContentsReadByObserver": false,
+    "credentialsCopied": false,
+    "newLoginCreated": false
+  },
+  "preflight": {
+    "command": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:workers --harness pi --model openai/gpt-6-luna --thinking low --verify-cancel --output /tmp/metatron-m8-auth-sjdG2wvR/pi-cancellation-fresh-preflight-20261018.json",
+    "exitCode": 0,
+    "receipt": "m8-pi-cancellation-fresh-preflight.json",
+    "submittedPrompts": 0
+  },
+  "live": {
+    "command": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:workers --allow-live --harness pi --model openai/gpt-6-luna --thinking low --verify-cancel --output /tmp/metatron-m8-auth-sjdG2wvR/pi-reader-cancel-fresh-native-20261018.json",
+    "exitCode": 1,
+    "receipt": "m8-pi-reader-cancel-fresh-native.json",
+    "submittedPrompts": 2,
+    "readerPassed": true,
+    "strictCancellationPassed": false,
+    "checks": {
+      "textBeforeRequest": true,
+      "nativeInterruptedAfterRequest": true,
+      "taskCancelled": true,
+      "ownedShutdown": true,
+      "noSessionError": true,
+      "noSuccessReport": false
+    }
+  },
+  "cancellationJournal": {
+    "source": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/live-workers-4266299f-f4a2-423a-8e98-e2f3621a0f30.sqlite",
+    "inspection": "Read-only selected journal metadata, no raw error bodies, credential files or native transcripts",
+    "events": [
+      {
+        "sequence": 109,
+        "type": "worker.result"
+      },
+      {
+        "sequence": 110,
+        "type": "gateway.tool_call",
+        "tool": "submit_result",
+        "outcome": "ok"
+      },
+      {
+        "sequence": 112,
+        "type": "pi.text_delta"
+      },
+      {
+        "sequence": 113,
+        "type": "smoke.cancel_requested"
+      },
+      {
+        "sequence": 117,
+        "type": "pi.turn_completed",
+        "nativeStatus": "interrupted"
+      },
+      {
+        "sequence": 119,
+        "type": "pi.process_exit",
+        "exitCode": 0,
+        "interrupted": true
+      }
+    ],
+    "conclusion": "A result was saved before text and stop. Requested abort no longer emits a session error, but noSuccessReport remains false; strict gate stays failed."
+  },
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "retained": {
+    "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/live-workers-4266299f-f4a2-423a-8e98-e2f3621a0f30.sqlite",
+    "fixture": "/tmp/lao-git-fixture-VMNA4F/repo with spaces",
+    "worktrees": [
+      "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/d42d0f3b-e3b2-4fea-bf97-a26ea7554b23-4b5f3c72-0afe-479c-8f6c-6b82e2657062",
+      "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/4ef77767-4adf-4791-ad28-1a16d0f153f3-122461e8-f766-4beb-a390-0001c5b33774"
+    ]
+  },
+  "remainingGates": [
+    "strict Pi cancellation without an already-submitted result",
+    "Pi/Claude/OpenCode native worker role denial",
+    "native writer and independent review",
+    "separate post-review owner integration approval and application"
+  ],
+  "limitations": [
+    "Both Pi failure receipts and their native state remain retained; no automatic replay or revised PASS",
+    "App-owned auth under /tmp is not durable across reboot",
+    "Metadata checks are not an OS sandbox or all-descendant proof",
+    "M8 item 8 stays unchecked; M9 untouched"
+  ]
+}

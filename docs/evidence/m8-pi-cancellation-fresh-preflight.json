@@ -1,0 +1,41 @@
+{
+  "harness": "pi",
+  "liveAuthorized": false,
+  "selected": {
+    "model": "openai/gpt-6-luna",
+    "thinking": "low"
+  },
+  "requestedChecks": {
+    "streamedReader": true,
+    "activeCancellation": true,
+    "crossAssignmentGatewayDenial": false
+  },
+  "maximumRequestedTurns": 0,
+  "discovery": {
+    "state": "available",
+    "version": "1.3.0",
+    "authenticated": "unknown",
+    "nextStep": null,
+    "selectionAvailable": true,
+    "thinkingChoices": [
+      "off",
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ]
+  },
+  "submittedPrompts": 0,
+  "gatewayScopeProbe": null,
+  "blocked": null,
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "passed": true,
+  "retained": null,
+  "limitations": [
+    "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+    "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+    "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+  ]
+}

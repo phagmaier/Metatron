@@ -1,0 +1,59 @@
+{
+  "evidenceKind": "Actual native corrected Pi cancellation probe; fresh two-turn scope, no retry",
+  "date": "2026-10-18",
+  "authorization": {
+    "choice": "Authorize two Pi turns",
+    "model": "openai/gpt-6-luna",
+    "thinking": "low",
+    "maximumTurns": 2,
+    "remainingTurns": 0,
+    "retries": false,
+    "writes": false,
+    "otherHarnesses": false,
+    "writerReviewerLifecycle": false,
+    "integration": false
+  },
+  "authCheck": {
+    "command": "mise x -- env PI_CODING_AGENT_DIR=/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi PI_OFFLINE=1 PI_TELEMETRY=0 pi auth check --provider openai --json --no-refresh",
+    "exitCode": 0,
+    "result": {
+      "status": "ready",
+      "provider": "openai",
+      "authType": "oauth"
+    },
+    "newLogin": false,
+    "observerCredentialReadOrCopy": false
+  },
+  "nativeCommand": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:workers --allow-live --harness pi --model openai/gpt-6-luna --thinking low --verify-cancel --output /tmp/metatron-m8-auth-sjdG2wvR/pi-narration-cancel-native-20261018.json",
+  "exitCode": 0,
+  "submittedPrompts": 2,
+  "probeCorrection": {
+    "observed": "Generic native launcher selects the first read_only profile, Reviewer, with concise review/report guidance. The prior cancellation result describes repository review. Its assignment nevertheless contained the cancellation instructions.",
+    "inference": "Reviewer/report guidance competed with the cancellation narration objective; the exact model decision is not observable.",
+    "change": "Cancellation-only immutable run snapshot explicitly selects read_only Reader and requests an interim narration before normal final reporting. Generic worker/adapter policy and strict cancellationEvidence checks are unchanged.",
+    "nativeResult": "All six cancellation checks now pass; no pre-stop report or session fault. This is bounded current-run evidence, not proof of every prompt or cancellation race."
+  },
+  "checks": {
+    "textBeforeRequest": true,
+    "nativeInterruptedAfterRequest": true,
+    "taskCancelled": true,
+    "ownedShutdown": true,
+    "noSessionError": true,
+    "noSuccessReport": true
+  },
+  "order": {
+    "text": 94,
+    "stop": 95,
+    "interruption": 99,
+    "ownedExitCode": 0
+  },
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "retention": "Successful fixture/per-run database/worktrees cleaned by the runner. Both earlier failed native states and app-owned login remain retained.",
+  "remainingGates": [
+    "Pi/Claude/OpenCode native worker role denial",
+    "native writer and independent candidate review",
+    "separate post-review owner integration approval before application"
+  ],
+  "milestone": "M8 item 8 unchecked; M9 untouched"
+}
