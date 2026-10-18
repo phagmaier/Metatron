@@ -140,7 +140,7 @@ Installed SDK `sdk.d.ts:5803–5813` specifically warns that cost/model totals a
 
 ### Resume the existing milestone sequence
 
-Items 1–2 have now been implemented and natively verified in their subsequent authorized work, using the installed official Claude SDK and OpenCode v2 client/server, not a v1 example. Proceed to the scheduled **M8 item 3 Pi/Codex capability revisit**, then installed/auth diagnostics, worker/Lead checks and the four-harness matrix in checklist order. No Pi implementation was bundled into either adapter slice.
+M8 items 1–6 are now verified under their recorded scopes. Item 6 uses the explicit limitation/fallback alternative: only Codex is implemented as Lead, with a current native gateway/denial receipt; saved-team fallbacks for Pi/Claude/OpenCode passed with inert protocol transports, not live cross-harness delegation. Proceed to **M8 item 7 global-config/manual-session/token-isolation verification**, then item 8's smoke matrix. [Current support matrix and evidence](adapter-recon.md#m8-item-6--lead-gateway-support-and-tested-fallbacks-2026-10-17).
 
 Defer Claude live steering/multi-turn queues, Pi resume changes, shell/background-task support, generalized adapter catalogue infrastructure, and account identity collection unless a current acceptance criterion needs them. Do not grow credential or personal-data storage solely to mirror Superset.
 
@@ -167,4 +167,4 @@ The report's external pi-acp session-map/background-shell details were not indep
 4. [Claude SDK TypeScript reference](https://code.claude.com/docs/en/agent-sdk/typescript); installed 0.3.302 declarations are the version-specific source for fields used above.
 5. [Pi RPC command reference](https://pi.dev/docs/latest/rpc-commands), independently checked against the installed 1.3.0 distribution's bundled docs.
 
-**Exact next task:** “Continue M8 item 3 only: revisit the installed Pi and Codex SDK/protocol capabilities, verify real version differences and surface unavailable controls accurately. Preserve Claude/OpenCode authentication, native policy, durable approvals, checkout isolation and no-replay boundaries. Keep later GUI diagnostics, worker/Lead and four-harness gates in todo.md order; do not bundle all Slice B hardening.”
+**Exact next task:** “Continue M8 item 7 only: verify no global harness user config was rewritten, no manual session interrupted, and no token silently copied between tools. Start with `mise current`, the M8 checklist and item 6 support/isolation limitations in `docs/adapter-recon.md`. Preserve historical Pi metadata uncertainty, native policy, durable approvals, checkout isolation and no replay. Keep item 8's smoke matrix and M9 hardening separate.”

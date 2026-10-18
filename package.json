@@ -25,7 +25,8 @@
     "test:live:lead": "node scripts/live-lead.ts",
     "test:live:claude": "node scripts/live-claude.ts",
     "test:live:opencode": "node scripts/live-opencode.ts",
-    "test:live:workers": "node scripts/live-workers.ts"
+    "test:live:workers": "node scripts/live-workers.ts",
+    "test:live:leads": "node scripts/live-leads.ts"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.302",

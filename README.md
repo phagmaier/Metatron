@@ -2,7 +2,7 @@
 
 This is the working repo for a **single-user, local-first multi-agent coding-harness orchestrator** targeting Arch Linux / Omarchy. Design docs and implementation live here side by side.
 
-The application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 added native Pi workers in isolated Git worktrees; M4 added a native Codex Lead using a session-scoped gateway. M8 items 1–2 add the official Claude Code Agent SDK and OpenCode v2 worker adapters, with owner-authorized native validation; M8 item 5 ran all four harnesses, Codex included, as live read-only workers. Tasks, reports, approvals and events are persisted. The remaining Lead, isolation and four-harness smoke-matrix M8 gates—and the beta—are not complete.
+The application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 added native Pi workers in isolated Git worktrees; M4 added a native Codex Lead using a session-scoped gateway. M8 items 1–2 add the official Claude Code Agent SDK and OpenCode v2 worker adapters; item 5 ran all four as live read-only workers. Item 6 verified the current Codex Lead and tested worker fallbacks for the three adapters without coordinator support—not four native Leads. Tasks, reports, approvals and events are persisted. The remaining isolation and four-harness smoke-matrix M8 gates—and the beta—are not complete.
 
 ## Run the app
 
@@ -108,7 +108,7 @@ mise x -- pnpm test:live:opencode --allow-live \
   --output /tmp/opencode-live-new.json
 ```
 
-Both modes own disposable Git/app state and refuse existing output files; failures retain state for inspection. Native **PASS**: [five-prompt receipt](docs/evidence/m8-opencode-native-live.json), [no-model discovery](docs/evidence/m8-opencode-discovery.json). Read/resume, one-shot approval, independent denial/stale-grant refusal and active cancellation passed with native `deepseek-flash` / `low` evidence. Provider access is still discovered as **unknown**; variants are native model settings, not a universal reasoning scale. No usage/balance accounting or live steering is claimed. [Browser receipt checks](docs/evidence/m8-opencode-ui-fixture.json) used inert HTTP/SSE fixtures, not live model evidence. Native gateway/Lead/four-harness validation remains on the later checklist. [Recon and limitations](docs/adapter-recon.md#m8-item-2--native-opencode-validation-2026-10-17).
+Both modes own disposable Git/app state and refuse existing output files; failures retain state for inspection. Native **PASS**: [five-prompt receipt](docs/evidence/m8-opencode-native-live.json), [no-model discovery](docs/evidence/m8-opencode-discovery.json). Read/resume, one-shot approval, independent denial/stale-grant refusal and active cancellation passed with native `deepseek-flash` / `low` evidence. Provider access is still discovered as **unknown**; variants are native model settings, not a universal reasoning scale. No usage/balance accounting or live steering is claimed. [Browser receipt checks](docs/evidence/m8-opencode-ui-fixture.json) used inert HTTP/SSE fixtures, not live model evidence. Item 5 verified its native worker gateway; item 6 records its unsupported Lead role and tested fallback below. The broader smoke matrix remains incomplete. [Recon and limitations](docs/adapter-recon.md#m8-item-2--native-opencode-validation-2026-10-17).
 
 ## Read-only workers on all four harnesses — M8 item 5
 
@@ -126,11 +126,36 @@ mise x -- env XDG_DATA_HOME=/tmp/lao-m8-workers pnpm test:live:workers --allow-l
 
 The script commits a random nonce to a disposable repository and passes only if the worker reports it through `submit_result`, the harness confirms the selected settings, the worktree and owner checkout are unchanged, and checked personal-config metadata is unchanged. Codex needs `CODEX_HOME='/tmp/lao-m8-workers/local-agent-orchestrator/codex' codex login` once; Claude needs `CLAUDE_CODE_OAUTH_TOKEN` (or another admitted route) in the environment. Native **PASS** at the cheapest selections: [Pi](docs/evidence/m8-worker-pi.json) `deepseek-flash`/off, [OpenCode](docs/evidence/m8-worker-opencode.json) free `deepseek-v4.1-flash-free`/low, [Codex](docs/evidence/m8-worker-codex.json) `gpt-6-luna`/low, [Claude](docs/evidence/m8-worker-claude.json) `haiku` (`claude-haiku-5-5`)/low. [Recon and limitations](docs/adapter-recon.md#m8-item-5--four-harness-read-only-workers-2026-10-17).
 
+## Lead support and worker fallback — M8 item 6
+
+Only **Codex** has a coordinator executor in this application. Pi, Claude Code and OpenCode refuse `coordinator` before launching a session; profile discovery does not offer that permission. This is an **application integration limitation**, not evidence that their native MCP/SDK interfaces cannot implement a Lead.
+
+- **Pi:** its current guard and MCP overlay implement file-worker/report tools only; coordinator sessions and session resume are refused.
+- **Claude Code:** its exact file-tool and five-method worker gateway allowlists do not admit coordinator operations. The SDK's MCP support is not the limitation.
+- **OpenCode:** its private host agent, native permission rules and gateway permission checks implement worker tools only.
+
+Fallback: save a team with a **Codex coordinator** and one or more of these harnesses as roster workers, or use owner-directed workers without a live Lead. `mise x -- node --test tests/lead-fallback.test.ts` exercises each saved-team fallback through the real engine, gateway and isolated Git worktree: coordinator refusal, one worker launch, one completion wake-up, report consumption and Lead/worker authority separation. All native boundaries in that test use **inert protocol fixtures**, not live models. Separate live worker evidence is linked under item 5; it is not a live cross-harness delegation claim.
+
+```sh
+# Four-harness discovery + coordinator refusals; zero model prompts.
+mise x -- env XDG_DATA_HOME=/tmp/lao-m8-workers pnpm test:live:leads \
+  --model gpt-6-luna --thinking low --output /tmp/lead-support-probe-new.json
+
+# One native Codex Lead turn, only with explicit usage/cost authorization.
+# Requires the app-owned Codex login; no workers are launched.
+mise x -- env XDG_DATA_HOME=/tmp/lao-m8-workers pnpm test:live:leads --allow-live \
+  --model gpt-6-luna --thinking low --output /tmp/lead-codex-live-new.json
+```
+
+The opt-in checks a committed random nonce, `get_run_status`, `propose_task`, a deliberately denied assignment to the coordinator itself, native model/effort confirmation and clean completion/exit. It refuses existing evidence outputs, uses a new database and disposable repo, retains failures without replay, and checks owner-checkout/personal-config metadata before cleanup. The default mode proves only discovery/refusals, not model access. The broader isolation audit and smoke matrix remain M8 items 7–8.
+
+Native **PASS** on Codex **0.163.0**, `gpt-6-luna`/low: [one-turn gateway/denial receipt](docs/evidence/m8-lead-codex-native.json). The Lead reported the nonce, used both gateway tools, received `POLICY_DENIED`, launched no worker and exited 0 with unchanged checked metadata. [Four-harness no-model support/refusal receipt](docs/evidence/m8-lead-support-probe.json); [precise support matrix and limitations](docs/adapter-recon.md#m8-item-6--lead-gateway-support-and-tested-fallbacks-2026-10-17). Claude has no supplied authentication in this process; no new Claude/Pi/OpenCode model prompts were sent.
+
 ## Team presets
 
 Expand **Team presets**, choose **New team**, then pick a coordinator Lead profile, one or more worker profiles, available workflows (workflow authoring is currently backend-only), a default mode and resource limits, and choose **Create team**. Saving dispatches nothing. Stale saves/deletes are refused; **Reload teams and profiles** before editing again. The seeded **Fake demo team** is fixed playback configuration.
 
-A team is either all FAKE demo profiles (scripted playback, no model tokens) or all native profiles; the two never mix. Native teams currently need a Codex Lead plus Pi, Claude Code, OpenCode and/or read-only Codex workers. A worker can never be a coordinator. Selected workflows may only use the team's profiles. Claude/OpenCode direct native adapter smokes passed; team/Lead/gateway/four-harness validation remains in the subsequent M8 checklist.
+A team is either all FAKE demo profiles (scripted playback, no model tokens) or all native profiles; the two never mix. Native teams currently need a Codex Lead plus Pi, Claude Code, OpenCode and/or read-only Codex workers. A worker can never be a coordinator. Selected workflows may only use the team's profiles. The item 6 saved-team fallbacks above passed with inert native-boundary fixtures; direct live adapter/worker evidence is separate, not proof of live cross-harness team delegation.
 
 Under **Projects and new runs**, open **Start a run from a saved team**, choose a team, enter a title and objective, then **Start team run**. The server refuses the start if the team changed after you reviewed that version. Native starts check Codex login and fresh discovery for each selected worker harness; live runs use your providers and may cost money. The run copies the team version, its Lead/worker profiles, their roles, its workflows, mode and limits into its own snapshot. Later edits or deletion of the team, profiles, roles or workflows do not change it; the run header shows the snapshot name and version. Minimal protocol-only demo: `mise x -- node --test tests/teams.test.ts tests/teams-api.test.ts`.
 

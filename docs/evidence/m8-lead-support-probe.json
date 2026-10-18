@@ -1,0 +1,62 @@
+{
+  "liveAuthorized": false,
+  "selected": {
+    "harness": "codex",
+    "model": "gpt-6-luna",
+    "thinking": "low"
+  },
+  "support": {
+    "pi": {
+      "version": "1.3.0",
+      "state": "available",
+      "authenticated": "unknown",
+      "lead": "unsupported by this application adapter",
+      "coordinatorRefusal": {
+        "code": "UNSUPPORTED",
+        "message": "Pi supports fresh file-tool workers with only the app's loopback gateway overlay"
+      },
+      "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+    },
+    "claude-code": {
+      "version": "2.1.302",
+      "state": "auth_required",
+      "authenticated": false,
+      "lead": "unsupported by this application adapter",
+      "coordinatorRefusal": {
+        "code": "UNSUPPORTED",
+        "message": "Claude supports isolated file-tool workers with only the app loopback gateway overlay"
+      },
+      "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+    },
+    "opencode": {
+      "version": "2.0.29",
+      "state": "available",
+      "authenticated": "unknown",
+      "lead": "unsupported by this application adapter",
+      "coordinatorRefusal": {
+        "code": "UNSUPPORTED",
+        "message": "OpenCode accepts only file-worker profiles and an app loopback gateway overlay"
+      },
+      "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+    },
+    "codex": {
+      "version": "0.163.0",
+      "state": "available",
+      "authenticated": true,
+      "lead": "implemented; native turn requires --allow-live",
+      "coordinatorRefusal": null,
+      "fallback": null
+    }
+  },
+  "submittedPrompts": 0,
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "passed": true,
+  "retained": null,
+  "limitations": [
+    "Only Codex has a coordinator executor and enforced Lead tool policy in this application; other refusals do not prove a native harness cannot implement one",
+    "Native opt-in covers one Codex Lead turn and gateway policy denial, not live end-to-end delegation to the other harnesses",
+    "Codex-Lead fallbacks for Pi, Claude and OpenCode use real engine/gateway/Git with inert protocol fixtures in tests/lead-fallback.test.ts; separate live worker receipts are under M8 item 5",
+    "Personal-config evidence checks metadata of the listed files, not a complete isolation audit (M8 item 7)"
+  ]
+}
