@@ -24,6 +24,7 @@ import {
   sameClaudeCheckout,
 } from "./claude-turn.ts";
 import type { StartSessionInput } from "./contract.ts";
+import { claudeCloudKeys, harnessEnvironment } from "./environment.ts";
 import { checkFileTool } from "./file-policy.ts";
 import { AdapterQueue } from "./queue.ts";
 
@@ -50,35 +51,19 @@ const gatewayTools = [
 ].map((name) => `mcp__lao__${name}`);
 
 function claudeEnvironment(directory: string): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = {};
-  // Do not inherit personal-session selectors, git selectors, arbitrary Node
-  // preload hooks or caller overlays. Only the owner-supplied setup-token is admitted.
-  for (const [key, value] of Object.entries(process.env))
-    if (
-      [
-        "PATH",
-        "HOME",
-        "TMPDIR",
-        "TMP",
-        "TEMP",
-        "LANG",
-        "LC_ALL",
-        "SSL_CERT_FILE",
-        "SSL_CERT_DIR",
-        "HTTPS_PROXY",
-        "HTTP_PROXY",
-        "NO_PROXY",
-        "ANTHROPIC_API_KEY",
-        "CLAUDE_CODE_OAUTH_TOKEN",
-        "CLAUDE_CODE_USE_BEDROCK",
-        "CLAUDE_CODE_USE_VERTEX",
-        "CLAUDE_CODE_USE_FOUNDRY",
-      ].includes(key) ||
-      /^(?:AWS_|GOOGLE_|CLOUD_ML_|ANTHROPIC_VERTEX_|AZURE_|ANTHROPIC_FOUNDRY_)/.test(
-        key,
-      )
-    )
-      env[key] = value;
+  const env = harnessEnvironment([
+    "ANTHROPIC_API_KEY",
+    "CLAUDE_CODE_OAUTH_TOKEN",
+    "CLAUDE_CODE_USE_BEDROCK",
+    "CLAUDE_CODE_USE_VERTEX",
+    "CLAUDE_CODE_USE_FOUNDRY",
+  ]);
+  // An explicit cloud route admits only its reviewed native credential names;
+  // arbitrary AWS_/GOOGLE_/AZURE_ secrets are never a credential policy.
+  for (const [flag, keys] of Object.entries(claudeCloudKeys))
+    if (env[flag] === "1")
+      for (const key of keys)
+        if (process.env[key] !== undefined) env[key] = process.env[key];
   env.CLAUDE_CONFIG_DIR = join(directory, "claude-config");
   env.CLAUDE_AGENT_SDK_CLIENT_APP = "metatron";
   env.CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION = "false";

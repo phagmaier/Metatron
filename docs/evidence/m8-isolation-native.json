@@ -1,0 +1,135 @@
+{
+  "cleanDiscovery": {
+    "codex": {
+      "installed": true,
+      "version": "0.163.0",
+      "state": "auth_required",
+      "authenticated": false,
+      "modelCount": 8
+    },
+    "pi": {
+      "installed": true,
+      "version": "1.3.0",
+      "state": "auth_required",
+      "authenticated": false,
+      "modelCount": 0
+    },
+    "claude-code": {
+      "installed": true,
+      "version": "2.1.302",
+      "state": "auth_required",
+      "authenticated": false,
+      "modelCount": 5
+    },
+    "opencode": {
+      "installed": true,
+      "version": "2.0.29",
+      "state": "available",
+      "authenticated": "unknown",
+      "modelCount": 10
+    }
+  },
+  "credentialDiscovery": {
+    "codex": {
+      "installed": true,
+      "state": "auth_required",
+      "authenticated": false,
+      "modelCount": 8
+    },
+    "pi": {
+      "installed": true,
+      "state": "available",
+      "authenticated": "unknown",
+      "modelCount": 19
+    },
+    "claude-code": {
+      "installed": true,
+      "state": "available",
+      "authenticated": "unknown",
+      "modelCount": 5
+    },
+    "opencode": {
+      "installed": true,
+      "state": "available",
+      "authenticated": "unknown",
+      "modelCount": 63
+    }
+  },
+  "launches": [
+    {
+      "harness": "codex",
+      "pid": 3075790,
+      "environmentObserved": true,
+      "disallowedVariables": [],
+      "intendedCredentialsPresent": true,
+      "appConfigSelected": true,
+      "exited": true,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "harness": "pi",
+      "pid": 3075832,
+      "environmentObserved": true,
+      "disallowedVariables": [],
+      "intendedCredentialsPresent": true,
+      "appConfigSelected": true,
+      "exited": true,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "harness": "claude-code",
+      "pid": 3075850,
+      "environmentObserved": true,
+      "disallowedVariables": [],
+      "intendedCredentialsPresent": true,
+      "appConfigSelected": true,
+      "exited": true,
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "harness": "opencode",
+      "pid": 3075896,
+      "environmentObserved": true,
+      "disallowedVariables": [],
+      "intendedCredentialsPresent": true,
+      "appConfigSelected": true,
+      "exited": true,
+      "exitCode": 130,
+      "signal": null
+    }
+  ],
+  "crossHarnessCredentialCopies": [],
+  "seededPersonalConfigUnchanged": true,
+  "personalServiceRequests": 0,
+  "executablePreloadBlocked": true,
+  "unrelatedProcessPreserved": true,
+  "submittedPrompts": 0,
+  "personalConfigMetadata": {
+    "contentsRead": false,
+    "watchedRoots": [
+      "Codex config",
+      "Codex auth",
+      "Codex sessions",
+      "Claude config",
+      "Pi config",
+      "OpenCode config",
+      "OpenCode data"
+    ],
+    "changedRoots": []
+  },
+  "existingHarnessProcesses": {
+    "observed": 10,
+    "preserved": 10
+  },
+  "passed": true,
+  "retained": null,
+  "limitations": [
+    "Metadata/process snapshots cannot attribute concurrent owner changes or explain the historical Pi observation",
+    "Only direct app-owned native children are observed; descendant cleanup and active emergency-stop use separate fixture tests",
+    "Inert credential canaries prove routing, not live provider entitlement; native cloud credential chains were not authenticated",
+    "No syscall tracer is installed; this is bounded source review plus metadata, credential-canary, process-identity and native no-model evidence, not an OS sandbox or proof of every file access"
+  ]
+}

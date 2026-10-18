@@ -21,6 +21,7 @@ import {
   type SteeringOptions,
   startSessionSchema,
 } from "./contract.ts";
+import { harnessEnvironment, piProviderKeys } from "./environment.ts";
 import { PiEvents } from "./pi-events.ts";
 import { PiRpc, type RpcRecord } from "./pi-rpc.ts";
 
@@ -46,8 +47,9 @@ async function piVersion(config: string) {
       {
         cwd: config,
         env: {
-          ...process.env,
+          ...harnessEnvironment(),
           PI_CODING_AGENT_DIR: config,
+          PI_CODING_AGENT_SESSION_DIR: join(config, "discovery-sessions"),
           PI_OFFLINE: "1",
           PI_TELEMETRY: "0",
         },
@@ -142,7 +144,7 @@ export class PiAdapter implements HarnessAdapter {
       );
     } else args.push("--no-session");
     const env: NodeJS.ProcessEnv = {
-      ...process.env,
+      ...harnessEnvironment(piProviderKeys),
       PI_CODING_AGENT_DIR: config,
       PI_CODING_AGENT_SESSION_DIR:
         sessionDirectory ?? join(config, "discovery-sessions"),
@@ -150,15 +152,10 @@ export class PiAdapter implements HarnessAdapter {
       PI_TELEMETRY: "0",
       LAO_PI_PERMISSION: permission,
     };
-    delete env.LAO_GATEWAY_URL;
-    delete env.LAO_GATEWAY_TOKEN;
     if (gateway) {
       env.LAO_GATEWAY_URL = gateway.url;
       env.LAO_GATEWAY_TOKEN = gateway.token;
     }
-    // Repository selectors and caller overlays must not redirect native tools.
-    for (const key of Object.keys(env))
-      if (key.startsWith("GIT_")) delete env[key];
     return this.spawnRpc(args, cwd, env);
   }
   async discover(): Promise<AdapterCapabilities> {

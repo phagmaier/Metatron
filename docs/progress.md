@@ -71,19 +71,10 @@
 - Completed visible budget holds for unfunded workflow children (migration v9), FIFO admission when commitments free, shared slot caps; tests 295/295, focused 10/10 and standard checks passed; FAKE runtime and browser verified.
 - [Original files, commands, evidence and limits](progress-m4-m5-history.md); [budget-hold ADR](adr/2026-10-17-workflow-budget-holds.md); live calls omitted; next was M7 item 7.
 
-## 2026-10-17 — Post-M7 item 6 correctness checkpoint
+## 2026-10-17 — Post-M7 item 6 correctness checkpoint (archived)
 
-- Fixed the four independently reproduced boundary findings only; M7 item 7 and all milestone checkboxes remain unchanged.
-- `storage/workflows.ts` now distinguishes an unlaunched dispatch generation from historical attempts/reports and honors cancellation after reservation drain; funded/admitted retries no longer settle stages prematurely.
-- `orchestration/workflows.ts` prepares eligible siblings despite cancellation/human holds, retains held inputs atomically, and requires normal explicit owner continuation without bypassing prerequisites.
-- `storage/recovery.ts` releases active dispatch bookkeeping for already-terminal attempts after restart, preserving outcomes, diagnostics, launch charges and explicit recovery decisions; nothing is requeued.
-- Added 10 failing-before/passing-after behavioral regressions in `tests/workflow-lifecycle.test.ts` and `tests/recovery.test.ts`, including journal rollback, stale generations, reservation drain and repeated restart.
-- Initial full suite: 304/305; the existing four-reader test assumed simultaneous `RUNNING` after asynchronous dispatch. Replaced that incidental assertion with each reader's durable report-before-synthesis ordering; exploration checks passed 4/4.
-- PASS: `mise x -- pnpm test` 305/305; focused `mise x -- node --test tests/workflow-lifecycle.test.ts tests/workflow-scheduling.test.ts tests/workflow-slots.test.ts tests/workflows.test.ts tests/recovery.test.ts tests/restart-reconciliation.test.ts tests/stops.test.ts` 45/45.
-- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test:fixtures` 3/3, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production.
-- [Disposable FAKE app smoke](evidence/m7-boundary-fixes-smoke.json): authenticated recovery/assignment/cancellation/human actions, funded and budget-admitted retries, cancellation during preparation, retained reports and terminal-before-release restart; 15 attempts, no automatic replay, owner checkout unchanged. Script/database/Git fixture removed.
-- Two concurrent read-only omp reviewers found no material issues in lifecycle/preparation and recovery/accounting. No new ADR, schema/dependency/toolchain/spec change or unresolved blocker; native cost-bearing turns and UI verification intentionally omitted.
-- Next remains M7 item 7: persist per-reader evidence and synthesis references, including explicit partial failures. Resume: "Implement M7 item 7 only"; run the focused command above first.
+- Fixed workflow generation/cancellation/preparation and terminal-before-release recovery boundaries; 10 failing-before/passing-after regressions, full 305/305, focused 45/45 and standard checks passed; FAKE runtime verified no replay/root changes.
+- [Original commands, initial failure, evidence and limitations](progress-m4-m5-history.md#2026-10-17--post-m7-item-6-correctness-checkpoint); no authority/schema/dependency change, live calls omitted; next remained M7 item 7.
 
 ## 2026-10-17 — M7 item 7: durable reader evidence and synthesis provenance (archived)
 
@@ -197,3 +188,13 @@
 - PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **435/435**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production; both new receipts passed JSON/outcome/exact-environment-secret exclusion.
 - No new Pi/Claude/OpenCode model prompts, live cross-harness delegation or broad isolation claim. Claude currently has no supplied token. Successful probe repos/databases removed; app-owned Codex login retained. README/recon/next-steps/todo updated; no dependencies, toolchain, spec, authority-policy changes or new ADR.
 - Next **M8 item 7 only**: verify global-config/manual-session/token isolation, retaining historical Pi metadata uncertainty. Resume: `mise current`, then the M8 checklist and [item 6 recon](adapter-recon.md#m8-item-6--lead-gateway-support-and-tested-fallbacks-2026-10-17); item 8's full matrix remains incomplete.
+
+## 2026-10-17 — M8 item 7: harness config/session/credential isolation
+
+- Chose isolation over extra Lead implementations. `adapters/environment.ts`, Codex/Pi/Pi-version now exclude unrelated tokens, personal-session selectors and preload hooks; Pi retains documented provider variables, Codex app-owned login only. Claude cloud auth now uses exact variables for explicitly enabled routes, not blanket prefixes.
+- Fixed completed Claude disposal unlinking a successor's resume lease; release clears ownership before unlink. New `harness-isolation.test.ts` **3/3** and `claude-isolation.test.ts` **6/6** failed before and passed after; focused new/Claude/stop checks **65/65**.
+- Native PASS: `mise x -- pnpm smoke:isolation --output /tmp/m8-isolation-native-first.json`; [receipt](evidence/m8-isolation-native.json). Two real app lifecycles/four installed binaries, inert auth only, zero prompts, app-owned config, intended-only canaries, no cross-harness file copies/preload/service contact; owned exits 0/0/0/130.
+- Seven watched real config/auth/session roots unchanged by metadata, 10/10 pre-existing native process identities preserved, unrelated process/service canaries untouched. No real credentials/config/transcript contents read by observers or personal sessions attached; native cloud entitlement and every filesystem access unproven. Historical Pi writes remain unattributed.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **444/444**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production. New [privacy-boundary ADR](adr/2026-10-17-harness-environment-isolation.md), README/recon/checklist/next-steps updated; no dependencies, toolchain, spec, model or tool-authority changes.
+- Two bounded read-only audits; no further material current-gate finding. Successful native scratch state and six ownership-checked failing-before fixtures removed; older temp-folder debt untouched. No paid model turns, UI changes, OS isolation or complete descendant-cleanup claim.
+- Next **M8 item 8 only**: per-adapter `spec.md` §13.3 smoke matrix, including honest auth/cost/unsupported outcomes. Resume: `mise current`, the M8 checklist and [item 7 recon](adapter-recon.md#m8-item-7--config-session-and-credential-isolation-2026-10-17); beta remains incomplete.

@@ -2,7 +2,7 @@
 
 This is the working repo for a **single-user, local-first multi-agent coding-harness orchestrator** targeting Arch Linux / Omarchy. Design docs and implementation live here side by side.
 
-The application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 added native Pi workers in isolated Git worktrees; M4 added a native Codex Lead using a session-scoped gateway. M8 items 1–2 add the official Claude Code Agent SDK and OpenCode v2 worker adapters; item 5 ran all four as live read-only workers. Item 6 verified the current Codex Lead and tested worker fallbacks for the three adapters without coordinator support—not four native Leads. Tasks, reports, approvals and events are persisted. The remaining isolation and four-harness smoke-matrix M8 gates—and the beta—are not complete.
+The application coordinates native **Codex, Claude Code, OpenCode and Pi** sessions. M3 added native Pi workers in isolated Git worktrees; M4 added a native Codex Lead using a session-scoped gateway. M8 items 1–2 add the official Claude Code Agent SDK and OpenCode v2 worker adapters; item 5 ran all four as live read-only workers. Item 6 verified the current Codex Lead and tested worker fallbacks for the three adapters without coordinator support—not four native Leads. Item 7 fixed credential-environment exposure and verified bounded config/session isolation. Tasks, reports, approvals and events are persisted. The full four-harness smoke matrix and the beta remain incomplete.
 
 ## Run the app
 
@@ -147,9 +147,31 @@ mise x -- env XDG_DATA_HOME=/tmp/lao-m8-workers pnpm test:live:leads --allow-liv
   --model gpt-6-luna --thinking low --output /tmp/lead-codex-live-new.json
 ```
 
-The opt-in checks a committed random nonce, `get_run_status`, `propose_task`, a deliberately denied assignment to the coordinator itself, native model/effort confirmation and clean completion/exit. It refuses existing evidence outputs, uses a new database and disposable repo, retains failures without replay, and checks owner-checkout/personal-config metadata before cleanup. The default mode proves only discovery/refusals, not model access. The broader isolation audit and smoke matrix remain M8 items 7–8.
+The opt-in checks a committed random nonce, `get_run_status`, `propose_task`, a deliberately denied assignment to the coordinator itself, native model/effort confirmation and clean completion/exit. It refuses existing evidence outputs, uses a new database and disposable repo, retains failures without replay, and checks owner-checkout/personal-config metadata before cleanup. The default mode proves only discovery/refusals, not model access. Item 7's bounded isolation evidence is below; item 8's full smoke matrix remains incomplete.
 
 Native **PASS** on Codex **0.163.0**, `gpt-6-luna`/low: [one-turn gateway/denial receipt](docs/evidence/m8-lead-codex-native.json). The Lead reported the nonce, used both gateway tools, received `POLICY_DENIED`, launched no worker and exited 0 with unchanged checked metadata. [Four-harness no-model support/refusal receipt](docs/evidence/m8-lead-support-probe.json); [precise support matrix and limitations](docs/adapter-recon.md#m8-item-6--lead-gateway-support-and-tested-fallbacks-2026-10-17). Claude has no supplied authentication in this process; no new Claude/Pi/OpenCode model prompts were sent.
+
+## Harness credential, config and session isolation — M8 item 7
+
+Native process environments are explicit allowlists, not copies of the app's whole environment. Arbitrary secrets, executable preload hooks and personal-session selectors are excluded; config/session paths and gateway tokens are assigned by the adapter.
+
+| Harness | Admitted authentication |
+| --- | --- |
+| Codex | Native owner login in the app-owned `CODEX_HOME`; no ambient provider API keys or other harness tokens |
+| Pi | Reviewed Pi 1.3.0 provider variables in [`environment.ts`](src/server/adapters/environment.ts), or native app-owned Pi authentication; the version subprocess receives no provider credentials |
+| Claude Code | Its admitted API key/setup-token; exact cloud variables only with the matching `CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_VERTEX` or `CLAUDE_CODE_USE_FOUNDRY` flag set to `1` |
+| OpenCode | Existing fixed `DEEPSEEK_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY` policy; private HOME/XDG/config/server |
+
+A shared provider API-key environment name can intentionally reach multiple compatible harnesses. A Claude setup-token reaches only Claude. Unknown custom Pi credential-variable names are no longer inherited implicitly: use Pi's supported authentication in its app-owned config, or explicitly review/add that provider variable. Native cloud routes may use their supported cloud credential chains; Metatron does not extract/copy personal harness logins or change route precedence to alter billing. Completed Claude disposal also cannot remove a newer resume session's lease.
+
+```sh
+# Actual installed binaries, inert credentials, private app data; no model prompt.
+mise x -- pnpm smoke:isolation --output /tmp/m8-isolation-new.json
+```
+
+The smoke refuses existing output files. It creates disposable seeded personal homes, a separate process/service canary and two real app lifecycles, strips real provider credentials, and verifies actual child environments, app-file token canaries and owned exits. [Native receipt](docs/evidence/m8-isolation-native.json): no copied canaries, no seeded or watched real-config metadata changes, no canary service contact, all 10 pre-existing harness process identities preserved; zero prompts. Real credential/config/transcript contents were not read by the metadata checks. Native catalog availability with inert keys is **not authenticated model access**.
+
+Nine new failing-before/passing-after regressions cover inheritance/preload, cloud credential routing and the Claude successor-lease race. [Decision and exact limits](docs/adr/2026-10-17-harness-environment-isolation.md); [audit evidence](docs/adapter-recon.md#m8-item-7--config-session-and-credential-isolation-2026-10-17). This is bounded source/native observation, not syscall tracing or an OS sandbox. The earlier personal Pi writes remain unattributed. Descendant cleanup, live cloud entitlement and the full smoke matrix are not claimed.
 
 ## Team presets
 

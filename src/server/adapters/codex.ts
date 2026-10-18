@@ -21,6 +21,7 @@ import {
   sessionEventSchema,
   startSessionSchema,
 } from "./contract.ts";
+import { harnessEnvironment } from "./environment.ts";
 
 // Native delegation and side channels no Codex session may use. Startup
 // verifies the effective state and fails closed if any remains enabled.
@@ -115,11 +116,9 @@ export class CodexAdapter implements HarnessAdapter {
   }
   private async launch(cwd: string, token: string | null) {
     await mkdir(this.home, { recursive: true, mode: 0o700 });
-    const env: NodeJS.ProcessEnv = { ...process.env, CODEX_HOME: this.home };
-    delete env.LAO_GATEWAY_TOKEN;
+    const env = harnessEnvironment();
+    env.CODEX_HOME = this.home;
     if (token) env.LAO_GATEWAY_TOKEN = token;
-    for (const key of Object.keys(env))
-      if (key.startsWith("GIT_")) delete env[key];
     const rpc = await this.spawnRpc(
       [
         "app-server",

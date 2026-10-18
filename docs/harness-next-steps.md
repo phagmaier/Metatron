@@ -140,7 +140,7 @@ Installed SDK `sdk.d.ts:5803–5813` specifically warns that cost/model totals a
 
 ### Resume the existing milestone sequence
 
-M8 items 1–6 are now verified under their recorded scopes. Item 6 uses the explicit limitation/fallback alternative: only Codex is implemented as Lead, with a current native gateway/denial receipt; saved-team fallbacks for Pi/Claude/OpenCode passed with inert protocol transports, not live cross-harness delegation. Proceed to **M8 item 7 global-config/manual-session/token-isolation verification**, then item 8's smoke matrix. [Current support matrix and evidence](adapter-recon.md#m8-item-6--lead-gateway-support-and-tested-fallbacks-2026-10-17).
+M8 items 1–7 are now verified under their recorded scopes. Only Codex is implemented as Lead; the other three use explicitly documented worker fallbacks. Item 7 fixed credential-environment exposure and a Claude resume-lease race, then exercised all four installed binaries without model prompts; historical Pi writes remain unattributed. Proceed to **M8 item 8 per-adapter smoke matrix** before M9. [Isolation evidence and limits](adapter-recon.md#m8-item-7--config-session-and-credential-isolation-2026-10-17).
 
 Defer Claude live steering/multi-turn queues, Pi resume changes, shell/background-task support, generalized adapter catalogue infrastructure, and account identity collection unless a current acceptance criterion needs them. Do not grow credential or personal-data storage solely to mirror Superset.
 
@@ -167,4 +167,4 @@ The report's external pi-acp session-map/background-shell details were not indep
 4. [Claude SDK TypeScript reference](https://code.claude.com/docs/en/agent-sdk/typescript); installed 0.3.302 declarations are the version-specific source for fields used above.
 5. [Pi RPC command reference](https://pi.dev/docs/latest/rpc-commands), independently checked against the installed 1.3.0 distribution's bundled docs.
 
-**Exact next task:** “Continue M8 item 7 only: verify no global harness user config was rewritten, no manual session interrupted, and no token silently copied between tools. Start with `mise current`, the M8 checklist and item 6 support/isolation limitations in `docs/adapter-recon.md`. Preserve historical Pi metadata uncertainty, native policy, durable approvals, checkout isolation and no replay. Keep item 8's smoke matrix and M9 hardening separate.”
+**Exact next task:** “Continue M8 item 8 only: reconcile/run the installed four-harness smoke matrix from spec §13.3 and record honest supported/unsupported/blocked outcomes. Start with `mise current`, the M8 checklist and item 7 recon/ADR. Preserve narrow credential routing, personal-session isolation, durable approvals, safe checkout identity and no replay. Distinguish existing native receipts from new runs; obtain any missing private auth or cost authorization before new live prompts. Keep M9 hardening separate.”

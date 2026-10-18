@@ -33,7 +33,7 @@ export type Active = {
   abort: AbortController;
   managed: ManagedSession;
   manifest: Manifest;
-  lock: string;
+  lock: string | undefined;
   pending: Map<string, Pending>;
   seenRequests: Set<string>;
   used: boolean;
@@ -86,6 +86,12 @@ export async function sameClaudeCheckout(current: Active): Promise<boolean> {
 }
 function denyClaudePending(current: Active): void {
   for (const pending of current.pending.values()) pending.finish(false);
+}
+async function releaseClaudeLease(current: Active): Promise<void> {
+  const lock = current.lock;
+  // Completion and later disposal must not unlink a successor's resume lease.
+  current.lock = undefined;
+  if (lock) await unlink(lock);
 }
 async function finishClaudeTurn(
   directory: string,
@@ -140,9 +146,11 @@ async function finishClaudeTurn(
         "App-owned Claude resume manifest could not be persisted",
       );
     }
-    await unlink(current.lock).catch(() => {
+    try {
+      await releaseClaudeLease(current);
+    } catch {
       current.fault = true;
-    });
+    }
     if (exit)
       current.events.push({
         type: "process_state",
@@ -244,5 +252,5 @@ export async function disposeClaudeTurn(current: Active): Promise<void> {
     current.query.close();
   }
   await current.done;
-  await unlink(current.lock).catch(() => {});
+  await releaseClaudeLease(current);
 }

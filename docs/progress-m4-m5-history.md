@@ -456,3 +456,18 @@ Exact original entries retained when the active log reached 200 lines.
 - PASS: baseline focused 11/11; `mise x -- pnpm test` 331/331; `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test:fixtures` 3/3, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production. README and adapter reconnaissance document commands, native evidence and limits; old M7 items 7–8 archived to retain the progress size cap.
 - No blocker. Live mode is owner-directed without a model Lead; no new UI/browser check, native crash/auth/quota induction or live candidate review (cost) is claimed. M7 checklist complete; M8/four-harness matrix and beta remain incomplete.
 - Next: M8 item 1 — Claude Code adapter via official Agent SDK. Resume: "Implement M8 item 1 only"; baseline `mise x -- pnpm test`, then inspect installed CLI/SDK versions and M8's spec sections before implementing.
+
+## 2026-10-17 — Post-M7 item 6 correctness checkpoint
+
+- Fixed the four independently reproduced boundary findings only; M7 item 7 and all milestone checkboxes remain unchanged.
+- `storage/workflows.ts` now distinguishes an unlaunched dispatch generation from historical attempts/reports and honors cancellation after reservation drain; funded/admitted retries no longer settle stages prematurely.
+- `orchestration/workflows.ts` prepares eligible siblings despite cancellation/human holds, retains held inputs atomically, and requires normal explicit owner continuation without bypassing prerequisites.
+- `storage/recovery.ts` releases active dispatch bookkeeping for already-terminal attempts after restart, preserving outcomes, diagnostics, launch charges and explicit recovery decisions; nothing is requeued.
+- Added 10 failing-before/passing-after behavioral regressions in `tests/workflow-lifecycle.test.ts` and `tests/recovery.test.ts`, including journal rollback, stale generations, reservation drain and repeated restart.
+- Initial full suite: 304/305; the existing four-reader test assumed simultaneous `RUNNING` after asynchronous dispatch. Replaced that incidental assertion with each reader's durable report-before-synthesis ordering; exploration checks passed 4/4.
+- PASS: `mise x -- pnpm test` 305/305; focused `mise x -- node --test tests/workflow-lifecycle.test.ts tests/workflow-scheduling.test.ts tests/workflow-slots.test.ts tests/workflows.test.ts tests/recovery.test.ts tests/restart-reconciliation.test.ts tests/stops.test.ts` 45/45.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test:fixtures` 3/3, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production.
+- [Disposable FAKE app smoke](evidence/m7-boundary-fixes-smoke.json): authenticated recovery/assignment/cancellation/human actions, funded and budget-admitted retries, cancellation during preparation, retained reports and terminal-before-release restart; 15 attempts, no automatic replay, owner checkout unchanged. Script/database/Git fixture removed.
+- Two concurrent read-only omp reviewers found no material issues in lifecycle/preparation and recovery/accounting. No new ADR, schema/dependency/toolchain/spec change or unresolved blocker; native cost-bearing turns and UI verification intentionally omitted.
+- Next remains M7 item 7: persist per-reader evidence and synthesis references, including explicit partial failures. Resume: "Implement M7 item 7 only"; run the focused command above first.
+
