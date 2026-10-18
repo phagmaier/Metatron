@@ -51,10 +51,11 @@ export function NativeRunForm({
         Lead. Live calls use your configured provider and may incur costs.
       </p>
       <p className="note">
-        File tools plus the app's session report tools. Readers cannot write;
-        writers can read/edit/write within the worktree. Shell, personal MCP
-        servers and extensions are disabled. This is not an OS sandbox. Tests
-        are reported as not run.
+        File tools plus the app's session report tools. The app's file-tool
+        policy denies reader writes and checks writer paths against the
+        worktree. Shell, personal MCP servers and extensions are disabled. This
+        is not an OS sandbox; filesystem races remain possible. Tests are
+        reported as not run.
       </p>
       <button
         type="button"

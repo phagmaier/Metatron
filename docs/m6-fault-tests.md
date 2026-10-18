@@ -1,5 +1,7 @@
 # M6 item 12: deterministic fault-test gate
 
+This records the M6 checkpoint. Later M8 added Claude/OpenCode one-shot native file approvals; Codex denial-only and Pi callback limits remain. See the [current support/evidence matrix](adapter-smoke-matrix.md) and [M9 completion/safety audit](completion-safety-audit.md). The simulated permission row below is historical evidence, not a current all-harness capability claim.
+
 All cases use FakeAdapter, committed SQLite fixtures or local protocol subprocesses in disposable Git repositories. No model/provider is contacted. Protocol subprocesses exercise our adapter boundary; they do not verify a live native harness. Browser rendering and live native behavior remain M9 and M8 gates respectively.
 
 | Fault or intervention | Automated evidence | Required outcome |

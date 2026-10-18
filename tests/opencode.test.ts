@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { access, mkdir, readFile, rename, rm, watch } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
@@ -8,6 +9,7 @@ import type {
 } from "../src/server/adapters/contract.ts";
 import { OpenCodeAdapter } from "../src/server/adapters/opencode.ts";
 import { OpenCodeEvents } from "../src/server/adapters/opencode-events.ts";
+import { createGitFixture } from "./helpers/git-fixture.ts";
 import { opencodeFixture } from "./helpers/opencode-fixture.ts";
 
 function status(events: SessionEvent[]) {
@@ -57,6 +59,25 @@ test("OpenCode streams cumulative whitespace exactly once and clean same-checkou
     } finally {
       await other.dispose(resumed);
     }
+    await assert.rejects(
+      other.resume(session.nativeSessionId, {
+        ...f.input,
+        runId: randomUUID(),
+        contextPolicy: "resume",
+      }),
+      { code: "POLICY_DENIED" },
+    );
+    const repoB = await createGitFixture();
+    await repoB.verify(async () => {
+      await assert.rejects(
+        other.resume(session.nativeSessionId, {
+          ...f.input,
+          cwd: repoB.directory,
+          contextPolicy: "resume",
+        }),
+        { code: "POLICY_DENIED" },
+      );
+    });
   } finally {
     await f.close();
   }

@@ -690,6 +690,16 @@ test("Claude resumes only a clean owned same-task checkout after reconstruction,
       next.resume(id, { ...f.input, taskId: randomUUID() }),
       { code: "POLICY_DENIED" },
     );
+    await assert.rejects(next.resume(id, { ...f.input, runId: randomUUID() }), {
+      code: "POLICY_DENIED",
+    });
+    const other = await createGitFixture();
+    await other.verify(async () => {
+      await assert.rejects(
+        next.resume(id, { ...f.input, cwd: other.directory }),
+        { code: "POLICY_DENIED" },
+      );
+    });
     await assert.rejects(
       next.resume(id, { ...f.input, permission: "workspace_write" }),
       { code: "POLICY_DENIED" },

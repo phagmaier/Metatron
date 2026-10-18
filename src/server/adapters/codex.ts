@@ -9,6 +9,7 @@ import {
 } from "../../shared/native-controls.ts";
 import { findExecutable, notInstalled, unreadyStep } from "./availability.ts";
 import { CodexEvents } from "./codex-events.ts";
+import { codexBinding, saveCodexBinding } from "./codex-manifest.ts";
 import { denyCodexPermission } from "./codex-permissions.ts";
 import { type CodexNotification, CodexRpc } from "./codex-rpc.ts";
 import {
@@ -271,6 +272,7 @@ export class CodexAdapter implements HarnessAdapter {
         "UNSUPPORTED",
         "Codex runs only as a gateway-connected coordinator Lead or a fresh read-only worker",
       );
+    const identity = await codexBinding(this.directory, data, threadId);
     const { rpc } = await this.launch(data.cwd, token);
     try {
       const catalog = await this.catalog(rpc);
@@ -344,6 +346,13 @@ export class CodexAdapter implements HarnessAdapter {
         throw new DomainError(
           "POLICY_DENIED",
           "Codex tool gateway did not connect; refusing prompts",
+        );
+      if (!threadId)
+        await saveCodexBinding(
+          this.directory,
+          data,
+          thread.thread.id,
+          identity,
         );
       const managed: ManagedSession = {
         nativeSessionId: thread.thread.id,

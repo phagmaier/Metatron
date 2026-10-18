@@ -1,0 +1,378 @@
+{
+  "milestone": "M9 item 6",
+  "date": "2026-10-18",
+  "passed": true,
+  "mode": "Real app, engine, SQLite and Git; deterministic protocol/SDK/HTTP fixtures, NOT live harness smoke evidence",
+  "nativeModelPrompts": 0,
+  "defects": [
+    {
+      "name": "Codex accepted a foreign run or same-path replacement Git repository on resume",
+      "failingBefore": "tests/codex-isolation.test.ts: 0/2 passed (missing expected rejection); retained test-run path /tmp/lao-test-run-gSOpJL",
+      "fixed": "Durable run/model/permission/original-checkout binding checked before native launch; same-run reconstruction passes"
+    },
+    {
+      "name": "New-run draft carried from project A to B",
+      "failingBefore": "Browser observed A_PRIVATE_DRAFT in B after project switch",
+      "retained": "/tmp/lao-project-switch-lhwZZa/before-fix.png",
+      "fixed": "Project-keyed form remount; fake/team/Lead/worker draft and discovery reset verified"
+    }
+  ],
+  "validation": {
+    "toolchain": {
+      "node": "26.7.0",
+      "pnpm": "11.22.0",
+      "command": "mise current",
+      "pinsChanged": false
+    },
+    "standard": [
+      {
+        "command": "mise x -- pnpm typecheck",
+        "pass": true
+      },
+      {
+        "command": "mise x -- pnpm lint",
+        "pass": true
+      },
+      {
+        "command": "mise x -- pnpm test",
+        "pass": true,
+        "tests": 478,
+        "failures": 0,
+        "log": "/tmp/metatron-m9-item6-test.log"
+      },
+      {
+        "command": "mise x -- pnpm test:fixtures",
+        "pass": true,
+        "tests": 3
+      },
+      {
+        "command": "mise x -- pnpm build",
+        "pass": true
+      },
+      {
+        "command": "mise x -- pnpm smoke",
+        "pass": true,
+        "modes": [
+          "development",
+          "production"
+        ]
+      },
+      {
+        "command": "mise x -- node scripts/project-switching.ts <<< quit",
+        "pass": true,
+        "outcome": "Two fixture runs complete; original roots unchanged; quit exits without EOF; app stopped, state retained at /tmp/lao-project-switch-71JbNF"
+      }
+    ],
+    "live": "intentionally omitted (cost); no native provider/model requests",
+    "graph": "Tier 2 codebase-memory checks reported no recorded coverage gaps for relied-on paths; targeted source reads verified behavior",
+    "focused": {
+      "command": "mise x -- node --test --test-global-setup=tests/helpers/temp-root.ts tests/project-switching.test.ts tests/codex-isolation.test.ts tests/context-policy.test.ts tests/lead.test.ts tests/claude.test.ts tests/opencode.test.ts",
+      "pass": true,
+      "tests": 89,
+      "failures": 0,
+      "log": "/tmp/metatron-m9-item6-focused.log"
+    }
+  },
+  "browser": {
+    "authorization": "Owner explicitly approved Playwright fallback after computer-use returned no browsers",
+    "checks": [
+      {
+        "name": "All four new-run drafts and run message reset at A→B",
+        "pass": true
+      },
+      {
+        "name": "Six A/B switches show only selected-run sessions; zero mutations/launches",
+        "pass": true
+      },
+      {
+        "name": "GUI launch of fixture Pi reader binds the new run to B",
+        "pass": true
+      },
+      {
+        "name": "GUI message after returning to A is absent from B",
+        "pass": true
+      },
+      {
+        "name": "Empty third project has no stale sessions or run actions",
+        "pass": true
+      },
+      {
+        "name": "Reload and reselect restore B sessions",
+        "pass": true
+      },
+      {
+        "name": "390px project switch has no horizontal overflow",
+        "pass": true
+      },
+      {
+        "name": "Server restart retains B sessions without rebinding",
+        "pass": true
+      },
+      {
+        "name": "390px project switch has no horizontal overflow",
+        "pass": true
+      }
+    ],
+    "attemptsBefore": 6,
+    "attemptsAfterExplicitNewBReaderAndAMessage": 8,
+    "attemptsAfterRestart": 8,
+    "restartRecordsUnchanged": true,
+    "selectionMutations": 0,
+    "mutations": [
+      {
+        "path": "/api/runs/native",
+        "projectId": "347fdee3-679b-4f21-81d3-49d5e22b6fae",
+        "runId": null
+      },
+      {
+        "path": "/api/runs/messages",
+        "projectId": null,
+        "runId": "8d9b3f7e-9a45-4440-bfec-552593029e58"
+      },
+      {
+        "path": "/api/projects",
+        "projectId": null,
+        "runId": null
+      }
+    ],
+    "screenshots": [
+      "m9-project-switch-A.png",
+      "m9-project-switch-B.png",
+      "m9-project-switch-empty.png",
+      "m9-project-switch-mobile.png",
+      "m9-project-switch-restart.png"
+    ]
+  },
+  "projects": [
+    {
+      "id": "a35ce926-77b4-4c18-8c0a-b98ae779a6ea",
+      "repositoryPath": "/tmp/lao-git-fixture-TXpy8D/repo with spaces"
+    },
+    {
+      "id": "347fdee3-679b-4f21-81d3-49d5e22b6fae",
+      "repositoryPath": "/tmp/lao-git-fixture-UDx9gs/repo with spaces"
+    }
+  ],
+  "ownerRoots": [
+    {
+      "path": "/tmp/lao-git-fixture-TXpy8D/repo with spaces",
+      "baseline": "2a58ac49f386001f8e02ed5b0bb5b7365af71105",
+      "head": "2a58ac49f386001f8e02ed5b0bb5b7365af71105",
+      "status": ""
+    },
+    {
+      "path": "/tmp/lao-git-fixture-UDx9gs/repo with spaces",
+      "baseline": "94d81cd589f5f5e23570ece2ddf87dd36b648c43",
+      "head": "94d81cd589f5f5e23570ece2ddf87dd36b648c43",
+      "status": ""
+    }
+  ],
+  "sessionBindings": [
+    {
+      "projectId": "a35ce926-77b4-4c18-8c0a-b98ae779a6ea",
+      "runId": "8d9b3f7e-9a45-4440-bfec-552593029e58",
+      "taskId": "13f5e6d7-7efc-414b-b005-17de02917484",
+      "attemptId": "57736136-c421-4ed0-ad66-868394027e68",
+      "adapter": "codex",
+      "nativeSessionId": "b863badf-edf1-4583-aab2-2a0b758b2681",
+      "context": {
+        "effective": "fresh",
+        "reason": "First Lead turn of this run",
+        "predecessorAttemptId": null,
+        "predecessorSessionId": null,
+        "checkpointArtifactId": null
+      },
+      "cwd": "/tmp/lao-git-fixture-TXpy8D/repo with spaces",
+      "worktreePath": "/tmp/lao-git-fixture-TXpy8D/repo with spaces",
+      "transcriptPath": null,
+      "state": "exited",
+      "exitCode": 0
+    },
+    {
+      "projectId": "347fdee3-679b-4f21-81d3-49d5e22b6fae",
+      "runId": "797cc0d5-5706-4d10-91d7-229450cc83fa",
+      "taskId": "9502b392-cba2-44bb-9814-4184f2549d42",
+      "attemptId": "f7d50043-7a07-432c-a52c-d5d0215d589a",
+      "adapter": "codex",
+      "nativeSessionId": "c2bc102a-bfe9-4f9f-800d-b934215de0cc",
+      "context": {
+        "effective": "fresh",
+        "reason": "First Lead turn of this run",
+        "predecessorAttemptId": null,
+        "predecessorSessionId": null,
+        "checkpointArtifactId": null
+      },
+      "cwd": "/tmp/lao-git-fixture-UDx9gs/repo with spaces",
+      "worktreePath": "/tmp/lao-git-fixture-UDx9gs/repo with spaces",
+      "transcriptPath": null,
+      "state": "exited",
+      "exitCode": 0
+    },
+    {
+      "projectId": "a35ce926-77b4-4c18-8c0a-b98ae779a6ea",
+      "runId": "8d9b3f7e-9a45-4440-bfec-552593029e58",
+      "taskId": "4f50c3ed-e436-4bea-8849-f728eea653bf",
+      "attemptId": "8671bfe7-5b8a-4fb2-92eb-5e657645397a",
+      "adapter": "pi",
+      "nativeSessionId": "fixture-1429452",
+      "context": {
+        "effective": "fresh",
+        "reason": "auto: no earlier attempt of this task, so new work starts fresh",
+        "predecessorAttemptId": null,
+        "predecessorSessionId": null,
+        "checkpointArtifactId": null
+      },
+      "cwd": "/tmp/lao-project-switch-PxA7qL/worktrees/4f50c3ed-e436-4bea-8849-f728eea653bf-d4a939bd-79c6-4e49-9524-b811faacf20f/checkout",
+      "worktreePath": "/tmp/lao-project-switch-PxA7qL/worktrees/4f50c3ed-e436-4bea-8849-f728eea653bf-d4a939bd-79c6-4e49-9524-b811faacf20f/checkout",
+      "transcriptPath": "/tmp/lao-project-switch-PxA7qL/pi-sessions/8671bfe7-5b8a-4fb2-92eb-5e657645397a",
+      "state": "exited",
+      "exitCode": 0
+    },
+    {
+      "projectId": "347fdee3-679b-4f21-81d3-49d5e22b6fae",
+      "runId": "797cc0d5-5706-4d10-91d7-229450cc83fa",
+      "taskId": "225fa85e-bd8a-46b6-b20f-9c73b8bb8261",
+      "attemptId": "7ca292ff-0af6-4fd4-9bc9-4c5c659db17a",
+      "adapter": "pi",
+      "nativeSessionId": "fixture-1429541",
+      "context": {
+        "effective": "fresh",
+        "reason": "auto: no earlier attempt of this task, so new work starts fresh",
+        "predecessorAttemptId": null,
+        "predecessorSessionId": null,
+        "checkpointArtifactId": null
+      },
+      "cwd": "/tmp/lao-project-switch-PxA7qL/worktrees/225fa85e-bd8a-46b6-b20f-9c73b8bb8261-268fc61c-a211-40ec-b9d5-355f2c6a2d26/checkout",
+      "worktreePath": "/tmp/lao-project-switch-PxA7qL/worktrees/225fa85e-bd8a-46b6-b20f-9c73b8bb8261-268fc61c-a211-40ec-b9d5-355f2c6a2d26/checkout",
+      "transcriptPath": "/tmp/lao-project-switch-PxA7qL/pi-sessions/7ca292ff-0af6-4fd4-9bc9-4c5c659db17a",
+      "state": "exited",
+      "exitCode": 0
+    },
+    {
+      "projectId": "a35ce926-77b4-4c18-8c0a-b98ae779a6ea",
+      "runId": "8d9b3f7e-9a45-4440-bfec-552593029e58",
+      "taskId": "f47e1b58-7c8c-42f1-96c8-00e6709ee202",
+      "attemptId": "19a0f75d-77c3-47ea-8523-27136fe58a52",
+      "adapter": "codex",
+      "nativeSessionId": "b863badf-edf1-4583-aab2-2a0b758b2681",
+      "context": {
+        "effective": "resume",
+        "reason": "The Lead continues its run thread",
+        "predecessorAttemptId": "57736136-c421-4ed0-ad66-868394027e68",
+        "predecessorSessionId": "b5fa32e1-0e4d-41ab-bf85-f983fb54a430",
+        "checkpointArtifactId": null
+      },
+      "cwd": "/tmp/lao-git-fixture-TXpy8D/repo with spaces",
+      "worktreePath": "/tmp/lao-git-fixture-TXpy8D/repo with spaces",
+      "transcriptPath": null,
+      "state": "exited",
+      "exitCode": 0
+    },
+    {
+      "projectId": "347fdee3-679b-4f21-81d3-49d5e22b6fae",
+      "runId": "797cc0d5-5706-4d10-91d7-229450cc83fa",
+      "taskId": "b3a62af7-d170-4fac-ba71-15ebd861d6d2",
+      "attemptId": "d3c699cb-4bdd-4337-9d59-c47e53658b45",
+      "adapter": "codex",
+      "nativeSessionId": "c2bc102a-bfe9-4f9f-800d-b934215de0cc",
+      "context": {
+        "effective": "resume",
+        "reason": "The Lead continues its run thread",
+        "predecessorAttemptId": "f7d50043-7a07-432c-a52c-d5d0215d589a",
+        "predecessorSessionId": "d1631308-68b3-4e24-aa73-1868e51f62e8",
+        "checkpointArtifactId": null
+      },
+      "cwd": "/tmp/lao-git-fixture-UDx9gs/repo with spaces",
+      "worktreePath": "/tmp/lao-git-fixture-UDx9gs/repo with spaces",
+      "transcriptPath": null,
+      "state": "exited",
+      "exitCode": 0
+    },
+    {
+      "projectId": "347fdee3-679b-4f21-81d3-49d5e22b6fae",
+      "runId": "5a23c985-d49b-4b26-a918-dde7c03a88dd",
+      "taskId": "c1342119-4cab-44b3-beaa-df7087f58031",
+      "attemptId": "c8a94fa7-3a93-42aa-a028-9ee48af3bff9",
+      "adapter": "pi",
+      "nativeSessionId": "fixture-1452480",
+      "context": {
+        "effective": "fresh",
+        "reason": "auto: no earlier attempt of this task, so new work starts fresh",
+        "predecessorAttemptId": null,
+        "predecessorSessionId": null,
+        "checkpointArtifactId": null
+      },
+      "cwd": "/tmp/lao-project-switch-PxA7qL/worktrees/c1342119-4cab-44b3-beaa-df7087f58031-3832738f-a2b6-4f88-8139-a1d11a0ff2ef/checkout",
+      "worktreePath": "/tmp/lao-project-switch-PxA7qL/worktrees/c1342119-4cab-44b3-beaa-df7087f58031-3832738f-a2b6-4f88-8139-a1d11a0ff2ef/checkout",
+      "transcriptPath": "/tmp/lao-project-switch-PxA7qL/pi-sessions/c8a94fa7-3a93-42aa-a028-9ee48af3bff9",
+      "state": "exited",
+      "exitCode": 0
+    },
+    {
+      "projectId": "a35ce926-77b4-4c18-8c0a-b98ae779a6ea",
+      "runId": "8d9b3f7e-9a45-4440-bfec-552593029e58",
+      "taskId": "c52a18bd-c5fe-43ec-ad61-05a84a0d8c81",
+      "attemptId": "f18da818-3ef5-4b22-bb25-b8aca45c6ae8",
+      "adapter": "codex",
+      "nativeSessionId": "b863badf-edf1-4583-aab2-2a0b758b2681",
+      "context": {
+        "effective": "resume",
+        "reason": "The Lead continues its run thread",
+        "predecessorAttemptId": "19a0f75d-77c3-47ea-8523-27136fe58a52",
+        "predecessorSessionId": "5360f747-9830-45b5-b549-c372bbb112ff",
+        "checkpointArtifactId": null
+      },
+      "cwd": "/tmp/lao-git-fixture-TXpy8D/repo with spaces",
+      "worktreePath": "/tmp/lao-git-fixture-TXpy8D/repo with spaces",
+      "transcriptPath": null,
+      "state": "exited",
+      "exitCode": 0
+    }
+  ],
+  "worktrees": [
+    {
+      "attemptId": "8671bfe7-5b8a-4fb2-92eb-5e657645397a",
+      "path": "/tmp/lao-project-switch-PxA7qL/worktrees/4f50c3ed-e436-4bea-8849-f728eea653bf-d4a939bd-79c6-4e49-9524-b811faacf20f/checkout",
+      "branch": "lao/attempt-8671bfe7-5b8a-4fb2-92eb-5e657645397a",
+      "repositoryRoot": "/tmp/lao-git-fixture-TXpy8D/repo with spaces",
+      "commonDirectory": "/tmp/lao-git-fixture-TXpy8D/repo with spaces/.git",
+      "baseSha": "2a58ac49f386001f8e02ed5b0bb5b7365af71105",
+      "state": "retained"
+    },
+    {
+      "attemptId": "7ca292ff-0af6-4fd4-9bc9-4c5c659db17a",
+      "path": "/tmp/lao-project-switch-PxA7qL/worktrees/225fa85e-bd8a-46b6-b20f-9c73b8bb8261-268fc61c-a211-40ec-b9d5-355f2c6a2d26/checkout",
+      "branch": "lao/attempt-7ca292ff-0af6-4fd4-9bc9-4c5c659db17a",
+      "repositoryRoot": "/tmp/lao-git-fixture-UDx9gs/repo with spaces",
+      "commonDirectory": "/tmp/lao-git-fixture-UDx9gs/repo with spaces/.git",
+      "baseSha": "94d81cd589f5f5e23570ece2ddf87dd36b648c43",
+      "state": "retained"
+    },
+    {
+      "attemptId": "c8a94fa7-3a93-42aa-a028-9ee48af3bff9",
+      "path": "/tmp/lao-project-switch-PxA7qL/worktrees/c1342119-4cab-44b3-beaa-df7087f58031-3832738f-a2b6-4f88-8139-a1d11a0ff2ef/checkout",
+      "branch": "lao/attempt-c8a94fa7-3a93-42aa-a028-9ee48af3bff9",
+      "repositoryRoot": "/tmp/lao-git-fixture-UDx9gs/repo with spaces",
+      "commonDirectory": "/tmp/lao-git-fixture-UDx9gs/repo with spaces/.git",
+      "baseSha": "94d81cd589f5f5e23570ece2ddf87dd36b648c43",
+      "state": "retained"
+    }
+  ],
+  "retained": {
+    "directory": "/tmp/lao-project-switch-PxA7qL",
+    "observation": "/tmp/lao-project-switch-PxA7qL/snapshot.json",
+    "browserBefore": "/tmp/lao-project-switch-PxA7qL/browser-before-restart.json",
+    "browserAfter": "/tmp/lao-project-switch-PxA7qL/browser-after-restart.json",
+    "browserDriver": "/tmp/lao-project-switch-PxA7qL/browser-check.mjs",
+    "previousSession": "/tmp/lao-project-switch-lhwZZa",
+    "servicesStopped": true
+  },
+  "limitations": [
+    "No OS sandbox or race-proof filesystem containment",
+    "Legacy Codex Lead threads without a binding require a new run; no automatic migration/replay",
+    "Codex read access is not confined to worktree",
+    "Worker native resume remains unsupported in engine",
+    "Existing OpenCode refused-tool and direct-child stop limits unchanged",
+    "M9/beta incomplete"
+  ]
+}

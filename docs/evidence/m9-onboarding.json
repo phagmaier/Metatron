@@ -1,0 +1,157 @@
+{
+  "date": "2026-10-18",
+  "milestone": "M9 item 7 only",
+  "status": "PASS",
+  "scope": "Onboarding README, GUI configuration example, usage/development references, known limitations and safety notes; no product runtime/dependency/toolchain/spec change",
+  "documents": [
+    "README.md",
+    "docs/configuration-example.md",
+    "docs/usage.md",
+    "docs/development.md"
+  ],
+  "checks": [
+    {
+      "command": "mise current; mise ls",
+      "status": "PASS",
+      "node": "26.7.0",
+      "pnpm": "11.22.0"
+    },
+    {
+      "command": "mise x -- pnpm typecheck",
+      "status": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm lint",
+      "status": "PASS",
+      "filesChecked": 250
+    },
+    {
+      "command": "mise x -- pnpm test",
+      "status": "PASS",
+      "passed": 478,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "mise x -- pnpm test:fixtures",
+      "status": "PASS",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "command": "mise x -- pnpm build",
+      "status": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm smoke",
+      "status": "PASS",
+      "development": "PASS",
+      "production": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "configuration": {
+    "status": "PASS",
+    "execution": "Scripted catalog fixtures through real profile/workflow/team services; no native session/model call",
+    "directory": "/tmp/lao-onboarding-qa.WI5DpR/config-fixture-1baYFW",
+    "profileCount": 5,
+    "workflowCount": 2,
+    "exploreWorkerLaunches": 3,
+    "limits": {
+      "maxConcurrentWriters": 1,
+      "maxConcurrentReadersReviewers": 2,
+      "maxConcurrentAgentsIncludingLead": 3,
+      "maxTotalWorkerLaunchesPerRun": 6,
+      "maxParallelReadersPerWorkflow": 2,
+      "maxRevisionCyclesPerTask": 1,
+      "maxAutomaticLeadWakeupsPerRun": 4
+    },
+    "defaultTableMatchesSchema": true,
+    "teamId": "53706b38-12e8-4fa0-8684-2c2fe22df659",
+    "attempts": 0,
+    "sessions": 0
+  },
+  "documentationLinks": {
+    "status": "PASS",
+    "documents": 4,
+    "localLinksChecked": 43,
+    "historicalReadmeAnchorPreserved": true
+  },
+  "commandExamples": {
+    "status": "PASS",
+    "shellBlocks": 7,
+    "documentedPnpmCommands": [
+      "acceptance",
+      "build",
+      "demo:m2",
+      "dev",
+      "format",
+      "install",
+      "lint",
+      "smoke",
+      "smoke:isolation",
+      "smoke:worker-catalog",
+      "smoke:workflow",
+      "start",
+      "test",
+      "test:fixtures",
+      "test:live:claude",
+      "test:live:leads",
+      "test:live:opencode",
+      "test:live:workers",
+      "test:live:writer",
+      "typecheck"
+    ]
+  },
+  "demo": {
+    "status": "PASS",
+    "execution": "FAKE only; no native harness or model call",
+    "database": "/tmp/lao-onboarding-qa.WI5DpR/demo-home/local-agent-orchestrator/state.sqlite",
+    "fixture": "/tmp/lao-git-fixture-HJOiAO/repo with spaces",
+    "runId": "527986d1-6e09-4d52-9218-0c4ee1810278",
+    "workerStates": [
+      "AWAITING_REVIEW",
+      "RETRY_DECISION"
+    ],
+    "before": {
+      "attempts": 4,
+      "sessions": 4,
+      "events": 78
+    },
+    "after": {
+      "attempts": 4,
+      "sessions": 4,
+      "events": 78
+    },
+    "http": {
+      "health": 200,
+      "html": 200,
+      "savedRunVisible": true,
+      "reportLabelsPlayback": true,
+      "origin": "http://127.0.0.1:37645",
+      "listener": "127.0.0.1"
+    },
+    "closed": true,
+    "afterReseeding": {
+      "attempts": 4,
+      "sessions": 4,
+      "events": 78
+    }
+  },
+  "demoCommand": "mise x -- env XDG_DATA_HOME=/tmp/lao-onboarding-qa.WI5DpR/demo-home pnpm demo:m2",
+  "verificationMethod": "One-off schema/table assertions; real profile/workflow/team services with explicitly scripted catalog adapters; real seeded FAKE engine; production app on an ephemeral loopback port via startApp, then normal-launcher reseeding. No new browser QA; existing screenshots linked.",
+  "qaCorrections": [
+    "Initial command-name validator matched prose pnpm may; restricted it to code spans/fences.",
+    "Initial HTTP check expected an array instead of the actual runs response object; corrected to runs and report content. App closed in finally.",
+    "An initial one-off verification driver invoked nested mise from its XDG-overridden environment. It attempted scratch tool installs and failed with disk quota exceeded. Removed only its owned demo-home/mise directory (291 MiB); retained app/fixture state. Normal mise current selections matched the initial session. Shared mise download cache may have refreshed. Replaced nested execution with separate normal-launcher invocations; final demo/reseed passed."
+  ],
+  "liveCostBearingTests": "INTENTIONALLY OMITTED (cost); zero native model turns; prior live evidence not rerun or reclassified",
+  "screenshots": "No new screenshots needed for documentation-only work; links to existing GUI evidence retained",
+  "newAdrs": [],
+  "newUnresolvedBlockers": [],
+  "limitations": "Documented existing Codex-only Lead, unsupported worker resume/Codex writers, OpenCode refused-tool turn loss and version coverage, Pi-only full native writer integration proof, no OS sandbox/race-proof containment, direct-child stop limits, sensitive report/test output, Git executable-driver/hidden-index refusals, no general config importer",
+  "next": "M9 item 8: audit unfinished checkboxes, fake/live presentation and sandboxing claims; beta release review remains pending"
+}

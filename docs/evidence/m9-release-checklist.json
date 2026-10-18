@@ -1,0 +1,226 @@
+{
+  "date": "2026-10-18",
+  "milestone": "M9 item 9 only",
+  "status": "PASS",
+  "implementationChecklist": "9/9",
+  "betaReview": "PENDING",
+  "ownerSignoff": false,
+  "milestones": [
+    {
+      "milestone": "M0",
+      "checked": 10,
+      "total": 10
+    },
+    {
+      "milestone": "M1",
+      "checked": 11,
+      "total": 11
+    },
+    {
+      "milestone": "M2",
+      "checked": 11,
+      "total": 11
+    },
+    {
+      "milestone": "M3",
+      "checked": 12,
+      "total": 12
+    },
+    {
+      "milestone": "M4",
+      "checked": 10,
+      "total": 10
+    },
+    {
+      "milestone": "M5",
+      "checked": 11,
+      "total": 11
+    },
+    {
+      "milestone": "M6",
+      "checked": 12,
+      "total": 12
+    },
+    {
+      "milestone": "M7",
+      "checked": 11,
+      "total": 11
+    },
+    {
+      "milestone": "M8",
+      "checked": 8,
+      "total": 8
+    },
+    {
+      "milestone": "M9",
+      "checked": 9,
+      "total": 9
+    }
+  ],
+  "scope": "Write beta release checklist and known issues in docs/progress.md; link it from README and todo, preserve historical progress and keep owner sign-off unchecked",
+  "filesChanged": [
+    "docs/progress.md",
+    "README.md",
+    "todo.md",
+    "docs/evidence/m9-release-checklist.json"
+  ],
+  "progress": {
+    "appendOnly": true,
+    "lines": 199,
+    "addedLines": 13,
+    "completedReleaseChecks": 3,
+    "uncheckedOwnerDecision": 1
+  },
+  "knownIssues": [
+    {
+      "issue": "OpenCode 2.0.32 refused file tool ends turn; feedback attempt failed and reverted",
+      "workaround": "Use tested Pi reader/reviewer profiles; inspect retained work and make explicit recovery decision before retry",
+      "evidence": [
+        "docs/evidence/m9-acceptance-C-live.json",
+        "docs/evidence/m9-acceptance-C-live-2.json"
+      ]
+    },
+    {
+      "issue": "Only Codex Lead; Codex writers/worker resume and Pi native resume/per-call approvals unsupported",
+      "details": "Claude/OpenCode clean same-checkout adapter resume does not enable cross-checkout engine worker resume; engine assignments use fresh worktrees/checkpoints"
+    },
+    {
+      "issue": "Native validation has bounded coverage",
+      "details": "Only Pi full writer/review/approved integration path; worker Lead-tool denials probe-originated; OpenCode subset 2.0.32 successes not full version compatibility; no fresh-OS/network installation verification"
+    },
+    {
+      "issue": "No OS sandbox or race-proof containment",
+      "details": "Codex reads not confined; preview tests run with owner permissions; direct-child stop does not guarantee all descendants exit; path filtering/log handling cannot guarantee secrecy"
+    },
+    {
+      "issue": "Git compatibility and operational limits",
+      "details": "Dirty/drifted/replaced checkouts, executable filters/merge drivers including LFS and hidden/sparse index state refused; caps do not exactly bound provider spending; historical worktree M3 test-reason literal is not test execution evidence; Node pin is not LTS"
+    }
+  ],
+  "validation": [
+    {
+      "command": "mise current",
+      "status": "PASS",
+      "node": "26.7.0",
+      "pnpm": "11.22.0"
+    },
+    {
+      "command": "mise x -- pnpm typecheck",
+      "status": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm lint",
+      "status": "PASS",
+      "filesChecked": 250
+    },
+    {
+      "command": "mise x -- pnpm test",
+      "status": "PASS",
+      "passed": 478,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 105025.481184
+    },
+    {
+      "command": "mise x -- pnpm test:fixtures",
+      "status": "PASS",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "command": "mise x -- pnpm build",
+      "status": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm smoke",
+      "status": "PASS",
+      "development": "PASS",
+      "production": "PASS",
+      "origins": [
+        "http://127.0.0.1:42363",
+        "http://127.0.0.1:43257"
+      ],
+      "listenersClosed": true
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "retainedEvidence": {
+    "previousAudit": {
+      "path": "docs/evidence/m9-completion-safety-audit.json",
+      "sha256": "f409b3d56e009f6cc6ca1742d723c632a76983b1f9da9eb2835c99bb9ec73046",
+      "status": "PASS",
+      "betaReviewAtItem8": "PENDING"
+    },
+    "hashComparisons": 42,
+    "allHashesMatch": true,
+    "liveAcceptancePasses": 7,
+    "failedLiveReceiptsPreserved": 4,
+    "rehearsalsPreserved": 7,
+    "historicalTurnsIncludingFailures": 43,
+    "newNativeModelPrompts": 0,
+    "references": [
+      {
+        "path": "docs/startup-verification.md",
+        "sha256": "99895e3ab2bc4ad8c4196f1e2d1a49b93767398e8ddd14fcfb7af71676a8e77b"
+      },
+      {
+        "path": "docs/configuration-example.md",
+        "sha256": "421613d8f87804bd2970925814dca30a7b2841f4cde936c870f059ed2951015a"
+      },
+      {
+        "path": "docs/usage.md",
+        "sha256": "b90ad2134dc0792880056da3de4d8dfccfad0437df3eaf26b638a9b77abc93a7"
+      },
+      {
+        "path": "docs/security-audit.md",
+        "sha256": "e4e1b383418f9a3793bda6f2c9310c97b7c86b991ac1236c2abfb3b772da4b3b"
+      },
+      {
+        "path": "docs/adapter-smoke-matrix.md",
+        "sha256": "1d4ba351e0bd5a5a5129e15558fb6ee4c22003867c20214c35da3bc66fd2691b"
+      },
+      {
+        "path": "docs/completion-safety-audit.md",
+        "sha256": "18afc3d8e06bd369719b4613a011c816e6e2fa995e06e2c105aafc05f46619b7"
+      },
+      {
+        "path": "docs/gui-status-checks.md",
+        "sha256": "a6fd667b067295e42d87f483c53be65d11dd8ceddfb11716cb194275fb7b6b9f"
+      },
+      {
+        "path": "docs/project-switching-verification.md",
+        "sha256": "e121892cacb4af434ac819f5d8bf8767278f7344c02b56630013f9eb6165b3f1"
+      },
+      {
+        "path": "docs/evidence/m9-completion-safety-audit.json",
+        "sha256": "f409b3d56e009f6cc6ca1742d723c632a76983b1f9da9eb2835c99bb9ec73046"
+      }
+    ]
+  },
+  "browserQaThisSession": false,
+  "minimalDemonstration": "pnpm smoke starts and closes the real development and production HTTP/GUI-asset servers; no native/model calls",
+  "newTests": "None; documentation-only changes",
+  "liveCostBearingTests": "Intentionally omitted (cost); no new native model turns",
+  "qaCorrection": "Initial ad hoc markdown assertion expected the bold closing delimiter before the sign-off colon. Corrected the validator to match the actual heading; no product/document failure.",
+  "newAdrs": [],
+  "newUnresolvedBlockers": [],
+  "runtimeDependencyToolchainSpecChanges": false,
+  "next": "Owner beta review of docs/progress.md checklist and linked evidence; no automatic future-backlog implementation",
+  "resume": "mise current; then review the M9 item 9 release checklist and known issues",
+  "documentationValidation": {
+    "status": "PASS",
+    "documents": [
+      "README.md",
+      "todo.md",
+      "docs/progress.md"
+    ],
+    "localLinks": 153,
+    "anchors": 25,
+    "missing": 0,
+    "progressHistoryUnchanged": true,
+    "releaseStatusAssertions": "PASS"
+  }
+}

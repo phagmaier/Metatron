@@ -240,7 +240,9 @@ function App() {
       <RolesPanel />
       <ProfilesPanel />
       <TeamsPanel />
+      {/* A draft belongs to its project; switching must not submit it elsewhere. */}
       <ProjectForms
+        key={selectedProject?.id ?? "new-project"}
         project={selectedProject}
         onProject={(id) => {
           setProjectId(id);

@@ -1,0 +1,701 @@
+{
+  "date": "2026-10-18",
+  "milestone": "M9 item 8 only",
+  "status": "PASS",
+  "betaReview": "PENDING",
+  "next": "M9 item 9: write beta release checklist and known issues in docs/progress.md",
+  "scope": "Completion/safety claims audit; task-directed source/graph review and retained evidence verification, not a fresh replay of all historical manual/native gates",
+  "toolchain": {
+    "firstCommand": "mise current",
+    "node": "26.7.0",
+    "pnpm": "11.22.0",
+    "pinsChanged": false
+  },
+  "milestones": [
+    {
+      "milestone": "M0",
+      "checked": 10,
+      "total": 10,
+      "open": []
+    },
+    {
+      "milestone": "M1",
+      "checked": 11,
+      "total": 11,
+      "open": []
+    },
+    {
+      "milestone": "M2",
+      "checked": 11,
+      "total": 11,
+      "open": []
+    },
+    {
+      "milestone": "M3",
+      "checked": 12,
+      "total": 12,
+      "open": []
+    },
+    {
+      "milestone": "M4",
+      "checked": 10,
+      "total": 10,
+      "open": []
+    },
+    {
+      "milestone": "M5",
+      "checked": 11,
+      "total": 11,
+      "open": []
+    },
+    {
+      "milestone": "M6",
+      "checked": 12,
+      "total": 12,
+      "open": []
+    },
+    {
+      "milestone": "M7",
+      "checked": 11,
+      "total": 11,
+      "open": []
+    },
+    {
+      "milestone": "M8",
+      "checked": 8,
+      "total": 8,
+      "open": []
+    },
+    {
+      "milestone": "M9",
+      "checked": 8,
+      "total": 9,
+      "open": [
+        "Write beta release checklist and known issues in `docs/progress.md`."
+      ]
+    }
+  ],
+  "futureBacklogChecked": 0,
+  "findings": [
+    {
+      "issue": "M6 notes still claimed native owner approval unimplemented and Pi resume deferred",
+      "resolution": "Current Claude/OpenCode one-shot approval and adapter/engine resume distinctions documented"
+    },
+    {
+      "issue": "Unsigned M9 target said beta ready",
+      "resolution": "Target explicitly pending item 9 and owner review"
+    },
+    {
+      "issue": "Health endpoint/schema still reported M4",
+      "resolution": "M9 stage with existing response test updated; no release sign-off implied"
+    },
+    {
+      "issue": "Pi form used absolute Readers cannot write wording",
+      "resolution": "Describes file-tool policy and remaining filesystem races"
+    },
+    {
+      "issue": "M6/M8 historical documents contained superseded remaining-gate claims",
+      "resolution": "Added checkpoint context; original history and native failures preserved"
+    }
+  ],
+  "nativeAcceptance": {
+    "passingReceipts": [
+      {
+        "path": "docs/evidence/m9-acceptance-A-live-2.json",
+        "sha256": "05ef2ae66f8e5e253458e3cceb28b3d9aaa1f4536835b006c68d2c6d942857e7",
+        "scenario": "A",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "checks": 7,
+        "turns": {
+          "cap": 5,
+          "total": 3,
+          "lead": 1
+        },
+        "integrationApproval": "script-issued under the owner's --approve-disposable authorization (disposable fixture only)"
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-B-live-2.json",
+        "sha256": "7d101c59e3c70bfe056069bfdff3017adcf0923d62999cd460cd070426f22b71",
+        "scenario": "B",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "checks": 8,
+        "turns": {
+          "cap": 7,
+          "total": 5,
+          "lead": 0
+        },
+        "integrationApproval": "script-issued under the owner's --approve-disposable authorization (disposable fixture only)"
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-C-live-3.json",
+        "sha256": "e712cec411b3da1cd0e9c0c51253c617cb1fa1883ee2abee0fddb5a3e4d03dab",
+        "scenario": "C",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "checks": 6,
+        "turns": {
+          "cap": 6,
+          "total": 6,
+          "lead": 1
+        },
+        "integrationApproval": "script-issued under the owner's --approve-disposable authorization (disposable fixture only)"
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-D-live.json",
+        "sha256": "e50fc5574d0b7917a8a3c7eda5efba50afc76d97b9636cc7ac771ad30458242a",
+        "scenario": "D",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "checks": 7,
+        "turns": {
+          "cap": 3,
+          "total": 3,
+          "lead": 1
+        },
+        "integrationApproval": "See retained receipt and owner approval history; no new approval in this audit"
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-E-live.json",
+        "sha256": "97fb3c46817b4e5cf2e49f8cb4307fcc2b723a453a48745ffa7e64b7e6e7f997",
+        "scenario": "E",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "checks": 6,
+        "turns": {
+          "cap": 2,
+          "total": 2,
+          "lead": 0
+        },
+        "integrationApproval": "See retained receipt and owner approval history; no new approval in this audit"
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-F-live.json",
+        "sha256": "79d29120d7e88c04135615961e987d4390f9c3883b62a567ecedeb3d771276ed",
+        "scenario": "F",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "checks": 6,
+        "turns": {
+          "cap": 4,
+          "total": 4,
+          "lead": 0
+        },
+        "integrationApproval": "See retained receipt and owner approval history; no new approval in this audit"
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-G-live.json",
+        "sha256": "3c5eabeb56addb4c60503876fb313631d276d1fdcf11577b05595bdef638f6ba",
+        "scenario": "G",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "checks": 4,
+        "turns": {
+          "cap": 1,
+          "total": 1,
+          "lead": 1
+        },
+        "integrationApproval": "See retained receipt and owner approval history; no new approval in this audit"
+      }
+    ],
+    "allRetainedOutcomes": [
+      {
+        "path": "docs/evidence/m9-acceptance-A-live-2.json",
+        "sha256": "05ef2ae66f8e5e253458e3cceb28b3d9aaa1f4536835b006c68d2c6d942857e7",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "turns": 3,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-A-live.json",
+        "sha256": "ca073bd4c85aa8b3fce7fda1296684b139aa37f79333cf432c978e3d68ee5c7f",
+        "mode": "live native harnesses",
+        "result": "FAIL",
+        "turns": 3,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-A-rehearsal.json",
+        "sha256": "e6d6d102f62bed5cb546ac47a1ff5e90dd938b3d147987d6e8f8d7e83ef0ec58",
+        "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+        "result": "PASS",
+        "turns": 5,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-B-live-2.json",
+        "sha256": "7d101c59e3c70bfe056069bfdff3017adcf0923d62999cd460cd070426f22b71",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "turns": 5,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-B-live.json",
+        "sha256": "d888756e223135534196baadff533b5d2110c9921e200ee61c724d848942bd39",
+        "mode": "live native harnesses",
+        "result": "FAIL",
+        "turns": 5,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-B-rehearsal.json",
+        "sha256": "b57df88bee47f0f097ddbd6d46e5d771a6f6368bb7819336102bde52a785d84c",
+        "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+        "result": "PASS",
+        "turns": 5,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-C-live-2.json",
+        "sha256": "4776a5e556425a5b77443147a654a75df9071c696c08088d178618289489fb6f",
+        "mode": "live native harnesses",
+        "result": "FAIL",
+        "turns": 5,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-C-live-3.json",
+        "sha256": "e712cec411b3da1cd0e9c0c51253c617cb1fa1883ee2abee0fddb5a3e4d03dab",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "turns": 6,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-C-live.json",
+        "sha256": "9e03c4c045d1a0d5514fb43f9d53a6fbffea72a375d358bea7519774f57e9fa5",
+        "mode": "live native harnesses",
+        "result": "FAIL",
+        "turns": 6,
+        "reconstructed": true
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-C-rehearsal.json",
+        "sha256": "c557ea068bef8faa937787d5ee391fab7a047ce1b31054f0e8a07c5e1070899c",
+        "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+        "result": "PASS",
+        "turns": 6,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-D-live.json",
+        "sha256": "e50fc5574d0b7917a8a3c7eda5efba50afc76d97b9636cc7ac771ad30458242a",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "turns": 3,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-D-rehearsal.json",
+        "sha256": "b970fe1f6c0007df000ba4c17eb1967be0240ae246e9007ed456de2ad22f4499",
+        "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+        "result": "PASS",
+        "turns": 3,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-E-live.json",
+        "sha256": "97fb3c46817b4e5cf2e49f8cb4307fcc2b723a453a48745ffa7e64b7e6e7f997",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "turns": 2,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-E-rehearsal.json",
+        "sha256": "f314112f3b03237aae700514fd3c1cef454ec680b08c6ece4d513bf2c151176a",
+        "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+        "result": "PASS",
+        "turns": 2,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-F-live.json",
+        "sha256": "79d29120d7e88c04135615961e987d4390f9c3883b62a567ecedeb3d771276ed",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "turns": 4,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-F-rehearsal.json",
+        "sha256": "f4d14ddf1911966a7b7f2d0bb9309c1bd92c1120e2a2023c6635709baf4fa33f",
+        "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+        "result": "PASS",
+        "turns": 4,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-G-live.json",
+        "sha256": "3c5eabeb56addb4c60503876fb313631d276d1fdcf11577b05595bdef638f6ba",
+        "mode": "live native harnesses",
+        "result": "PASS",
+        "turns": 1,
+        "reconstructed": false
+      },
+      {
+        "path": "docs/evidence/m9-acceptance-G-rehearsal.json",
+        "sha256": "45504ba4ca8ffd27539dbd29ddf8a8d9b7891ee2edba956c3f39062ad3cda8fb",
+        "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+        "result": "PASS",
+        "turns": 1,
+        "reconstructed": false
+      }
+    ],
+    "passingTurns": 24,
+    "allTurnsIncludingFailures": 43,
+    "failedNativeReceiptsRetained": 4,
+    "liveCPartialFailures": 0,
+    "liveCReaderHarness": "pi",
+    "newNativeModelPrompts": 0
+  },
+  "nativeMatrix": {
+    "catalogs": [
+      {
+        "path": "docs/evidence/m8-worker-catalog-codex.json",
+        "sha256": "8b63b3fcc43fc02988d11dce5d2e3b95bd882e9d2d7cc2a52007f052ef3faa21",
+        "harness": "codex",
+        "passed": true,
+        "submittedPrompts": 0,
+        "boundary": "Native client catalog fetch plus probe-originated server-side Lead-tool denials on the same worker binding; not a native-client Lead-tool invocation",
+        "denials": "probe-originated on worker binding; not native client Lead-tool invocation"
+      },
+      {
+        "path": "docs/evidence/m8-worker-catalog-claude-code-setup-token.json",
+        "sha256": "c14a493999922f9f1eb89e20d13efbc2c520d49950ee9766141f783d2f024acd",
+        "harness": "claude-code",
+        "passed": true,
+        "submittedPrompts": 0,
+        "boundary": "Native client catalog fetch plus probe-originated server-side Lead-tool denials on the same worker binding; not a native-client Lead-tool invocation",
+        "denials": "probe-originated on worker binding; not native client Lead-tool invocation"
+      },
+      {
+        "path": "docs/evidence/m8-worker-catalog-opencode.json",
+        "sha256": "8c9f007a7e0a5a2ca5410882b8d04a03fe8c48829e706f5ed2714c339f9d7e75",
+        "harness": "opencode",
+        "passed": true,
+        "submittedPrompts": 0,
+        "boundary": "Native client catalog fetch plus probe-originated server-side Lead-tool denials on the same worker binding; not a native-client Lead-tool invocation",
+        "denials": "probe-originated on worker binding; not native client Lead-tool invocation"
+      },
+      {
+        "path": "docs/evidence/m8-worker-catalog-pi.json",
+        "sha256": "a71c1a640e2d1cf600fc3fc5421a85296e7c1777435be753e0d5ff57e7bca69a",
+        "harness": "pi",
+        "passed": true,
+        "submittedPrompts": 0,
+        "boundary": "Native client catalog fetch plus probe-originated server-side Lead-tool denials on the same worker binding; not a native-client Lead-tool invocation",
+        "denials": "probe-originated on worker binding; not native client Lead-tool invocation"
+      }
+    ],
+    "history": [
+      {
+        "path": "docs/evidence/m3-live-summary.json",
+        "sha256": "67a872b62ca898432683fdf3d3fe16003813b18330b223625c8993fcdacd3c69",
+        "passed": null,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m4-live-summary.json",
+        "sha256": "6c4a469a63565c5755d092838831e8e0738bc348541b42cea282c7d6bd567d78",
+        "passed": null,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m7-workflow-pi-smoke.json",
+        "sha256": "a99aec0ace40e8462d9756aa2c95aa92bae6ab001666fc8f215266c64b3c2586",
+        "passed": null,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-codex-lead-lifecycle-native.json",
+        "sha256": "8bd286f351f4209f22308c55ad16645c8a7722d29c657430a1628a646570b4b5",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-pi-cancellation-narration-native.json",
+        "sha256": "c8b21040cdfcc6f8c1c199c8573a0877cecd2181e4cf2b76d6acc5c964682068",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-claude-native-live.json",
+        "sha256": "19e057b3cb95c5497dfd2e7a918f3a8d5bb1c7cae37f410bb1e92b61830ddebd",
+        "passed": null,
+        "status": "LIVE_PASS",
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-opencode-native-live.json",
+        "sha256": "db12cdd91a446310032eebe09576a4819fb9bf8869ec0e44dc5242545850c8d8",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-worker-codex.json",
+        "sha256": "c7ad600dcc29d3e22205332ce240170bd6172d811340de5056bfbd1458d4f232",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-worker-claude.json",
+        "sha256": "bcb1bea766712934ee340762272c99db4fcf4c952720424d5c8ccafa4e39a030",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-worker-opencode.json",
+        "sha256": "44304e808aa0b0839fdf495eee116f9011cec90fed8ea86593f2aaabf58fa832",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-worker-pi.json",
+        "sha256": "b63fba1777c402848de7201ebe8f7b71c044c03b4c97788f001d1883077f85db",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-writer-native.json",
+        "sha256": "4ee5beb1a4cd074dcee8e8e6dbc3fbcae71757f99ea49816a7d542dd71c7e2b7",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      },
+      {
+        "path": "docs/evidence/m8-writer-integration-native.json",
+        "sha256": "7dcd4261f98174f6e5d79ae7ae95a47f29a28234608afec720c23a599c29c43d",
+        "passed": true,
+        "status": null,
+        "basis": "Existing native record; not rerun during this audit"
+      }
+    ],
+    "leadSupport": "Codex only",
+    "unobserved": "Native client calling an unlisted Lead tool from worker binding",
+    "writerIntegration": "Pi only; Claude/OpenCode direct writes are not full reviewed integration proof",
+    "openCode": "2.0.29 direct native matrix; 2.0.32 later reader/reviewer successes plus refused-tool turn-loss failures; not full version compatibility"
+  },
+  "productionDispatch": {
+    "entrypoint": "src/server/main.ts",
+    "nativeAdapters": "PiAdapter, CodexAdapter, ClaudeAdapter, OpenCodeAdapter",
+    "fakeExecutor": "executeFakeTurn, only selected for run.execution=fake",
+    "nativeFailure": "Retains failure/recovery; no FAKE fallback in audited dispatch",
+    "mixedRoster": "POLICY_DENIED",
+    "labelsReviewed": [
+      "run badge",
+      "sessions",
+      "Lead messages",
+      "workflow children",
+      "workflow invocation",
+      "team run form",
+      "scripted report contents"
+    ],
+    "fixtureInjections": "Only explicit test/QA startApp callers; labelled project/run/prompt and evidence modes",
+    "browserQaThisSession": false
+  },
+  "sourceCoverage": {
+    "project": "home-phagmaier-Code-Metatron",
+    "tier": "Tier 2, task-directed verification",
+    "generation": "2026-10-18T23:45:44Z",
+    "paths": [
+      "src/server/main.ts",
+      "src/server/app.ts",
+      "src/shared/health.ts",
+      "src/server/orchestration/engine.ts",
+      "src/server/orchestration/execute.ts",
+      "src/server/orchestration/native-execute.ts",
+      "src/server/orchestration/lead-execute.ts",
+      "src/server/orchestration/team-run.ts",
+      "src/server/storage/teams.ts",
+      "src/server/storage/profiles.ts",
+      "src/shared/native.ts",
+      "src/web/main.tsx",
+      "src/web/lead-panel.tsx",
+      "src/web/workflow-panel.tsx",
+      "src/web/workflow-run-form.tsx",
+      "src/web/team-run-form.tsx",
+      "src/web/native-run-form.tsx",
+      "src/web/lead-run-form.tsx",
+      "src/web/project-forms.tsx",
+      "scripts/acceptance-app.ts",
+      "scripts/gui-status.ts",
+      "scripts/project-switching.ts",
+      "scripts/smoke.ts",
+      "tests/teams.test.ts",
+      "tests/profiles.test.ts",
+      "tests/server.test.ts",
+      "tests/security-audit.test.ts",
+      "src/server/adapters/codex.ts",
+      "src/server/adapters/claude.ts",
+      "src/server/adapters/opencode.ts",
+      "src/server/adapters/pi.ts",
+      "src/shared/worktrees.ts",
+      "src/server/git/worktrees.ts",
+      "src/server/fake-demo.ts",
+      "scripts/demo-m2.ts",
+      "src/server/api.ts",
+      "src/web/api.ts",
+      "tests/helpers/project-switch-fixture.ts"
+    ],
+    "scopes": [
+      {
+        "requested_scope": "src",
+        "scope": "src",
+        "total": 0,
+        "returned": 0,
+        "truncated": false,
+        "entries": [],
+        "status": "no_recorded_issue"
+      },
+      {
+        "requested_scope": "scripts",
+        "scope": "scripts",
+        "total": 0,
+        "returned": 0,
+        "truncated": false,
+        "entries": [],
+        "status": "no_recorded_issue"
+      }
+    ],
+    "caveat": "Best-effort signal only. No recorded issue does not prove graph or source completeness; read flagged source and qualify claims when metadata is changed or unavailable.",
+    "allStatuses": "no_recorded_issue",
+    "allFreshness": "metadata_match"
+  },
+  "demo": {
+    "passed": true,
+    "database": "/tmp/lao-m9-claims.c7O1KO/data/local-agent-orchestrator/state.sqlite",
+    "observations": [
+      {
+        "restart": 0,
+        "origin": "http://127.0.0.1:45439",
+        "health": {
+          "status": "ok",
+          "app": "Local Agent Orchestrator",
+          "milestone": "M9"
+        },
+        "execution": "fake",
+        "sessions": 4,
+        "attempts": 4,
+        "events": 78,
+        "reportCount": 1,
+        "workerStates": [
+          "AWAITING_REVIEW",
+          "RETRY_DECISION"
+        ],
+        "repository": "/tmp/lao-git-fixture-MftWRo/repo with spaces",
+        "head": "402d1a0ec09b587e38b2cba834f08cba2fe5db80",
+        "status": "",
+        "fakeReportsLabelled": true,
+        "nativeSessions": 0,
+        "nativeProcessIds": 0
+      },
+      {
+        "restart": 1,
+        "origin": "http://127.0.0.1:38971",
+        "health": {
+          "status": "ok",
+          "app": "Local Agent Orchestrator",
+          "milestone": "M9"
+        },
+        "execution": "fake",
+        "sessions": 4,
+        "attempts": 4,
+        "events": 78,
+        "reportCount": 1,
+        "workerStates": [
+          "AWAITING_REVIEW",
+          "RETRY_DECISION"
+        ],
+        "repository": "/tmp/lao-git-fixture-MftWRo/repo with spaces",
+        "head": "402d1a0ec09b587e38b2cba834f08cba2fe5db80",
+        "status": "",
+        "fakeReportsLabelled": true,
+        "nativeSessions": 0,
+        "nativeProcessIds": 0
+      }
+    ],
+    "listenersClosed": true
+  },
+  "validation": [
+    {
+      "command": "mise x -- pnpm typecheck",
+      "status": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm lint",
+      "status": "PASS",
+      "filesChecked": 250
+    },
+    {
+      "command": "mise x -- pnpm test",
+      "status": "PASS",
+      "passed": 478,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "mise x -- pnpm test:fixtures",
+      "status": "PASS",
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "command": "mise x -- pnpm build",
+      "status": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm smoke",
+      "status": "PASS",
+      "development": "PASS",
+      "production": "PASS"
+    },
+    {
+      "command": "mise x -- env XDG_DATA_HOME=/tmp/lao-m9-claims.c7O1KO/data pnpm demo:m2",
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "qaCorrections": [
+    "First ad hoc demo assertion read a summary field on the report envelope; engine.reports returns artifact/content. Corrected to inspect content; demo passed. No product failure."
+  ],
+  "liveCostBearingTests": "Intentionally omitted (cost); no new authorization or native model turns",
+  "limitations": [
+    "No OS sandbox or race-proof containment",
+    "Codex reads not worktree-confined; its native read-only/no-network policy is a narrower harness control",
+    "Direct-child emergency stop, descendants may remain",
+    "Legacy worktree evidence tests literal remains historical compatibility metadata; not proof of test execution or Codex shell absence",
+    "Provider spending not exactly capped; availability/model lists do not establish access or price",
+    "Embedded secrets and sensitive model/test output still possible",
+    "Node 26.7.0 pin is not LTS; retained pinned version, changing it requires owner approval"
+  ],
+  "newAdrs": [],
+  "newUnresolvedBlockers": [],
+  "preservedPreExistingEdits": true,
+  "documentationLinks": {
+    "documents": [
+      "todo.md",
+      "docs/completion-safety-audit.md",
+      "docs/adapter-smoke-matrix.md",
+      "docs/m6-fault-tests.md"
+    ],
+    "localLinksChecked": 167,
+    "missing": 0
+  }
+}
