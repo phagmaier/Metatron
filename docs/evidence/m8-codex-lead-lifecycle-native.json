@@ -1,0 +1,269 @@
+{
+  "liveAuthorized": true,
+  "selected": {
+    "harness": "codex",
+    "model": "gpt-6-luna",
+    "thinking": "low"
+  },
+  "requestedChecks": {
+    "gatewayPolicy": true,
+    "completedResumeAndCancel": true
+  },
+  "maximumRequestedTurns": 3,
+  "support": {
+    "pi": {
+      "version": "1.3.0",
+      "state": "auth_required",
+      "authenticated": false,
+      "lead": "unsupported by this application adapter",
+      "coordinatorRefusal": {
+        "code": "UNSUPPORTED",
+        "message": "Pi supports fresh file-tool workers with only the app's loopback gateway overlay"
+      },
+      "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+    },
+    "claude-code": {
+      "version": "2.1.302",
+      "state": "auth_required",
+      "authenticated": false,
+      "lead": "unsupported by this application adapter",
+      "coordinatorRefusal": {
+        "code": "UNSUPPORTED",
+        "message": "Claude supports isolated file-tool workers with only the app loopback gateway overlay"
+      },
+      "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+    },
+    "opencode": {
+      "version": "2.0.32",
+      "state": "available",
+      "authenticated": "unknown",
+      "lead": "unsupported by this application adapter",
+      "coordinatorRefusal": {
+        "code": "UNSUPPORTED",
+        "message": "OpenCode accepts only file-worker profiles and an app loopback gateway overlay"
+      },
+      "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+    },
+    "codex": {
+      "version": "0.163.0",
+      "state": "available",
+      "authenticated": true,
+      "lead": "implemented; native turn requires --allow-live",
+      "coordinatorRefusal": null,
+      "fallback": null
+    }
+  },
+  "nativeCodexLead": {
+    "runId": "47c85f6f-1e3a-4b1d-a78e-8ecd03ba939d",
+    "nativeSessionId": "01a14e2e-561d-7362-a4b5-803fd44a36cd",
+    "checks": {
+      "authoritativeCompletion": true,
+      "streamedCompletion": true,
+      "settingsMatch": true,
+      "gatewayReadAndProposal": true,
+      "coordinatorAssignmentDenied": true,
+      "nonceReported": true,
+      "noWorkerLaunched": true,
+      "noSessionError": true
+    },
+    "settingsVerified": [
+      {
+        "type": "settings_verified",
+        "model": "gpt-6-luna",
+        "thinking": "low",
+        "source": "Codex thread start/resume response; no model reroute"
+      }
+    ],
+    "stream": {
+      "deltaCount": 92,
+      "firstDeltaSequence": 20,
+      "lastDeltaSequence": 123,
+      "samples": [
+        {
+          "sequence": 20,
+          "text": "I"
+        },
+        {
+          "sequence": 21,
+          "text": "’ll"
+        },
+        {
+          "sequence": 22,
+          "text": " read"
+        }
+      ],
+      "terminals": [
+        {
+          "sequence": 126,
+          "nativeStatus": "completed"
+        }
+      ],
+      "streamedBeforeTerminal": true
+    },
+    "gatewayConnected": [
+      {
+        "role": "lead",
+        "mode": "autonomous_bounded",
+        "version": "lao-tools/5"
+      }
+    ],
+    "tools": [
+      {
+        "tool": "get_run_status",
+        "outcome": "ok"
+      },
+      {
+        "tool": "propose_task",
+        "outcome": "ok"
+      }
+    ],
+    "denials": [
+      {
+        "tool": "assign_task",
+        "code": "POLICY_DENIED",
+        "message": "Choose a worker from this run's roster"
+      }
+    ],
+    "messages": [
+      {
+        "text": "I’ll read the run roster first, then inspect the requested file and make the single proposed task and deliberate assignment attempt.\n\nNonce: `55b7c6f5-e0be-403f-baba-238e500b79a2`\n\nProposed the read-only inspection task. The assignment attempt was denied with `POLICY_DENIED` (“Choose a worker from this run’s roster”). No worker was assigned and no files were changed."
+      }
+    ],
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": false
+      }
+    ],
+    "sessionErrors": [],
+    "usage": [
+      {
+        "type": "usage",
+        "inputTokens": 13527,
+        "outputTokens": 71,
+        "source": "codex thread token usage (last turn)"
+      }
+    ],
+    "configured": [
+      {
+        "threadId": "01a14e2e-561d-7362-a4b5-803fd44a36cd",
+        "resumed": false,
+        "model": "gpt-6-luna",
+        "thinking": "low",
+        "sandbox": "read-only (no network)",
+        "approvals": "never"
+      }
+    ]
+  },
+  "completedResume": {
+    "checks": {
+      "sameNativeThread": true,
+      "completedFollowUp": true,
+      "settingsMatch": true,
+      "nonceRemembered": true,
+      "noWorkerLaunched": true
+    },
+    "nativeSessionId": "01a14e2e-561d-7362-a4b5-803fd44a36cd",
+    "stream": {
+      "deltaCount": 33,
+      "firstDeltaSequence": 149,
+      "lastDeltaSequence": 181,
+      "samples": [
+        {
+          "sequence": 149,
+          "text": "The"
+        },
+        {
+          "sequence": 150,
+          "text": " exact"
+        },
+        {
+          "sequence": 151,
+          "text": " nonce"
+        }
+      ],
+      "terminals": [
+        {
+          "sequence": 184,
+          "nativeStatus": "completed"
+        }
+      ],
+      "streamedBeforeTerminal": true
+    },
+    "settingsVerified": [
+      {
+        "type": "settings_verified",
+        "model": "gpt-6-luna",
+        "thinking": "low",
+        "source": "Codex thread start/resume response; no model reroute"
+      }
+    ],
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": false
+      }
+    ]
+  },
+  "activeCancellation": {
+    "checks": {
+      "textBeforeRequest": true,
+      "nativeInterruptedAfterRequest": true,
+      "taskCancelled": true,
+      "ownedShutdown": true,
+      "noSessionError": true,
+      "noSuccessReport": true
+    },
+    "request": {
+      "afterTextSequence": 205,
+      "requestSequence": 206
+    },
+    "stream": {
+      "deltaCount": 2,
+      "firstDeltaSequence": 204,
+      "lastDeltaSequence": 205,
+      "samples": [
+        {
+          "sequence": 204,
+          "text": "I"
+        },
+        {
+          "sequence": 205,
+          "text": "’ll"
+        }
+      ],
+      "terminals": [
+        {
+          "sequence": 210,
+          "nativeStatus": "interrupted"
+        }
+      ],
+      "streamedBeforeTerminal": true
+    },
+    "nativeSessionId": "01a14e2e-561d-7362-a4b5-803fd44a36cd",
+    "taskStatus": "CANCELLED",
+    "sessionState": "exited",
+    "exitCode": 0,
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": true
+      }
+    ],
+    "sessionErrors": []
+  },
+  "submittedPrompts": 3,
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "passed": true,
+  "retained": null,
+  "limitations": [
+    "Only Codex has a coordinator executor and enforced Lead tool policy in this application; other refusals do not prove a native harness cannot implement one",
+    "One Codex Lead gateway turn; optional --verify-lifecycle adds completed same-thread resume and active cancellation, at most three paid turns. No workers, native writer, review or integration.",
+    "Codex-Lead fallbacks for Pi, Claude and OpenCode use real engine/gateway/Git with inert protocol fixtures in tests/lead-fallback.test.ts; separate live worker receipts are under M8 item 5",
+    "Personal-config evidence checks metadata of the listed files, not a complete isolation audit (M8 item 7)"
+  ]
+}

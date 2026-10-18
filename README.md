@@ -181,9 +181,22 @@ Nine new failing-before/passing-after regressions cover inheritance/preload, clo
 
 ## Per-adapter smoke matrix — M8 item 8
 
-**Incomplete; new model turns remain explicitly on hold.** [Seven-check support/evidence matrix and exact blockers](docs/adapter-smoke-matrix.md) separates recorded native observations, unsupported controls and missing checks. [Current four-harness zero-prompt runner preflight](docs/evidence/m8-smoke-runner-preflight.json) records Codex 0.163.0 / Claude 2.1.302 / Pi 1.3.0 / OpenCode 2.0.32; fresh Codex/Claude/Pi homes require credentials, OpenCode auth is unknown. [Earlier full-catalog/refusal receipt](docs/evidence/m8-smoke-matrix-discovery.json) remains historical; its OpenCode native version was 2.0.29, not current paid compatibility proof.
+**Incomplete; Codex's three-turn slice passed, while Pi's two-turn slice passed its reader and failed strict cancellation.** The [seven-check matrix](docs/adapter-smoke-matrix.md) preserves current native proof, historical observations, unsupported controls and open checks. [Codex lifecycle](docs/evidence/m8-codex-lead-lifecycle-native.json) and [Pi's unchanged failed receipt](docs/evidence/m8-pi-reader-cancel-native.json) are separate evidence. Both app-owned native logins are established without observer credential-file access; Pi's native auth check uses provider `openai` and reports OAuth. Claude still needs auth; OpenCode 2.0.32 auth/paid compatibility remain unverified.
 
-Outstanding: **native** Codex/Pi streaming, current Codex Lead resume/cancel, Pi active cancellation, Pi/Claude/OpenCode gateway-denial evidence, and one real writer → candidate review → separately owner-approved integration. Stream/lifecycle and cross-assignment scope probes have cost-free validation, not native model proof; scope `INVALID_INPUT` must not be promoted to Lead-role denial. [Current scope evidence](docs/evidence/m8-gateway-scope-fixtures.json). The owner reconfirmed cost-free preparation only. Fresh approved auth/spend is required before native turns; earlier model-spend or native Write approvals authorize neither new turns nor integration. M8 item 8 stays unchecked; M9 untouched.
+Outstanding: strict **native Pi cancellation**, Pi/Claude/OpenCode worker role-denial evidence, and one real writer → candidate review → separately owner-approved integration. Pi's retained cancellation has a report before stop and a requested abort mislabeled as `native_error`; the normalization fix passes [inert engine smoke](docs/evidence/m8-pi-requested-abort-fixture.json), not a native rerun. The early-result check is unchanged. Cross-assignment `INVALID_INPUT` is not Lead-role denial. Both native turn allowances are consumed; further prompts and native writes need fresh scoped approval. Native Write never approves integration. M8 item 8 stays unchecked; M9 untouched.
+
+### Writer and reviewer preview held for owner approval
+
+`pnpm test:live:writer` uses Pi's existing guarded writer plus an independent read-only reviewer. Default mode is discovery only. Future native execution needs fresh spending/auth authorization **and both** `--allow-live --allow-disposable-write`; either gate alone blocks without requesting a turn. The two-turn maximum covers one exact disposable README edit and one candidate review, with no automatic retry.
+
+```sh
+# Zero model turns. Choose a fresh XDG home and a new evidence output.
+mise x -- env XDG_DATA_HOME=/tmp/lao-m8-writer-next pnpm test:live:writer \
+  --model deepseek/deepseek-flash --thinking off \
+  --output /tmp/m8-writer-preflight-next.json
+```
+
+A passing run prepares an isolated tested preview, **never approves or applies it**. It retains the default app database and candidate/worktrees for separate owner inspection using the receipt's `retained.inspectCommand`. Existing databases cannot be reopened by this runner, and no integration flag exists. [Exact hold boundary and cost-free evidence](docs/adapter-smoke-matrix.md#approval-held-writer-and-reviewer-preparation). Current lifecycle evidence is inert; [actual Pi preflight](docs/evidence/m8-writer-preflight.json) requires auth and requested zero turns. No native matrix gate is closed.
 
 ## Team presets
 

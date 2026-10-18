@@ -1,0 +1,172 @@
+{
+  "evidenceKind": "Actual installed native adapters; zero model prompts; no credential contents read",
+  "appOwnedCodexHome": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/codex",
+  "authorization": {
+    "source": "Owner selected Signed in — authorize three Codex turns, then completed native login in the exact app-owned home",
+    "harness": "codex",
+    "model": "gpt-6-luna",
+    "thinking": "low",
+    "maximumRequestedTurns": 3,
+    "retries": false,
+    "workers": false,
+    "sourceWrites": false,
+    "integration": false
+  },
+  "commands": [
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:leads --model gpt-6-luna --thinking low --verify-lifecycle --output /tmp/metatron-m8-auth-sjdG2wvR/discovery-before-login.json",
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:workers --harness codex --model gpt-6-luna --thinking low --output /tmp/metatron-m8-auth-sjdG2wvR/auth-model-after-login.json",
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:workers --harness codex --model gpt-6-luna --thinking low --output /tmp/metatron-m8-auth-sjdG2wvR/auth-model-confirmed-login.json"
+  ],
+  "beforeLogin": {
+    "liveAuthorized": false,
+    "selected": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "requestedChecks": {
+      "gatewayPolicy": true,
+      "completedResumeAndCancel": true
+    },
+    "maximumRequestedTurns": 0,
+    "support": {
+      "pi": {
+        "version": "1.3.0",
+        "state": "auth_required",
+        "authenticated": false,
+        "lead": "unsupported by this application adapter",
+        "coordinatorRefusal": {
+          "code": "UNSUPPORTED",
+          "message": "Pi supports fresh file-tool workers with only the app's loopback gateway overlay"
+        },
+        "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+      },
+      "claude-code": {
+        "version": "2.1.302",
+        "state": "auth_required",
+        "authenticated": false,
+        "lead": "unsupported by this application adapter",
+        "coordinatorRefusal": {
+          "code": "UNSUPPORTED",
+          "message": "Claude supports isolated file-tool workers with only the app loopback gateway overlay"
+        },
+        "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+      },
+      "opencode": {
+        "version": "2.0.32",
+        "state": "available",
+        "authenticated": "unknown",
+        "lead": "unsupported by this application adapter",
+        "coordinatorRefusal": {
+          "code": "UNSUPPORTED",
+          "message": "OpenCode accepts only file-worker profiles and an app loopback gateway overlay"
+        },
+        "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+      },
+      "codex": {
+        "version": "0.163.0",
+        "state": "auth_required",
+        "authenticated": false,
+        "lead": "implemented; native turn requires --allow-live",
+        "coordinatorRefusal": null,
+        "fallback": null
+      }
+    },
+    "submittedPrompts": 0,
+    "ownerCheckoutUnchanged": true,
+    "personalConfigMetadataUnchanged": true,
+    "passed": true,
+    "retained": null,
+    "limitations": [
+      "Only Codex has a coordinator executor and enforced Lead tool policy in this application; other refusals do not prove a native harness cannot implement one",
+      "One Codex Lead gateway turn; optional --verify-lifecycle adds completed same-thread resume and active cancellation, at most three paid turns. No workers, native writer, review or integration.",
+      "Codex-Lead fallbacks for Pi, Claude and OpenCode use real engine/gateway/Git with inert protocol fixtures in tests/lead-fallback.test.ts; separate live worker receipts are under M8 item 5",
+      "Personal-config evidence checks metadata of the listed files, not a complete isolation audit (M8 item 7)"
+    ]
+  },
+  "afterInitialOwnerConfirmation": {
+    "harness": "codex",
+    "liveAuthorized": false,
+    "selected": {
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "requestedChecks": {
+      "streamedReader": true,
+      "activeCancellation": false,
+      "crossAssignmentGatewayDenial": false
+    },
+    "maximumRequestedTurns": 0,
+    "discovery": {
+      "state": "auth_required",
+      "version": "0.163.0",
+      "authenticated": false,
+      "nextStep": "Codex is not logged in for this app. Run `CODEX_HOME='/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/codex' codex login` in a terminal, then check again. This app-owned Codex home never reuses your personal login.",
+      "selectionAvailable": false,
+      "thinkingChoices": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
+    "submittedPrompts": 0,
+    "gatewayScopeProbe": null,
+    "blocked": "Selection unavailable: Codex is not logged in for this app. Run `CODEX_HOME='/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/codex' codex login` in a terminal, then check again. This app-owned Codex home never reuses your personal login.",
+    "ownerCheckoutUnchanged": true,
+    "personalConfigMetadataUnchanged": true,
+    "passed": true,
+    "retained": null,
+    "limitations": [
+      "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+      "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+      "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+    ]
+  },
+  "afterCompletedNativeLogin": {
+    "harness": "codex",
+    "liveAuthorized": false,
+    "selected": {
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "requestedChecks": {
+      "streamedReader": true,
+      "activeCancellation": false,
+      "crossAssignmentGatewayDenial": false
+    },
+    "maximumRequestedTurns": 0,
+    "discovery": {
+      "state": "available",
+      "version": "0.163.0",
+      "authenticated": true,
+      "nextStep": null,
+      "selectionAvailable": true,
+      "thinkingChoices": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
+    "submittedPrompts": 0,
+    "gatewayScopeProbe": null,
+    "blocked": null,
+    "ownerCheckoutUnchanged": true,
+    "personalConfigMetadataUnchanged": true,
+    "passed": true,
+    "retained": null,
+    "limitations": [
+      "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+      "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+      "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+    ]
+  },
+  "nativeModelPrompts": 0,
+  "limitations": [
+    "An initial owner confirmation did not reach application authentication; its cause was not established. The owner subsequently ran native login successfully in the exact home.",
+    "The app-owned login is under /tmp and may disappear on reboot. Personal auth.json contents were not opened or copied; no broad OS-isolation claim."
+  ]
+}

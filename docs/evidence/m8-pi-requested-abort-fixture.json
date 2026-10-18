@@ -1,0 +1,23 @@
+{
+  "evidenceKind": "Inert Pi RPC subprocess through actual engine/Git/cancellation; NOT native model evidence",
+  "passed": true,
+  "nativeModelPrompts": 0,
+  "inertProtocolPrompts": 1,
+  "taskStatus": "CANCELLED",
+  "attemptStatus": "cancelled",
+  "sessionState": "exited",
+  "exitCode": 0,
+  "terminal": {
+    "type": "turn_completed",
+    "nativeStatus": "interrupted"
+  },
+  "processExit": {
+    "exitCode": 0,
+    "signal": null,
+    "interrupted": true
+  },
+  "sessionErrors": 0,
+  "successReports": 0,
+  "fixtureCheckoutUnchanged": true,
+  "scopedFix": "Requested native aborted message maps to interruption without a session fault; native live receipt remains failed and is not replayed"
+}

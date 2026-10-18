@@ -277,6 +277,22 @@ test("native owner cancellation interrupts a silent turn and releases reservatio
     assert.equal(f.store.listAttempts()[0]?.status, "cancelled");
     assert.equal(f.store.listSessions()[0]?.state, "exited");
     assert.equal(f.engine.worktrees.list()[0]?.state, "retained");
+    const events = f.store.events({ runId: run.id, limit: 500 });
+    assert.equal(
+      events.some((event) => event.type === "pi.session_error"),
+      false,
+    );
+    assert.equal(
+      events.some((event) => event.type === "worker.result"),
+      false,
+    );
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === "pi.turn_completed" &&
+          event.payload.nativeStatus === "interrupted",
+      ),
+    );
     assert.equal(
       f.store.db.prepare("SELECT count(*) AS n FROM reservations").get()?.n,
       0,

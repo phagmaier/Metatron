@@ -1,0 +1,58 @@
+{
+  "evidenceKind": "Read-only analysis of the retained actual native Pi run; NOT a rerun or corrected native PASS",
+  "nativeReceipt": "m8-pi-reader-cancel-native.json",
+  "nativeModelPrompts": 2,
+  "additionalNativeModelPrompts": 0,
+  "reader": {
+    "passed": true,
+    "streamedBeforeCompletedTerminal": true,
+    "nonceReported": true,
+    "model": "openai/gpt-6-luna",
+    "thinking": "low",
+    "ownedExit": 0,
+    "worktreeUnchanged": true
+  },
+  "cancellation": {
+    "strictGatePassed": false,
+    "taskStatus": "CANCELLED",
+    "nativeTerminal": "interrupted",
+    "ownedExit": 0,
+    "failedChecks": [
+      "noSessionError",
+      "noSuccessReport"
+    ],
+    "journal": {
+      "workerResult": 111,
+      "submitResultGateway": 112,
+      "firstText": 114,
+      "observedText": 115,
+      "stopRequested": 116,
+      "sessionError": 122,
+      "nativeInterrupted": 124,
+      "processExit": 126
+    },
+    "nativeAssistantStopReason": "aborted",
+    "nativeAssistantErrorMessagePresent": true,
+    "nativeErrorMessageContentsIncluded": false,
+    "workerResultBeforeStop": true,
+    "workerResultAfterStop": false
+  },
+  "source": {
+    "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/live-workers-d5f8b3a9-02e4-4658-ac5e-63bcbffee3e3.sqlite",
+    "transcriptMetadata": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi-sessions/59f518aa-3293-4510-bb3b-0e4f0bf476d5/2026-10-18T08-59-54-265Z_01a14e3d-2c19-773f-a6cb-ed7ecd569e69.jsonl",
+    "transcriptFieldsObserved": [
+      "assistant.stopReason",
+      "assistant.errorMessage presence only"
+    ]
+  },
+  "action": {
+    "requestedAbortNormalization": "Distinguish an explicitly requested native abort from an unexpected abort; preserve genuine provider/transport faults.",
+    "nativeReceiptRetainedUnchanged": true,
+    "noSuccessReportCheckWeakened": false,
+    "liveRetry": false
+  },
+  "limitations": [
+    "Cause of the model's early result was not established; native cancellation remains incomplete under the strict gate.",
+    "The requested-abort fix is verified separately with inert protocol evidence, not by a new native model turn."
+  ]
+}

@@ -73,6 +73,7 @@ type Active = {
   managed: ManagedSession;
   busy: boolean;
   accepting: boolean;
+  cancelRequested: boolean;
   messages: Map<string, string>;
   settings: Extract<SessionEvent, { type: "settings_verified" }>;
 };
@@ -316,6 +317,7 @@ export class PiAdapter implements HarnessAdapter {
         managed,
         busy: false,
         accepting: false,
+        cancelRequested: false,
         messages: new Map(),
         settings: {
           type: "settings_verified",
@@ -346,6 +348,7 @@ export class PiAdapter implements HarnessAdapter {
     const current = this.active(session);
     if (current.busy)
       throw new DomainError("CONFLICT", "Pi already has an active prompt");
+    current.cancelRequested = false;
     current.busy = true;
     current.accepting = true;
     const queue: RpcRecord[] = [];
@@ -419,7 +422,7 @@ export class PiAdapter implements HarnessAdapter {
             }
           }
         }
-        for (const event of mapper.consume(record)) {
+        for (const event of mapper.consume(record, current.cancelRequested)) {
           if (
             event.type === "turn_completed" &&
             event.nativeStatus === "completed"
@@ -450,6 +453,7 @@ export class PiAdapter implements HarnessAdapter {
     try {
       await current.rpc.request("clear_queue", {}, 10_000);
       current.messages.clear();
+      current.cancelRequested = true;
       await current.rpc.request("abort", {}, 10_000);
     } catch (error) {
       await current.rpc.close();

@@ -187,6 +187,14 @@ process.stdin.on("data", (chunk) => {
       continue;
     }
     if (command.type === "abort") {
+      emit({
+        type: "message_end",
+        message: {
+          role: "assistant",
+          stopReason: "aborted",
+          errorMessage: "Request was aborted.",
+        },
+      });
       emit({ type: "agent_settled", aborted: true });
       continue;
     }

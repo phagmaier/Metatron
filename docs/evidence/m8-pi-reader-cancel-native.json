@@ -1,0 +1,236 @@
+{
+  "harness": "pi",
+  "liveAuthorized": true,
+  "selected": {
+    "model": "openai/gpt-6-luna",
+    "thinking": "low"
+  },
+  "requestedChecks": {
+    "streamedReader": true,
+    "activeCancellation": true,
+    "crossAssignmentGatewayDenial": false
+  },
+  "maximumRequestedTurns": 2,
+  "discovery": {
+    "state": "available",
+    "version": "1.3.0",
+    "authenticated": "unknown",
+    "nextStep": null,
+    "selectionAvailable": true,
+    "thinkingChoices": [
+      "off",
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ]
+  },
+  "submittedPrompts": 2,
+  "gatewayScopeProbe": null,
+  "run": {
+    "taskStatus": "AWAITING_REVIEW",
+    "attemptStatus": "completed",
+    "adapter": "pi",
+    "nativeSessionId": "01a14e3c-f51a-71c0-a444-0bd92b9899fa",
+    "sessionState": "exited",
+    "exitCode": 0,
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": false
+      }
+    ]
+  },
+  "settingsVerified": [
+    {
+      "type": "settings_verified",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low",
+      "source": "Pi get_state after set_model/set_thinking_level"
+    }
+  ],
+  "stream": {
+    "deltaCount": 43,
+    "firstDeltaSequence": 29,
+    "lastDeltaSequence": 71,
+    "samples": [
+      {
+        "sequence": 29,
+        "text": "Completed"
+      },
+      {
+        "sequence": 30,
+        "text": "."
+      },
+      {
+        "sequence": 31,
+        "text": " The"
+      }
+    ],
+    "terminals": [
+      {
+        "sequence": 74,
+        "nativeStatus": "completed"
+      }
+    ],
+    "streamedBeforeTerminal": true
+  },
+  "gatewayDenials": [],
+  "nonceReported": true,
+  "report": {
+    "outcome": "completed",
+    "summary": "Read native-proof.txt. Exact nonce: f02dac6f-836b-47d8-9406-b2243dff5d9a",
+    "changedFiles": [],
+    "tests": [
+      {
+        "command": "Not run (shell unavailable; inspection-only task).",
+        "result": "not_run"
+      }
+    ],
+    "findings": [
+      {
+        "severity": "info",
+        "location": "native-proof.txt",
+        "text": "Contains exact nonce f02dac6f-836b-47d8-9406-b2243dff5d9a."
+      }
+    ],
+    "knownRisks": [],
+    "questions": [],
+    "artifactRefs": [],
+    "revisionOrCommit": null
+  },
+  "gatewayTools": [
+    {
+      "tool": "read_assignment",
+      "outcome": "ok"
+    },
+    {
+      "tool": "submit_result",
+      "outcome": "ok"
+    }
+  ],
+  "nativeTools": [
+    "mcp__lao__read_assignment",
+    "read",
+    "mcp__lao__submit_result"
+  ],
+  "sessionErrors": [],
+  "usage": [
+    {
+      "type": "usage",
+      "inputTokens": 1525,
+      "outputTokens": 20,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 380,
+      "outputTokens": 27,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 1850,
+      "outputTokens": 132,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 697,
+      "outputTokens": 47,
+      "source": "pi native assistant message (may be partial)"
+    }
+  ],
+  "worktree": {
+    "changedFiles": [],
+    "headUnchanged": true
+  },
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "cancellation": {
+    "checks": {
+      "textBeforeRequest": true,
+      "nativeInterruptedAfterRequest": true,
+      "taskCancelled": true,
+      "ownedShutdown": true,
+      "noSessionError": false,
+      "noSuccessReport": false
+    },
+    "request": {
+      "afterTextSequence": 115,
+      "requestSequence": 116
+    },
+    "stream": {
+      "deltaCount": 5,
+      "firstDeltaSequence": 114,
+      "lastDeltaSequence": 121,
+      "samples": [
+        {
+          "sequence": 114,
+          "text": "**"
+        },
+        {
+          "sequence": 115,
+          "text": "Outcome"
+        },
+        {
+          "sequence": 119,
+          "text": ":**"
+        }
+      ],
+      "terminals": [
+        {
+          "sequence": 124,
+          "nativeStatus": "interrupted"
+        }
+      ],
+      "streamedBeforeTerminal": true
+    },
+    "nativeSessionId": "01a14e3d-2c19-773f-a6cb-ed7ecd569e69",
+    "taskStatus": "CANCELLED",
+    "sessionState": "exited",
+    "exitCode": 0,
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": true
+      }
+    ],
+    "sessionErrors": [
+      {
+        "type": "session_error",
+        "code": "native_error",
+        "recoverable": true,
+        "message": "Pi reported native_error; inspect app-owned native session diagnostics"
+      }
+    ]
+  },
+  "cancellationWorktree": {
+    "attemptId": "59f518aa-3293-4510-bb3b-0e4f0bf476d5",
+    "path": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/17dfaa94-0468-4c3a-9223-2293fe6c2979-3ae4a6de-7675-4150-bb12-dc7d84a950bb/checkout",
+    "baseSha": "6ca13d7873ba6588e175ae19feabf55a9cfa43c5",
+    "headSha": "6ca13d7873ba6588e175ae19feabf55a9cfa43c5",
+    "files": [],
+    "stagedDiffStat": "",
+    "unstagedDiffStat": "",
+    "diffCheck": "passed",
+    "tests": "not_run: shell tools are disabled in M3"
+  },
+  "passed": false,
+  "retained": {
+    "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/live-workers-d5f8b3a9-02e4-4658-ac5e-63bcbffee3e3.sqlite",
+    "fixture": "/tmp/lao-git-fixture-Too61M/repo with spaces",
+    "worktrees": [
+      "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/953c497b-a779-435b-9ef9-576015e9751b-37dad94b-d4f5-43df-9871-8c9ab43fd47e",
+      "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/17dfaa94-0468-4c3a-9223-2293fe6c2979-3ae4a6de-7675-4150-bb12-dc7d84a950bb"
+    ]
+  },
+  "limitations": [
+    "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+    "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+    "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+  ]
+}

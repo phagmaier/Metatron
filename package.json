@@ -27,6 +27,7 @@
     "test:live:opencode": "node scripts/live-opencode.ts",
     "test:live:workers": "node scripts/live-workers.ts",
     "test:live:leads": "node scripts/live-leads.ts",
+    "test:live:writer": "node scripts/live-writer.ts",
     "smoke:isolation": "node scripts/smoke-isolation.ts"
   },
   "dependencies": {

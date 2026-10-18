@@ -1,0 +1,1380 @@
+{
+  "evidenceKind": "INERT Pi RPC subprocesses with actual engine/Git/review/preview/HTTP paths, NOT native model evidence",
+  "nativeModelPrompts": 0,
+  "boundary": "Both future native spend and disposable-write execution gates are required. The runner stops at an unapproved review/preview; it cannot approve/apply integration. This session authorized cost-free preparation only.",
+  "technique": "Ephemeral Node module hooks redirected only live-writer startApp to the actual PiAdapter backed by the existing inert RPC fixture. Fixture writer appended the scoped nonce; separate fixture reviewer consumed the candidate packet. Only the native protocol/model boundary was scripted. No installed Pi model turn was submitted.",
+  "positiveCommand": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-writer-q9ZaXc-verified node --import /tmp/metatron-m8-writer-q9ZaXc/hooks.mjs scripts/live-writer.ts --model fixture/model --thinking off --allow-live --allow-disposable-write --output /tmp/metatron-m8-writer-q9ZaXc/pass-effective.json",
+  "negativeCommands": "Same inert CLI with fresh XDG homes and METATRON_WRITER_CASE=badwriter|changes|dirtyreview returned 1 after one/two/two turns respectively, with no preview/approval/apply/retry. Single-gate invocations returned 2 with zero attempts/sessions. Reopening a retained database and requesting --approve-integration were rejected before any child spawn; the retained DB checksum remained unchanged.",
+  "initialFailure": "First inert lifecycle completed a writer and independent reviewer but the runner incorrectly tested requested contextPolicy=auto against fresh. Corrected production runner to inspect the persisted effectiveContext=fresh; all other independence checks stayed enforced. Initial failing receipt retained below. No native model replay.",
+  "readbackCorrection": "The first throwaway HTTP inspector used diff.content, which is not in candidateDiffResponseSchema. Corrected only that inspector to read the published patch field, then observed the retained review, candidate diff, unapproved preview and blocked plan without adding attempts. No application API change.",
+  "retention": "Native success/failure state remains retained by the production runner. Only these explicitly inert fixtures and throwaway inspection roots are removed after ownership/journal/secret checks; referenced temporary fixture paths are not live native evidence or login homes.",
+  "cases": {
+    "heldPreview": {
+      "harness": "pi",
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "liveGate": true,
+      "disposableWriteGate": true,
+      "maximumRequestedTurns": 2,
+      "integrationAuthority": "none; separate owner review/approval/apply required",
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "runId": "d27a7fc4-d499-4a65-94d9-f68e9f188360",
+      "writer": {
+        "taskId": "2d94b5f7-b0b2-4c81-b59a-710f3c7ad1d4",
+        "attemptId": "9cdb2b6e-8fbd-44d6-a65b-fd64d7d4cb52",
+        "profileId": "00000000-0000-4000-8000-000000000011",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-verified/local-agent-orchestrator/worktrees/2d94b5f7-b0b2-4c81-b59a-710f3c7ad1d4-1847f0a1-5bbd-4488-b4a0-7a236f37d75e/checkout",
+        "nativeSessionId": "fixture-165778",
+        "contextPolicy": "auto",
+        "effectiveContext": "fresh",
+        "checks": {
+          "completed": true,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "Protocol fixture report"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 21,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "outcome": "completed",
+          "summary": "Protocol fixture structured summary",
+          "changedFiles": [
+            "README.md"
+          ],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "captured": {
+          "attemptId": "9cdb2b6e-8fbd-44d6-a65b-fd64d7d4cb52",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-verified/local-agent-orchestrator/worktrees/2d94b5f7-b0b2-4c81-b59a-710f3c7ad1d4-1847f0a1-5bbd-4488-b4a0-7a236f37d75e/checkout",
+          "baseSha": "8b5aff0630be2923e16aaf3a3805c81872463d51",
+          "headSha": "8b5aff0630be2923e16aaf3a3805c81872463d51",
+          "files": [
+            {
+              "path": "README.md",
+              "status": " M",
+              "sensitive": false
+            }
+          ],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": " README.md | 2 ++\n 1 file changed, 2 insertions(+)\n",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "candidate": {
+        "id": "720c0dc7-5606-4c45-bb48-2a298dbfb5a6",
+        "createdAt": "2026-10-18T08:22:01.970Z",
+        "updatedAt": "2026-10-18T08:22:02.296Z",
+        "taskId": "2d94b5f7-b0b2-4c81-b59a-710f3c7ad1d4",
+        "attemptId": "9cdb2b6e-8fbd-44d6-a65b-fd64d7d4cb52",
+        "baseSha": "8b5aff0630be2923e16aaf3a3805c81872463d51",
+        "candidateSha": "a179b3516f889fdb42a2075c0d8960ca573f380f",
+        "reportSubmitted": true,
+        "reviewIds": [
+          "08cdf4e6-8e9f-4ccb-97e6-bb8c7eba8650"
+        ],
+        "status": "reviewed",
+        "humanDecision": null,
+        "decidedAt": null
+      },
+      "reviewer": {
+        "taskId": "151e223a-a489-476c-a991-1b4108f95ab1",
+        "attemptId": "865455b9-f4d2-476a-a04c-d679795b0d2b",
+        "profileId": "00000000-0000-4000-8000-000000000012",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-verified/local-agent-orchestrator/worktrees/151e223a-a489-476c-a991-1b4108f95ab1-9ffe615d-fc55-4122-98cf-e3739da0aa52/checkout",
+        "nativeSessionId": "fixture-165840",
+        "contextPolicy": "auto",
+        "effectiveContext": "fresh",
+        "checks": {
+          "completed": true,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 48,
+          "lastDeltaSequence": 48,
+          "samples": [
+            {
+              "sequence": 48,
+              "text": "Reviewed README: # Disposable fixture\n\nM8 disposable writer proof 2be67efd-03cd-4e28-99c2-ae3a94c6da5f\n"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 50,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "summary": "Fixture review: candidate and surrounding code inspected",
+          "recommendation": "pass",
+          "findings": [],
+          "tests": [
+            {
+              "command": "Tests unavailable: shell is disabled",
+              "result": "not_run"
+            }
+          ]
+        },
+        "captured": {
+          "attemptId": "865455b9-f4d2-476a-a04c-d679795b0d2b",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-verified/local-agent-orchestrator/worktrees/151e223a-a489-476c-a991-1b4108f95ab1-9ffe615d-fc55-4122-98cf-e3739da0aa52/checkout",
+          "baseSha": "8b5aff0630be2923e16aaf3a3805c81872463d51",
+          "headSha": "a179b3516f889fdb42a2075c0d8960ca573f380f",
+          "files": [],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": "",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "reviews": [
+        {
+          "summary": "Fixture review: candidate and surrounding code inspected",
+          "recommendation": "pass",
+          "findings": [],
+          "tests": [
+            {
+              "command": "Tests unavailable: shell is disabled",
+              "result": "not_run"
+            }
+          ],
+          "id": "08cdf4e6-8e9f-4ccb-97e6-bb8c7eba8650",
+          "createdAt": "2026-10-18T08:22:02.296Z",
+          "updatedAt": "2026-10-18T08:22:02.296Z",
+          "taskId": "2d94b5f7-b0b2-4c81-b59a-710f3c7ad1d4",
+          "reviewerAttemptId": "865455b9-f4d2-476a-a04c-d679795b0d2b",
+          "candidateId": "720c0dc7-5606-4c45-bb48-2a298dbfb5a6"
+        }
+      ],
+      "independence": {
+        "differentTask": true,
+        "differentAttempt": true,
+        "differentProfile": true,
+        "freshNativeSession": true,
+        "separateCandidateCheckout": true,
+        "unchangedReviewerCheckout": true,
+        "exactCandidatePacket": true,
+        "boundReview": true
+      },
+      "preview": {
+        "id": "0cba38e9-583d-48fd-8723-47d47159cac1",
+        "createdAt": "2026-10-18T08:22:02.318Z",
+        "updatedAt": "2026-10-18T08:22:02.443Z",
+        "runId": "d27a7fc4-d499-4a65-94d9-f68e9f188360",
+        "taskId": "2d94b5f7-b0b2-4c81-b59a-710f3c7ad1d4",
+        "implementationTaskId": "2d94b5f7-b0b2-4c81-b59a-710f3c7ad1d4",
+        "candidateId": "720c0dc7-5606-4c45-bb48-2a298dbfb5a6",
+        "reviewId": "08cdf4e6-8e9f-4ccb-97e6-bb8c7eba8650",
+        "baseSha": "8b5aff0630be2923e16aaf3a3805c81872463d51",
+        "candidateSha": "a179b3516f889fdb42a2075c0d8960ca573f380f",
+        "destinationBranch": "main",
+        "destinationSha": "8b5aff0630be2923e16aaf3a3805c81872463d51",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-verified/local-agent-orchestrator/worktrees/integration-0cba38e9-583d-48fd-8723-47d47159cac1/checkout",
+        "branch": "lao/integration-0cba38e9-583d-48fd-8723-47d47159cac1",
+        "tests": [
+          [
+            "/home/phagmaier/.local/share/mise/installs/node/26.7.0/bin/node",
+            "-e",
+            "require('node:assert/strict').equal(require('node:fs').readFileSync('README.md','utf8'),\"# Disposable fixture\\n\\nM8 disposable writer proof 2be67efd-03cd-4e28-99c2-ae3a94c6da5f\\n\");"
+          ]
+        ],
+        "timeoutSeconds": 30,
+        "status": "passed",
+        "resultSha": "a179b3516f889fdb42a2075c0d8960ca573f380f",
+        "files": [
+          {
+            "status": "M",
+            "path": "README.md"
+          }
+        ],
+        "drift": null,
+        "conflicts": [],
+        "checks": [
+          {
+            "name": "destination",
+            "status": "passed",
+            "detail": "main is at the candidate base 8b5aff0630be2923e16aaf3a3805c81872463d51"
+          },
+          {
+            "name": "candidate",
+            "status": "passed",
+            "detail": "Candidate branch still records a179b3516f889fdb42a2075c0d8960ca573f380f"
+          },
+          {
+            "name": "apply",
+            "status": "passed",
+            "detail": "Fast-forwarded lao/integration-0cba38e9-583d-48fd-8723-47d47159cac1 to a179b3516f889fdb42a2075c0d8960ca573f380f"
+          },
+          {
+            "name": "overlap",
+            "status": "passed",
+            "detail": "No file was changed on both sides"
+          },
+          {
+            "name": "diff",
+            "status": "passed",
+            "detail": "1 changed file, all from the reviewed candidate"
+          },
+          {
+            "name": "diff_check",
+            "status": "passed",
+            "detail": "git diff --check passed"
+          },
+          {
+            "name": "tests",
+            "status": "passed",
+            "detail": "1/1 declared commands passed"
+          },
+          {
+            "name": "final_destination",
+            "status": "passed",
+            "detail": "main unchanged during preparation"
+          }
+        ],
+        "testResults": [
+          {
+            "argv": [
+              "/home/phagmaier/.local/share/mise/installs/node/26.7.0/bin/node",
+              "-e",
+              "require('node:assert/strict').equal(require('node:fs').readFileSync('README.md','utf8'),\"# Disposable fixture\\n\\nM8 disposable writer proof 2be67efd-03cd-4e28-99c2-ae3a94c6da5f\\n\");"
+            ],
+            "result": "passed",
+            "exitCode": 0,
+            "signal": null,
+            "durationMs": 30,
+            "artifactId": "1cb98120-33d6-4da2-9bfd-fd4a8d758739",
+            "outputTruncated": false
+          }
+        ],
+        "diffArtifactId": "9fa34e34-62dc-456d-a0e5-22250551fe09",
+        "diagnostic": null,
+        "decision": null,
+        "applications": []
+      },
+      "applyPlan": {
+        "integrationId": "0cba38e9-583d-48fd-8723-47d47159cac1",
+        "destinationBranch": "main",
+        "expectedSha": "8b5aff0630be2923e16aaf3a3805c81872463d51",
+        "currentSha": "8b5aff0630be2923e16aaf3a3805c81872463d51",
+        "resultSha": "a179b3516f889fdb42a2075c0d8960ca573f380f",
+        "method": "fast_forward_checkout",
+        "checkoutPath": "/tmp/lao-git-fixture-ZnZYhD/repo with spaces",
+        "commands": [
+          {
+            "cwd": "/tmp/lao-git-fixture-ZnZYhD/repo with spaces",
+            "args": [
+              "-c",
+              "submodule.recurse=false",
+              "merge",
+              "--ff-only",
+              "--no-stat",
+              "--no-autostash",
+              "--no-overwrite-ignore",
+              "--no-verify-signatures",
+              "a179b3516f889fdb42a2075c0d8960ca573f380f"
+            ]
+          }
+        ],
+        "blockers": [
+          "Only approved work that is ready to integrate, or blocked from it, can be applied"
+        ]
+      },
+      "integrationHold": {
+        "previewUnapproved": true,
+        "candidateUnapproved": true,
+        "taskStillAwaitingReview": true,
+        "planBlocked": true,
+        "ownerCheckoutUnchanged": true
+      },
+      "persisted": {
+        "attempts": 2,
+        "sessions": 2
+      },
+      "worktrees": [
+        "/tmp/metatron-m8-writer-q9ZaXc-verified/local-agent-orchestrator/worktrees/2d94b5f7-b0b2-4c81-b59a-710f3c7ad1d4-1847f0a1-5bbd-4488-b4a0-7a236f37d75e/checkout",
+        "/tmp/metatron-m8-writer-q9ZaXc-verified/local-agent-orchestrator/worktrees/151e223a-a489-476c-a991-1b4108f95ab1-9ffe615d-fc55-4122-98cf-e3739da0aa52/checkout"
+      ],
+      "stage": "awaiting_owner_integration_review",
+      "requestedTurns": 2,
+      "passed": true,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "integrationApprovalGranted": false,
+      "integrationApplied": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-writer-q9ZaXc-verified/local-agent-orchestrator/state.sqlite",
+        "fixture": "/tmp/lao-git-fixture-ZnZYhD/repo with spaces",
+        "inspectCommand": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-writer-q9ZaXc-verified pnpm dev"
+      },
+      "limitations": [
+        "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+        "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+        "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+        "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+      ],
+      "evidenceKind": "INERT Pi RPC fixture; NOT native model evidence"
+    },
+    "incorrectWriter": {
+      "harness": "pi",
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "liveGate": true,
+      "disposableWriteGate": true,
+      "maximumRequestedTurns": 2,
+      "integrationAuthority": "none; separate owner review/approval/apply required",
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "runId": "95c7fa12-1de0-4097-886a-345bfa120cd8",
+      "writer": {
+        "taskId": "cabc308d-cf0a-4ea6-b647-ec72d96b30b7",
+        "attemptId": "83649498-78dc-4636-b25e-257ce8011297",
+        "profileId": "00000000-0000-4000-8000-000000000011",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-badwriter/local-agent-orchestrator/worktrees/cabc308d-cf0a-4ea6-b647-ec72d96b30b7-a1cf6455-c8fd-4462-a6f6-b91c2ffbf391/checkout",
+        "nativeSessionId": "fixture-167282",
+        "contextPolicy": "auto",
+        "effectiveContext": "fresh",
+        "checks": {
+          "completed": true,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "Protocol fixture report"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 21,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "outcome": "completed",
+          "summary": "Protocol fixture structured summary",
+          "changedFiles": [
+            "README.md"
+          ],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "captured": {
+          "attemptId": "83649498-78dc-4636-b25e-257ce8011297",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-badwriter/local-agent-orchestrator/worktrees/cabc308d-cf0a-4ea6-b647-ec72d96b30b7-a1cf6455-c8fd-4462-a6f6-b91c2ffbf391/checkout",
+          "baseSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+          "headSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+          "files": [
+            {
+              "path": "README.md",
+              "status": " M",
+              "sensitive": false
+            }
+          ],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": " README.md | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)\n",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "candidate": {
+        "id": "5e1ed3a0-6d00-4b13-a25d-d2157970ecd8",
+        "createdAt": "2026-10-18T08:23:09.381Z",
+        "updatedAt": "2026-10-18T08:23:09.381Z",
+        "taskId": "cabc308d-cf0a-4ea6-b647-ec72d96b30b7",
+        "attemptId": "83649498-78dc-4636-b25e-257ce8011297",
+        "baseSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+        "candidateSha": "6802fa8a1596d85f3cb90493fe8f8c188a8d266f",
+        "reportSubmitted": true,
+        "reviewIds": [],
+        "status": "proposed",
+        "humanDecision": null,
+        "decidedAt": null
+      },
+      "failure": {
+        "code": "SMOKE_FAILED",
+        "message": "Writer/review probe failed; inspect retained app-owned state. Never retry automatically."
+      },
+      "persisted": {
+        "attempts": 1,
+        "sessions": 1
+      },
+      "worktrees": [
+        "/tmp/metatron-m8-writer-q9ZaXc-badwriter/local-agent-orchestrator/worktrees/cabc308d-cf0a-4ea6-b647-ec72d96b30b7-a1cf6455-c8fd-4462-a6f6-b91c2ffbf391/checkout"
+      ],
+      "stage": "writer",
+      "requestedTurns": 1,
+      "passed": false,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "integrationApprovalGranted": false,
+      "integrationApplied": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-writer-q9ZaXc-badwriter/local-agent-orchestrator/state.sqlite",
+        "fixture": "/tmp/lao-git-fixture-jUVDB9/repo with spaces",
+        "inspectCommand": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-writer-q9ZaXc-badwriter pnpm dev"
+      },
+      "limitations": [
+        "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+        "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+        "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+        "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+      ],
+      "evidenceKind": "INERT Pi RPC fixture; NOT native model evidence"
+    },
+    "changesRequested": {
+      "harness": "pi",
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "liveGate": true,
+      "disposableWriteGate": true,
+      "maximumRequestedTurns": 2,
+      "integrationAuthority": "none; separate owner review/approval/apply required",
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "runId": "3a962bad-172b-4ce8-85e9-aca6ed2e93e2",
+      "writer": {
+        "taskId": "0e1a5cca-fe3a-4401-a769-76d0b30b579b",
+        "attemptId": "acce6d0e-ec78-41f8-81ff-d7af555af91d",
+        "profileId": "00000000-0000-4000-8000-000000000011",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-changes/local-agent-orchestrator/worktrees/0e1a5cca-fe3a-4401-a769-76d0b30b579b-b12d7fb6-e456-4eeb-a215-a32c2cb61d71/checkout",
+        "nativeSessionId": "fixture-167063",
+        "contextPolicy": "auto",
+        "effectiveContext": "fresh",
+        "checks": {
+          "completed": true,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "Protocol fixture report"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 21,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "outcome": "completed",
+          "summary": "Protocol fixture structured summary",
+          "changedFiles": [
+            "README.md"
+          ],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "captured": {
+          "attemptId": "acce6d0e-ec78-41f8-81ff-d7af555af91d",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-changes/local-agent-orchestrator/worktrees/0e1a5cca-fe3a-4401-a769-76d0b30b579b-b12d7fb6-e456-4eeb-a215-a32c2cb61d71/checkout",
+          "baseSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+          "headSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+          "files": [
+            {
+              "path": "README.md",
+              "status": " M",
+              "sensitive": false
+            }
+          ],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": " README.md | 2 ++\n 1 file changed, 2 insertions(+)\n",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "candidate": {
+        "id": "cf05b3c8-8492-4fc1-8830-07f3e362efdb",
+        "createdAt": "2026-10-18T08:23:08.746Z",
+        "updatedAt": "2026-10-18T08:23:08.746Z",
+        "taskId": "0e1a5cca-fe3a-4401-a769-76d0b30b579b",
+        "attemptId": "acce6d0e-ec78-41f8-81ff-d7af555af91d",
+        "baseSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+        "candidateSha": "2eb01e4194cad79149df336525e71839163bd221",
+        "reportSubmitted": true,
+        "reviewIds": [],
+        "status": "proposed",
+        "humanDecision": null,
+        "decidedAt": null
+      },
+      "reviewer": {
+        "taskId": "01bc79a6-6d5a-4b2d-884e-726fb2c320dc",
+        "attemptId": "cff40b18-ad9d-4cca-b14f-e71af2e65a93",
+        "profileId": "00000000-0000-4000-8000-000000000012",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-changes/local-agent-orchestrator/worktrees/01bc79a6-6d5a-4b2d-884e-726fb2c320dc-0d0f5e3d-d6d3-4a7f-ba5a-70c60a8b43c4/checkout",
+        "nativeSessionId": "fixture-167446",
+        "contextPolicy": "auto",
+        "effectiveContext": "fresh",
+        "checks": {
+          "completed": true,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 48,
+          "lastDeltaSequence": 48,
+          "samples": [
+            {
+              "sequence": 48,
+              "text": "Reviewed README: # Disposable fixture\n\nM8 disposable writer proof 4ddd4c18-6ae0-4c6d-9add-1115487e2806\n"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 50,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "summary": "INERT changes-requested gate scenario",
+          "recommendation": "changes_requested",
+          "findings": [
+            {
+              "severity": "important",
+              "file": "README.md",
+              "line": 3,
+              "justification": "Deliberate inert negative recommendation",
+              "evidence": "Fixture-only recommendation tests the hold boundary, not a real code finding",
+              "confidence": 0.95
+            }
+          ],
+          "tests": [
+            {
+              "command": "Tests unavailable: shell is disabled",
+              "result": "not_run"
+            }
+          ]
+        },
+        "captured": {
+          "attemptId": "cff40b18-ad9d-4cca-b14f-e71af2e65a93",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-changes/local-agent-orchestrator/worktrees/01bc79a6-6d5a-4b2d-884e-726fb2c320dc-0d0f5e3d-d6d3-4a7f-ba5a-70c60a8b43c4/checkout",
+          "baseSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+          "headSha": "2eb01e4194cad79149df336525e71839163bd221",
+          "files": [],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": "",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "reviews": [
+        {
+          "summary": "INERT changes-requested gate scenario",
+          "recommendation": "changes_requested",
+          "findings": [
+            {
+              "severity": "important",
+              "file": "README.md",
+              "line": 3,
+              "justification": "Deliberate inert negative recommendation",
+              "evidence": "Fixture-only recommendation tests the hold boundary, not a real code finding",
+              "confidence": 0.95
+            }
+          ],
+          "tests": [
+            {
+              "command": "Tests unavailable: shell is disabled",
+              "result": "not_run"
+            }
+          ],
+          "id": "50c353fe-f2e9-4f99-8050-a10f802db08a",
+          "createdAt": "2026-10-18T08:23:09.796Z",
+          "updatedAt": "2026-10-18T08:23:09.796Z",
+          "taskId": "0e1a5cca-fe3a-4401-a769-76d0b30b579b",
+          "reviewerAttemptId": "cff40b18-ad9d-4cca-b14f-e71af2e65a93",
+          "candidateId": "cf05b3c8-8492-4fc1-8830-07f3e362efdb"
+        }
+      ],
+      "independence": {
+        "differentTask": true,
+        "differentAttempt": true,
+        "differentProfile": true,
+        "freshNativeSession": true,
+        "separateCandidateCheckout": true,
+        "unchangedReviewerCheckout": true,
+        "exactCandidatePacket": true,
+        "boundReview": true
+      },
+      "failure": {
+        "code": "SMOKE_FAILED",
+        "message": "Writer/review probe failed; inspect retained app-owned state. Never retry automatically."
+      },
+      "persisted": {
+        "attempts": 2,
+        "sessions": 2
+      },
+      "worktrees": [
+        "/tmp/metatron-m8-writer-q9ZaXc-changes/local-agent-orchestrator/worktrees/0e1a5cca-fe3a-4401-a769-76d0b30b579b-b12d7fb6-e456-4eeb-a215-a32c2cb61d71/checkout",
+        "/tmp/metatron-m8-writer-q9ZaXc-changes/local-agent-orchestrator/worktrees/01bc79a6-6d5a-4b2d-884e-726fb2c320dc-0d0f5e3d-d6d3-4a7f-ba5a-70c60a8b43c4/checkout"
+      ],
+      "stage": "review",
+      "requestedTurns": 2,
+      "passed": false,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "integrationApprovalGranted": false,
+      "integrationApplied": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-writer-q9ZaXc-changes/local-agent-orchestrator/state.sqlite",
+        "fixture": "/tmp/lao-git-fixture-rUMTYn/repo with spaces",
+        "inspectCommand": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-writer-q9ZaXc-changes pnpm dev"
+      },
+      "limitations": [
+        "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+        "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+        "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+        "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+      ],
+      "evidenceKind": "INERT Pi RPC fixture; NOT native model evidence"
+    },
+    "dirtyReviewer": {
+      "harness": "pi",
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "liveGate": true,
+      "disposableWriteGate": true,
+      "maximumRequestedTurns": 2,
+      "integrationAuthority": "none; separate owner review/approval/apply required",
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "runId": "ce125213-c0cc-42da-afe8-37ccd3947453",
+      "writer": {
+        "taskId": "db41684a-7ba1-4d98-9618-a3da35e150af",
+        "attemptId": "a79affd8-2d30-4e2f-baa6-e8358f2849ff",
+        "profileId": "00000000-0000-4000-8000-000000000011",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-dirtyreview/local-agent-orchestrator/worktrees/db41684a-7ba1-4d98-9618-a3da35e150af-8497e6c6-7a77-4ade-ae1c-fd5211c07e52/checkout",
+        "nativeSessionId": "fixture-167131",
+        "contextPolicy": "auto",
+        "effectiveContext": "fresh",
+        "checks": {
+          "completed": true,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "Protocol fixture report"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 21,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "outcome": "completed",
+          "summary": "Protocol fixture structured summary",
+          "changedFiles": [
+            "README.md"
+          ],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "captured": {
+          "attemptId": "a79affd8-2d30-4e2f-baa6-e8358f2849ff",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-dirtyreview/local-agent-orchestrator/worktrees/db41684a-7ba1-4d98-9618-a3da35e150af-8497e6c6-7a77-4ade-ae1c-fd5211c07e52/checkout",
+          "baseSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+          "headSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+          "files": [
+            {
+              "path": "README.md",
+              "status": " M",
+              "sensitive": false
+            }
+          ],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": " README.md | 2 ++\n 1 file changed, 2 insertions(+)\n",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "candidate": {
+        "id": "67f972f2-c576-404f-922e-41712f85a516",
+        "createdAt": "2026-10-18T08:23:08.898Z",
+        "updatedAt": "2026-10-18T08:23:08.898Z",
+        "taskId": "db41684a-7ba1-4d98-9618-a3da35e150af",
+        "attemptId": "a79affd8-2d30-4e2f-baa6-e8358f2849ff",
+        "baseSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+        "candidateSha": "ebcfb10540466fe5add89f13a77574dcabf00b68",
+        "reportSubmitted": true,
+        "reviewIds": [],
+        "status": "proposed",
+        "humanDecision": null,
+        "decidedAt": null
+      },
+      "reviewer": {
+        "taskId": "f02f6b8c-7071-4cf0-89d9-45a83c097855",
+        "attemptId": "12c27769-7b01-42d1-a549-759a31c3ebd9",
+        "profileId": "00000000-0000-4000-8000-000000000012",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-dirtyreview/local-agent-orchestrator/worktrees/f02f6b8c-7071-4cf0-89d9-45a83c097855-17a18e52-45f4-4783-b207-d8a2e8af9143/checkout",
+        "nativeSessionId": "fixture-167516",
+        "contextPolicy": "auto",
+        "effectiveContext": "fresh",
+        "checks": {
+          "completed": false,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 48,
+          "lastDeltaSequence": 48,
+          "samples": [
+            {
+              "sequence": 48,
+              "text": "Reviewed README: Tampered by a reader\n"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 50,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "summary": "Fixture review: candidate and surrounding code inspected",
+          "recommendation": "pass",
+          "findings": [],
+          "tests": [
+            {
+              "command": "Tests unavailable: shell is disabled",
+              "result": "not_run"
+            }
+          ]
+        },
+        "captured": {
+          "attemptId": "12c27769-7b01-42d1-a549-759a31c3ebd9",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-dirtyreview/local-agent-orchestrator/worktrees/f02f6b8c-7071-4cf0-89d9-45a83c097855-17a18e52-45f4-4783-b207-d8a2e8af9143/checkout",
+          "baseSha": "fb656932b5637b19efc1c6452e59f5845b49c548",
+          "headSha": "ebcfb10540466fe5add89f13a77574dcabf00b68",
+          "files": [
+            {
+              "path": "README.md",
+              "status": " M",
+              "sensitive": false
+            }
+          ],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": " README.md | 4 +---\n 1 file changed, 1 insertion(+), 3 deletions(-)\n",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "reviews": [],
+      "failure": {
+        "code": "SMOKE_FAILED",
+        "message": "Writer/review probe failed; inspect retained app-owned state. Never retry automatically."
+      },
+      "persisted": {
+        "attempts": 2,
+        "sessions": 2
+      },
+      "worktrees": [
+        "/tmp/metatron-m8-writer-q9ZaXc-dirtyreview/local-agent-orchestrator/worktrees/db41684a-7ba1-4d98-9618-a3da35e150af-8497e6c6-7a77-4ade-ae1c-fd5211c07e52/checkout",
+        "/tmp/metatron-m8-writer-q9ZaXc-dirtyreview/local-agent-orchestrator/worktrees/f02f6b8c-7071-4cf0-89d9-45a83c097855-17a18e52-45f4-4783-b207-d8a2e8af9143/checkout"
+      ],
+      "stage": "review",
+      "requestedTurns": 2,
+      "passed": false,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "integrationApprovalGranted": false,
+      "integrationApplied": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-writer-q9ZaXc-dirtyreview/local-agent-orchestrator/state.sqlite",
+        "fixture": "/tmp/lao-git-fixture-l8Xufz/repo with spaces",
+        "inspectCommand": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-writer-q9ZaXc-dirtyreview pnpm dev"
+      },
+      "limitations": [
+        "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+        "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+        "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+        "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+      ],
+      "evidenceKind": "INERT Pi RPC fixture; NOT native model evidence"
+    },
+    "spendGateOnly": {
+      "harness": "pi",
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "liveGate": true,
+      "disposableWriteGate": false,
+      "maximumRequestedTurns": 0,
+      "integrationAuthority": "none; separate owner review/approval/apply required",
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "blocked": "Both native spending and disposable Write gates are required; zero turns requested",
+      "persisted": {
+        "attempts": 0,
+        "sessions": 0
+      },
+      "worktrees": [],
+      "stage": "discovery",
+      "requestedTurns": 0,
+      "passed": false,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "integrationApprovalGranted": false,
+      "integrationApplied": false,
+      "retained": null,
+      "limitations": [
+        "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+        "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+        "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+        "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+      ],
+      "evidenceKind": "INERT Pi RPC fixture; NOT native model evidence"
+    },
+    "writeGateOnly": {
+      "harness": "pi",
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "liveGate": false,
+      "disposableWriteGate": true,
+      "maximumRequestedTurns": 0,
+      "integrationAuthority": "none; separate owner review/approval/apply required",
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "blocked": "Both native spending and disposable Write gates are required; zero turns requested",
+      "persisted": {
+        "attempts": 0,
+        "sessions": 0
+      },
+      "worktrees": [],
+      "stage": "discovery",
+      "requestedTurns": 0,
+      "passed": false,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "integrationApprovalGranted": false,
+      "integrationApplied": false,
+      "retained": null,
+      "limitations": [
+        "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+        "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+        "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+        "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+      ],
+      "evidenceKind": "INERT Pi RPC fixture; NOT native model evidence"
+    },
+    "initialRequestedContextMistake": {
+      "harness": "pi",
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "liveGate": true,
+      "disposableWriteGate": true,
+      "maximumRequestedTurns": 2,
+      "integrationAuthority": "none; separate owner review/approval/apply required",
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "runId": "1d2585d6-7927-4b47-955b-71b81f3be356",
+      "writer": {
+        "taskId": "79c4e329-2e48-4d27-9c39-55aac49f7f7b",
+        "attemptId": "48e599f1-f647-404c-aead-eeaed097228b",
+        "profileId": "00000000-0000-4000-8000-000000000011",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-pass/local-agent-orchestrator/worktrees/79c4e329-2e48-4d27-9c39-55aac49f7f7b-7911ff74-d185-4eba-841b-9b188b6f655e/checkout",
+        "nativeSessionId": "fixture-164672",
+        "contextPolicy": "auto",
+        "checks": {
+          "completed": true,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "Protocol fixture report"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 21,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "outcome": "completed",
+          "summary": "Protocol fixture structured summary",
+          "changedFiles": [
+            "README.md"
+          ],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "captured": {
+          "attemptId": "48e599f1-f647-404c-aead-eeaed097228b",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-pass/local-agent-orchestrator/worktrees/79c4e329-2e48-4d27-9c39-55aac49f7f7b-7911ff74-d185-4eba-841b-9b188b6f655e/checkout",
+          "baseSha": "86d870b58e72bdcc5589e1f483107d6f853eab09",
+          "headSha": "86d870b58e72bdcc5589e1f483107d6f853eab09",
+          "files": [
+            {
+              "path": "README.md",
+              "status": " M",
+              "sensitive": false
+            }
+          ],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": " README.md | 2 ++\n 1 file changed, 2 insertions(+)\n",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "candidate": {
+        "id": "77dfec9b-4665-48c4-bfe9-3e39d9b92c80",
+        "createdAt": "2026-10-18T08:20:59.871Z",
+        "updatedAt": "2026-10-18T08:20:59.871Z",
+        "taskId": "79c4e329-2e48-4d27-9c39-55aac49f7f7b",
+        "attemptId": "48e599f1-f647-404c-aead-eeaed097228b",
+        "baseSha": "86d870b58e72bdcc5589e1f483107d6f853eab09",
+        "candidateSha": "45e8061efc2c53614cb9a959aaca91d1b0034926",
+        "reportSubmitted": true,
+        "reviewIds": [],
+        "status": "proposed",
+        "humanDecision": null,
+        "decidedAt": null
+      },
+      "reviewer": {
+        "taskId": "91e0528a-a8c7-48a0-95fd-f823143b9209",
+        "attemptId": "23bc9021-8591-4e9c-9cf8-6502c8762899",
+        "profileId": "00000000-0000-4000-8000-000000000012",
+        "worktreePath": "/tmp/metatron-m8-writer-q9ZaXc-pass/local-agent-orchestrator/worktrees/91e0528a-a8c7-48a0-95fd-f823143b9209-afbcacc9-02ea-42bf-bed1-fac0eb032937/checkout",
+        "nativeSessionId": "fixture-164763",
+        "contextPolicy": "auto",
+        "checks": {
+          "completed": true,
+          "settingsMatch": true,
+          "noSessionError": true
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 48,
+          "lastDeltaSequence": 48,
+          "samples": [
+            {
+              "sequence": 48,
+              "text": "Reviewed README: # Disposable fixture\n\nM8 disposable writer proof dcb8bb16-e719-41ed-adce-a53bdee77d74\n"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 50,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "report": {
+          "summary": "Fixture review: candidate and surrounding code inspected",
+          "recommendation": "pass",
+          "findings": [],
+          "tests": [
+            {
+              "command": "Tests unavailable: shell is disabled",
+              "result": "not_run"
+            }
+          ]
+        },
+        "captured": {
+          "attemptId": "23bc9021-8591-4e9c-9cf8-6502c8762899",
+          "path": "/tmp/metatron-m8-writer-q9ZaXc-pass/local-agent-orchestrator/worktrees/91e0528a-a8c7-48a0-95fd-f823143b9209-afbcacc9-02ea-42bf-bed1-fac0eb032937/checkout",
+          "baseSha": "86d870b58e72bdcc5589e1f483107d6f853eab09",
+          "headSha": "45e8061efc2c53614cb9a959aaca91d1b0034926",
+          "files": [],
+          "stagedDiffStat": "",
+          "unstagedDiffStat": "",
+          "diffCheck": "passed",
+          "tests": "not_run: shell tools are disabled in M3"
+        }
+      },
+      "reviews": [
+        {
+          "summary": "Fixture review: candidate and surrounding code inspected",
+          "recommendation": "pass",
+          "findings": [],
+          "tests": [
+            {
+              "command": "Tests unavailable: shell is disabled",
+              "result": "not_run"
+            }
+          ],
+          "id": "0c9b2ebe-d4b3-4947-bda4-d40991baba2f",
+          "createdAt": "2026-10-18T08:21:00.312Z",
+          "updatedAt": "2026-10-18T08:21:00.312Z",
+          "taskId": "79c4e329-2e48-4d27-9c39-55aac49f7f7b",
+          "reviewerAttemptId": "23bc9021-8591-4e9c-9cf8-6502c8762899",
+          "candidateId": "77dfec9b-4665-48c4-bfe9-3e39d9b92c80"
+        }
+      ],
+      "independence": {
+        "differentTask": true,
+        "differentAttempt": true,
+        "differentProfile": true,
+        "freshNativeSession": false,
+        "separateCandidateCheckout": true,
+        "unchangedReviewerCheckout": true,
+        "exactCandidatePacket": true,
+        "boundReview": true
+      },
+      "failure": {
+        "code": "SMOKE_FAILED",
+        "message": "Writer/review probe failed; inspect retained app-owned state. Never retry automatically."
+      },
+      "persisted": {
+        "attempts": 2,
+        "sessions": 2
+      },
+      "worktrees": [
+        "/tmp/metatron-m8-writer-q9ZaXc-pass/local-agent-orchestrator/worktrees/79c4e329-2e48-4d27-9c39-55aac49f7f7b-7911ff74-d185-4eba-841b-9b188b6f655e/checkout",
+        "/tmp/metatron-m8-writer-q9ZaXc-pass/local-agent-orchestrator/worktrees/91e0528a-a8c7-48a0-95fd-f823143b9209-afbcacc9-02ea-42bf-bed1-fac0eb032937/checkout"
+      ],
+      "stage": "review",
+      "requestedTurns": 2,
+      "passed": false,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "integrationApprovalGranted": false,
+      "integrationApplied": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-writer-q9ZaXc-pass/local-agent-orchestrator/state.sqlite",
+        "fixture": "/tmp/lao-git-fixture-xtQ6Z1/repo with spaces",
+        "inspectCommand": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-writer-q9ZaXc-pass pnpm dev"
+      },
+      "limitations": [
+        "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+        "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+        "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+        "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+      ],
+      "evidenceKind": "INERT Pi RPC fixture; NOT native model evidence"
+    }
+  },
+  "retainedAppReadback": {
+    "evidenceKind": "INERT writer/reviewer fixture with actual retained-app HTTP readback, NOT native model evidence",
+    "existingDatabaseReplayRefused": true,
+    "unknownIntegrationFlagRefused": true,
+    "noChildSpawnOnEitherRefusal": true,
+    "retainedDatabaseUnchangedByRefusedCLI": true,
+    "httpReviewAndCandidateDiffAvailable": true,
+    "previewId": "0cba38e9-583d-48fd-8723-47d47159cac1",
+    "candidateId": "720c0dc7-5606-4c45-bb48-2a298dbfb5a6",
+    "previewStatus": "passed",
+    "ownerDecision": null,
+    "applications": 0,
+    "planBlocked": true,
+    "attemptsBefore": 2,
+    "attemptsAfter": 2,
+    "ownerApproval": false,
+    "integrationApplied": false
+  }
+}

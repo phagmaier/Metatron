@@ -1,0 +1,1001 @@
+{
+  "evidenceKind": "Actual Pi native OAuth readiness and application discovery; zero model prompts",
+  "ownerAuthorization": {
+    "harness": "pi",
+    "model": "openai/gpt-6-luna",
+    "thinking": "low",
+    "maximumRequestedTurns": 2,
+    "permission": "read_only",
+    "retries": false,
+    "writes": false,
+    "integration": false
+  },
+  "appOwnedAgentDirectory": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi",
+  "beforeLogin": {
+    "evidenceKind": "Actual installed Pi native authentication check; zero model prompts",
+    "harness": "pi",
+    "version": "1.3.0",
+    "agentDirectory": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi",
+    "command": "mise x -- env PI_CODING_AGENT_DIR=/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi PI_OFFLINE=1 PI_TELEMETRY=0 pi auth check --provider openai-codex --json --no-refresh",
+    "exitCode": 1,
+    "nativeResult": {
+      "status": "not_ready",
+      "provider": "openai-codex",
+      "reason": "credentials_not_configured"
+    },
+    "nativeModelPrompts": 0,
+    "credentialContentsReadByAssistant": false,
+    "credentialsCopied": false,
+    "loginAttemptedByAssistant": false,
+    "integrationAuthorized": false,
+    "nextStep": "Owner runs Pi with the exact app-owned agent directory and /login openai-codex; subsequently discover available model/thinking without prompts and request a fresh bounded two-turn scope."
+  },
+  "afterLogin": {
+    "evidenceKind": "Actual installed Pi native auth checks after owner login; zero model prompts; credential contents not read by observer",
+    "version": "1.3.0",
+    "agentDirectory": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi",
+    "checks": [
+      {
+        "command": "mise x -- env PI_CODING_AGENT_DIR=/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi PI_OFFLINE=1 PI_TELEMETRY=0 pi auth check --provider openai-codex --json --no-refresh",
+        "exitCode": 1,
+        "nativeResult": {
+          "status": "not_ready",
+          "provider": "openai-codex",
+          "reason": "credentials_not_configured"
+        }
+      },
+      {
+        "command": "mise x -- env PI_CODING_AGENT_DIR=/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/pi PI_OFFLINE=1 PI_TELEMETRY=0 pi auth check --provider openai --json --no-refresh",
+        "exitCode": 0,
+        "nativeResult": {
+          "status": "ready",
+          "provider": "openai",
+          "authType": "oauth"
+        }
+      }
+    ],
+    "observations": [
+      "The app-owned auth file grew after owner login; only filesystem metadata was inspected by the observer.",
+      "Actual application discovery returned openai models, including openai/gpt-6-luna with low thinking. The first status check used the wrong provider identifier for this installed login.",
+      "Native ready/OAuth metadata and catalog selection do not prove model entitlement or authorize spending."
+    ],
+    "nativeModelPrompts": 0,
+    "credentialsCopied": false,
+    "integrationAuthorized": false
+  },
+  "actualApplicationCatalog": {
+    "evidenceKind": "Actual installed Pi adapter discovery; zero model prompts; no credential contents read by observer",
+    "catalog": {
+      "harness": "pi",
+      "state": "available",
+      "version": "1.3.0",
+      "nextStep": null,
+      "implemented": true,
+      "installed": true,
+      "authenticated": "unknown",
+      "models": [
+        {
+          "id": "openai/gpt-4",
+          "label": "GPT-4 (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4-turbo",
+          "label": "GPT-4 Turbo (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4.1",
+          "label": "GPT-4.1 (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4.1-mini",
+          "label": "GPT-4.1 mini (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4.1-nano",
+          "label": "GPT-4.1 nano (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4o",
+          "label": "GPT-4o (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4o-2024-05-13",
+          "label": "GPT-4o (2024-05-13) (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4o-2024-08-06",
+          "label": "GPT-4o (2024-08-06) (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4o-2024-11-20",
+          "label": "GPT-4o (2024-11-20) (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-4o-mini",
+          "label": "GPT-4o mini (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5",
+          "label": "GPT-5 (openai)",
+          "thinking": [
+            {
+              "id": "minimal",
+              "label": "minimal"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5-chat-latest",
+          "label": "GPT-5 Chat Latest (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5-mini",
+          "label": "GPT-5 Mini (openai)",
+          "thinking": [
+            {
+              "id": "minimal",
+              "label": "minimal"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5-nano",
+          "label": "GPT-5 Nano (openai)",
+          "thinking": [
+            {
+              "id": "minimal",
+              "label": "minimal"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5-pro",
+          "label": "GPT-5 Pro (openai)",
+          "thinking": [
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.1",
+          "label": "GPT-5.1 (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.2",
+          "label": "GPT-5.2 (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.2-chat-latest",
+          "label": "GPT-5.2 Chat (openai)",
+          "thinking": [
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.2-pro",
+          "label": "GPT-5.2 Pro (openai)",
+          "thinking": [
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.3-chat-latest",
+          "label": "GPT-5.3 Chat (latest) (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.3-codex",
+          "label": "GPT-5.3 Codex (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.3-codex-spark",
+          "label": "GPT-5.3 Codex Spark (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.4",
+          "label": "GPT-5.4 (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.4-mini",
+          "label": "GPT-5.4 mini (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.4-nano",
+          "label": "GPT-5.4 nano (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.4-pro",
+          "label": "GPT-5.4 Pro (openai)",
+          "thinking": [
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.5",
+          "label": "GPT-5.5 (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.5-pro",
+          "label": "GPT-5.5 Pro (openai)",
+          "thinking": [
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.6-luna",
+          "label": "GPT-5.6 Luna (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.6-sol",
+          "label": "GPT-5.6 Sol (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-5.6-terra",
+          "label": "GPT-5.6 Terra (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-6-astra",
+          "label": "GPT-6 Astra (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-6-luna",
+          "label": "GPT-6 Luna (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-6-sol",
+          "label": "GPT-6 Sol (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-6.1-sol",
+          "label": "GPT-6.1 Sol (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-daybreak-blue-latest",
+          "label": "Daybreak Blue (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-daybreak-red-latest",
+          "label": "Daybreak Red (openai)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "openai/gpt-realtime-2.1",
+          "label": "GPT-Realtime-2.1 (openai)",
+          "thinking": [
+            {
+              "id": "minimal",
+              "label": "minimal"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "openai/o1",
+          "label": "o1 (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/o1-pro",
+          "label": "o1-pro (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/o3",
+          "label": "o3 (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/o3-mini",
+          "label": "o3-mini (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/o3-pro",
+          "label": "o3-pro (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        },
+        {
+          "id": "openai/o4-mini",
+          "label": "o4-mini (openai)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            }
+          ]
+        }
+      ],
+      "permissions": [
+        "read_only",
+        "workspace_write"
+      ],
+      "diagnostics": [
+        "App-owned Pi configuration; provider environment credentials or app-owned Pi login required. Catalog presence does not prove entitlement.",
+        "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Steer/follow-up queue at native input boundaries; queue acceptance is not delivery.",
+        "Unsupported: owner approval prompts (allowed tools run without a native per-call callback; the tool allowlist and app guard extension enforce policy); resume (This Pi adapter does not reopen native sessions; each attempt uses a new worktree); Lead/coordinator sessions.",
+        "pi profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement."
+      ]
+    },
+    "attempts": 0,
+    "sessions": 0,
+    "nativeModelPrompts": 0,
+    "personalConfigMetadataUnchanged": true
+  },
+  "readerCancelSelection": {
+    "harness": "pi",
+    "liveAuthorized": false,
+    "selected": {
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "requestedChecks": {
+      "streamedReader": true,
+      "activeCancellation": true,
+      "crossAssignmentGatewayDenial": false
+    },
+    "maximumRequestedTurns": 0,
+    "discovery": {
+      "state": "available",
+      "version": "1.3.0",
+      "authenticated": "unknown",
+      "nextStep": null,
+      "selectionAvailable": true,
+      "thinkingChoices": [
+        "off",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    },
+    "submittedPrompts": 0,
+    "gatewayScopeProbe": null,
+    "blocked": null,
+    "ownerCheckoutUnchanged": true,
+    "personalConfigMetadataUnchanged": true,
+    "passed": true,
+    "retained": null,
+    "limitations": [
+      "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+      "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+      "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+    ]
+  },
+  "nativeModelPrompts": 0,
+  "limitations": [
+    "Native auth check for this login uses provider openai; the initial openai-codex check queried the wrong identifier, not proof the owner's login failed.",
+    "Application catalog reports authenticated:unknown; native auth readiness says OAuth. The separate paid reader demonstrates only that observed turn, not future quota or entitlement.",
+    "No credential contents were opened or copied by the observer."
+  ]
+}

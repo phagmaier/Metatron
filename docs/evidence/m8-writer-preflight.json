@@ -1,0 +1,44 @@
+{
+  "evidenceKind": "Actual installed PiAdapter discovery only, NOT native writer/reviewer/model evidence",
+  "nativeModelPrompts": 0,
+  "command": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-writer-native-u0akQM pnpm test:live:writer --model deepseek/deepseek-flash --thinking off --output /tmp/metatron-m8-writer-native-u0akQM/discovery.json",
+  "receipt": {
+    "harness": "pi",
+    "selected": {
+      "model": "deepseek/deepseek-flash",
+      "thinking": "off"
+    },
+    "liveGate": false,
+    "disposableWriteGate": false,
+    "maximumRequestedTurns": 0,
+    "integrationAuthority": "none; separate owner review/approval/apply required",
+    "discovery": {
+      "state": "auth_required",
+      "version": "1.3.0",
+      "authenticated": false,
+      "nextStep": "Pi lists no model with usable provider credentials. Export a provider API key Pi supports (for example DEEPSEEK_API_KEY; see Pi's providers documentation) in the shell that starts this app, restart the app and check again.",
+      "selectionAvailable": false,
+      "thinkingChoices": []
+    },
+    "blocked": "Pi lists no model with usable provider credentials. Export a provider API key Pi supports (for example DEEPSEEK_API_KEY; see Pi's providers documentation) in the shell that starts this app, restart the app and check again.",
+    "persisted": {
+      "attempts": 0,
+      "sessions": 0
+    },
+    "worktrees": [],
+    "stage": "discovery",
+    "requestedTurns": 0,
+    "passed": true,
+    "ownerCheckoutUnchanged": true,
+    "personalConfigMetadataUnchanged": true,
+    "integrationApprovalGranted": false,
+    "integrationApplied": false,
+    "retained": null,
+    "limitations": [
+      "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+      "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+      "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+      "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+    ]
+  }
+}

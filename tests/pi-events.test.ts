@@ -102,6 +102,55 @@ test("Pi aborts and unexplained exits never imply provider failure or task succe
   assert.equal(deadline[0]?.type, "session_error");
   assert.ok(JSON.stringify(deadline).includes('"code":"deadline"'));
 });
+test("Pi requested aborts retain interruption and usage without masking genuine provider failures", () => {
+  const mapper = new PiEvents();
+  assert.deepEqual(
+    mapper.consume(
+      {
+        type: "message_end",
+        message: {
+          role: "assistant",
+          stopReason: "aborted",
+          errorMessage: "Request was aborted.",
+          usage: { input: 2, output: 3 },
+        },
+      },
+      true,
+    ),
+    [
+      {
+        type: "usage",
+        inputTokens: 2,
+        outputTokens: 3,
+        source: "pi native assistant message (may be partial)",
+      },
+    ],
+  );
+  assert.deepEqual(mapper.consume({ type: "agent_settled", aborted: true }), [
+    { type: "turn_completed", nativeStatus: "interrupted" },
+  ]);
+  const failed = new PiEvents();
+  const events = failed.consume(
+    {
+      type: "message_end",
+      message: {
+        role: "assistant",
+        stopReason: "error",
+        errorMessage: "401 authentication failed fixture-secret",
+      },
+    },
+    true,
+  );
+  assert.equal(events[0]?.type, "session_error");
+  assert.equal(
+    events[0]?.type === "session_error" && events[0].providerFailureKind,
+    "auth",
+  );
+  assert.equal(JSON.stringify(events).includes("fixture-secret"), false);
+  assert.deepEqual(failed.consume({ type: "agent_settled", aborted: false }), [
+    { type: "turn_completed", nativeStatus: "failed" },
+  ]);
+});
 test("RPC subprocess correlates responses, preserves Unicode separators, records exit and rejects malformed frames", async () => {
   const script = `let b='';process.stdin.on('data',c=>{b+=c;let i;while((i=b.indexOf('\\n'))>=0){const v=JSON.parse(b.slice(0,i));b=b.slice(i+1);process.stdout.write(JSON.stringify({id:v.id,type:'response',command:v.type,success:true,data:{echo:v.type}})+'\\n');process.stdout.write(JSON.stringify({type:'message_update',assistantMessageEvent:{type:'text_delta',delta:'a\u2028b'}})+'\\n')}});`;
   const rpc = new PiRpc(

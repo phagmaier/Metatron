@@ -43,7 +43,7 @@ function classify(error: string): ProviderFailureKind | "native_error" {
 export class PiEvents {
   private stopReason: string | null = null;
   private failure = false;
-  consume(record: RpcRecord): SessionEvent[] {
+  consume(record: RpcRecord, cancellationRequested = false): SessionEvent[] {
     if (record.type === "message_update") {
       const update = z
         .object({ type: z.string(), delta: z.string().optional() })
@@ -84,6 +84,10 @@ export class PiEvents {
             },
           ]
         : [];
+      // Only an explicitly requested abort is expected; provider and transport
+      // failures must remain visible even while the owner is stopping a turn.
+      if (this.stopReason === "aborted" && cancellationRequested)
+        return usageEvents;
       if (this.failure) {
         const error = parsed.data.errorMessage ?? "";
         const code =
