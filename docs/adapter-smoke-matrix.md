@@ -63,6 +63,19 @@ Both flags remain discovery-only without `--allow-live`. The flag is an executio
 - [Inert protocol runner receipts](evidence/m8-smoke-runner-fixtures.json): Pi reader/cancel, Codex reader and Codex completed-resume/cancel PASS through real adapters/engine/gateway/Git with scripted transports. Two already-completed cancellation targets correctly exit 1, retain evidence and do not retry; they are expected negative outcomes, not native failures. The first throwaway Lead fixture selected a coordinator from a worker-only roster and failed; only that fixture selector was corrected. **Zero native model prompts; no row in the native matrix is closed.**
 
 
+## Cross-assignment gateway probe — cost-free continuation
+
+The owner explicitly chose **Continue cost-free preparation** rather than authorizing the offered native turns. Spending HOLD remains; the work below submitted no native model prompt and created no login or integration approval.
+
+`scripts/live-workers.ts --verify-gateway-denial` adds one negative call inside its existing reader turn, not another model turn. The runner prepares an actual unassigned task in another run, then asks the worker to call its existing `read_assignment` tool once with that foreign `taskId` as an extra top-level argument. The gateway's strict worker schema rejects it with **`INVALID_INPUT`** before rebinding the assignment. No worker catalog, adapter permission or gateway authorization is widened.
+
+A probe PASS requires a successful assignment read, exactly one `read_assignment`/`INVALID_INPUT` rejection and a later structured result, all in the same task/attempt/session binding. The foreign task must remain identical with zero attempts/dispatches, and no Lead-only tool may have succeeded. A model report claiming denial is insufficient. If a native client rejects the extra argument before the gateway, this runner cannot certify a gateway rejection; it fails/retains state without retrying or bypassing that client.
+
+**This is assignment-scope schema rejection, not worker-to-Lead role-denial proof.** Lead-only methods remain absent from worker catalogs; do not expose them merely to make a negative native call possible. The existing gateway/adapter policy regressions cover those role boundaries with fixtures. The native role-denial cells above remain open; this preparation neither replaces them with validation evidence nor checks off the milestone.
+
+- [Three positive and three expected-negative inert runner receipts](evidence/m8-gateway-scope-fixtures.json): Pi/Claude/OpenCode run through their actual adapters with inert RPC/SDK/HTTP transports and real engine/gateway/Git. All positive cases record `INVALID_INPUT` and an unchanged unassigned control. All cases that merely claim denial exit 1 despite a valid completed reader, retain evidence and submit no retry.
+- [Actual three-adapter preflight with the new flag](evidence/m8-gateway-scope-preflight.json): zero prompts, `gatewayScopeProbe:null`, Pi 1.3.0 and Claude 2.1.302 auth required; OpenCode 2.0.32 auth unknown and the requested DeepSeek selection unavailable. Catalog availability is not model access. No current native client schema behavior, role denial or full matrix PASS is claimed.
+
 ## Safe repeat commands — no new model prompts
 
 Use fresh evidence filenames. Put disposable XDG overrides **after** `mise x --`; putting them before mise can trigger tool reinstallation. These existing commands cover subsets of preflight, not a complete live matrix or an exact reproduction of the removed instrumented probe.
@@ -76,7 +89,7 @@ mise x -- pnpm test:live:claude --output /tmp/m8-matrix-claude-next.json
 mise x -- pnpm test:live:opencode --output /tmp/m8-matrix-opencode-next.json
 mise x -- env XDG_DATA_HOME=/tmp/lao-m8-matrix-next pnpm test:live:workers \
   --harness pi --model deepseek/deepseek-flash --thinking off \
-  --verify-cancel \
+  --verify-cancel --verify-gateway-denial \
   --output /tmp/m8-matrix-pi-next.json
 ```
 
@@ -87,7 +100,7 @@ Without `--allow-live`, model/lifecycle flags do not authorize a prompt or estab
 1. **Owner spending decision: HOLD.** New model-bearing checks remain unauthorized. Earlier M8 authorizations do not carry forward; do not add `--allow-live` to a native run, switch billing routes or retry a failed/ambiguous turn without new scoped authorization. The prior eight/non-Claude or nine/all-four turn proposals were not approved; neither was integration. Inert transport verification is not a live spend authorization.
 2. **Claude/Pi authentication absent in the current fresh homes.** Privately supply an owner-approved native route to the process that will run the smoke; Pi currently lists no usable model. Existing Claude setup-token guidance and vendor-policy caveat remain in [recon](adapter-recon.md#m8-item-1--claude-authentication-slice-a-2026-10-17) and [ADR](adr/2026-10-17-claude-setup-token.md). Never paste a token into chat/arguments or extract personal credentials. A no-model Claude probe is `mise x -- pnpm test:live:claude --output /tmp/m8-matrix-claude-auth-next.json`; auth metadata still is not entitlement.
 3. **Codex fresh home intentionally logged out.** The earlier owner-authenticated `/tmp/lao-m8-workers/local-agent-orchestrator/codex` home is historical, may disappear on reboot and is not assumed migrated to this desktop. This continuation did not inspect/reuse it. If the owner deliberately chooses that app-owned home, its no-prompt check is `mise x -- env XDG_DATA_HOME=/tmp/lao-m8-workers pnpm test:live:leads --model gpt-6-luna --thinking low --output /tmp/m8-matrix-codex-auth-next.json`; if logged out, the owner can run `mise x -- env CODEX_HOME=/tmp/lao-m8-workers/local-agent-orchestrator/codex codex login`. Never copy a personal login or authenticate a throwaway preflight home that will be removed.
-4. **Missing native observations, not merely missing setup:** run the instrumented Codex/Pi streaming and opt-in Codex/Pi lifecycle scenarios only after scoped authorization. Pi/Claude/OpenCode native scoped policy-denial evidence still needs a deliberate probe; reader-mode reruns do not supply it. No unsupported operation should be emulated and labeled native resume/approval. Inert lifecycle passes above do not close these native gaps.
+4. **Missing native observations, not merely missing setup:** run the instrumented streaming/lifecycle and assignment-scope probes only after fresh scoped spending/auth authorization and rediscovery of an available selection. `--verify-gateway-denial` prepares a server-observed cross-assignment `INVALID_INPUT` check, not a worker-to-Lead role-denial call. The latter remains unobserved with Lead-only tools intentionally absent from worker catalogs; no policy widening or weaker acceptance claim is authorized. Reader-only reruns and inert passes do not close these native gaps.
 5. **One real writer lifecycle remains unverified.** Use a supported writer on a marked disposable repository, capture its candidate, independently review it, inspect the exact integration preview, then obtain a separate explicit owner approval bound to that preview before applying. A model-spending decision or native Write callback is not that approval. Existing [integration workflow tests](../tests/integration-workflow.test.ts) establish application behavior with fixtures only; there is no native writer-to-integration receipt to cite.
 
 **Next checklist item remains M8 item 8.** Resume with `mise current`, this matrix and the latest recon; settle new auth/spend prerequisites before native prompts, instrument only the missing scenarios, and leave M9 and beta completion unclaimed. Auth/rate-limit/credit-exhaustion induction and broad recovery/descendant hardening were not exercised here.
@@ -100,8 +113,14 @@ Without `--allow-live`, model/lifecycle flags do not authorize a prompt or estab
 - Receipt invariants, all 15 linked matrix files and exact-environment-secret exclusion across seven changed/new artifacts: PASS. The throwaway link checker first misparsed an escaped literal; correcting that parser passed without application changes.
 - No application code or permanent tests changed. No UI behavior changed; no new browser check or native cost-bearing smoke is claimed.
 
-## Current continuation verification
+## Stream/lifecycle preparation verification
 
 - `mise x -- pnpm typecheck`, `mise x -- pnpm lint`: PASS; `mise x -- pnpm test`: **448/448**, including four ordered-stream evidence regressions; `mise x -- pnpm test:fixtures`: **3/3**.
 - `mise x -- pnpm build`, `mise x -- pnpm smoke`: PASS; development/production health, HTML and script launches observed.
 - Positive/negative runner smoke and current native no-model checks are linked above. Receipt invariants and exact-environment-secret exclusion passed. No UI or adapter-policy change, dependency, toolchain, spec change or new ADR; no cost-bearing native run, login, candidate integration or milestone check-off.
+
+## Gateway-scope preparation verification
+
+- `mise x -- pnpm typecheck`, `mise x -- pnpm lint`: PASS; `mise x -- pnpm test`: **455/455**; focused evidence **11/11** (seven new cases); `mise x -- pnpm test:fixtures`: **3/3**.
+- `mise x -- pnpm build`, `mise x -- pnpm smoke`: PASS, actual development/production startup observed. Positive/negative runner and native zero-prompt receipts are linked above; fixture passes are not native model evidence.
+- No app adapter/policy, dependency, toolchain, spec or ADR change, login, native model turn, candidate integration or checkbox change. M8 item 8 remains blocked; M9 untouched.

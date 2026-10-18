@@ -1,0 +1,119 @@
+{
+  "evidenceKind": "Actual installed adapters; discovery only, not native model evidence",
+  "nativeModelPrompts": 0,
+  "commands": [
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-scope-native-dQrNWe pnpm test:live:workers --harness pi --model deepseek/deepseek-flash --thinking off --verify-gateway-denial --output /tmp/metatron-m8-scope-native-dQrNWe/pi-discovery.json",
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-scope-native-dQrNWe pnpm test:live:workers --harness claude-code --model haiku --thinking low --verify-gateway-denial --output /tmp/metatron-m8-scope-native-dQrNWe/claude-discovery.json",
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-scope-native-dQrNWe pnpm test:live:workers --harness opencode --model deepseek/deepseek-flash --thinking low --verify-gateway-denial --output /tmp/metatron-m8-scope-native-dQrNWe/opencode-discovery.json"
+  ],
+  "cases": {
+    "pi": {
+      "harness": "pi",
+      "liveAuthorized": false,
+      "selected": {
+        "model": "deepseek/deepseek-flash",
+        "thinking": "off"
+      },
+      "requestedChecks": {
+        "streamedReader": true,
+        "activeCancellation": false,
+        "crossAssignmentGatewayDenial": true
+      },
+      "maximumRequestedTurns": 0,
+      "discovery": {
+        "state": "auth_required",
+        "version": "1.3.0",
+        "authenticated": false,
+        "nextStep": "Pi lists no model with usable provider credentials. Export a provider API key Pi supports (for example DEEPSEEK_API_KEY; see Pi's providers documentation) in the shell that starts this app, restart the app and check again.",
+        "selectionAvailable": false,
+        "thinkingChoices": []
+      },
+      "submittedPrompts": 0,
+      "gatewayScopeProbe": null,
+      "blocked": "Selection unavailable: Pi lists no model with usable provider credentials. Export a provider API key Pi supports (for example DEEPSEEK_API_KEY; see Pi's providers documentation) in the shell that starts this app, restart the app and check again.",
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "passed": true,
+      "retained": null,
+      "limitations": [
+        "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+        "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+        "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+      ]
+    },
+    "claude": {
+      "harness": "claude-code",
+      "liveAuthorized": false,
+      "selected": {
+        "model": "haiku",
+        "thinking": "low"
+      },
+      "requestedChecks": {
+        "streamedReader": true,
+        "activeCancellation": false,
+        "crossAssignmentGatewayDenial": true
+      },
+      "maximumRequestedTurns": 0,
+      "discovery": {
+        "state": "auth_required",
+        "version": "2.1.302",
+        "authenticated": false,
+        "nextStep": "AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+        "selectionAvailable": false,
+        "thinkingChoices": [
+          "low",
+          "medium",
+          "high",
+          "xhigh",
+          "max"
+        ]
+      },
+      "submittedPrompts": 0,
+      "gatewayScopeProbe": null,
+      "blocked": "Selection unavailable: AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "passed": true,
+      "retained": null,
+      "limitations": [
+        "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+        "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+        "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+      ]
+    },
+    "opencode": {
+      "harness": "opencode",
+      "liveAuthorized": false,
+      "selected": {
+        "model": "deepseek/deepseek-flash",
+        "thinking": "low"
+      },
+      "requestedChecks": {
+        "streamedReader": true,
+        "activeCancellation": false,
+        "crossAssignmentGatewayDenial": true
+      },
+      "maximumRequestedTurns": 0,
+      "discovery": {
+        "state": "available",
+        "version": "2.0.32",
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": false,
+        "thinkingChoices": []
+      },
+      "submittedPrompts": 0,
+      "gatewayScopeProbe": null,
+      "blocked": "Selection unavailable: model/thinking not in native discovery",
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "passed": true,
+      "retained": null,
+      "limitations": [
+        "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+        "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+        "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+      ]
+    }
+  }
+}

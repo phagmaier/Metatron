@@ -3,12 +3,86 @@ import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import type { Engine } from "../src/server/orchestration/engine.ts";
 import type { Event } from "../src/shared/domain/entities.ts";
+import { workerTools } from "../src/shared/orchestration.ts";
 
 type SmokeEvent = Pick<Event, "sequence" | "type" | "payload">;
 export type CancellationRequest = {
   afterTextSequence: number;
   requestSequence: number;
 };
+export type GatewayProbeBinding = {
+  taskId: string;
+  attemptId: string;
+  sessionId: string;
+};
+
+export function gatewayScopeEvidence(
+  events: (SmokeEvent & Pick<Event, "taskId" | "attemptId" | "sessionId">)[],
+  binding: GatewayProbeBinding,
+) {
+  let assignmentSequence: number | null = null;
+  let resultSequence: number | null = null;
+  let resultCount = 0;
+  let rejectionCount = 0;
+  let rejection:
+    | (GatewayProbeBinding & {
+        sequence: number;
+        tool: "read_assignment";
+        code: "INVALID_INPUT";
+      })
+    | null = null;
+  let noPrivilegedToolSucceeded = true;
+  for (const event of events) {
+    if (
+      event.taskId !== binding.taskId ||
+      event.attemptId !== binding.attemptId ||
+      event.sessionId !== binding.sessionId
+    )
+      continue;
+    if (event.type === "gateway.tool_call" && event.payload.outcome === "ok") {
+      if (event.payload.tool === "read_assignment")
+        assignmentSequence ??= event.sequence;
+      if (!workerTools.some((tool) => tool === event.payload.tool))
+        noPrivilegedToolSucceeded = false;
+    }
+    if (
+      event.type === "gateway.denied" &&
+      event.payload.tool === "read_assignment" &&
+      event.payload.code === "INVALID_INPUT"
+    ) {
+      rejectionCount++;
+      rejection ??= {
+        ...binding,
+        sequence: event.sequence,
+        tool: "read_assignment",
+        code: "INVALID_INPUT",
+      };
+    }
+    if (event.type === "worker.result") {
+      resultCount++;
+      resultSequence ??= event.sequence;
+    }
+  }
+  return {
+    checks: {
+      assignmentBeforeRejection:
+        assignmentSequence !== null &&
+        rejection !== null &&
+        assignmentSequence < rejection.sequence,
+      oneScopeRejection: rejectionCount === 1,
+      resultAfterRejection:
+        resultCount === 1 &&
+        resultSequence !== null &&
+        rejection !== null &&
+        resultSequence > rejection.sequence,
+      noPrivilegedToolSucceeded,
+    },
+    assignmentSequence,
+    rejection,
+    rejectionCount,
+    resultSequence,
+  };
+}
 
 export function smokeEvents(engine: Engine, runId: string, taskId?: string) {
   const events: Event[] = [];

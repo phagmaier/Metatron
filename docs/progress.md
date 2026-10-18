@@ -112,18 +112,10 @@
 - Official client/native 2.0.29, private authenticated loopback host, permissions/resume/stream/cancel and engine integration verified with five authorized prompts plus no-model/browser fixtures. Default 421/421, focused 21/21 and standard checks passed; no OS sandbox or complete matrix claim.
 - [Original commands, dependency justification, ADR, diagnostics and evidence](progress-m8-history.md#2026-10-17--m8-item-2-opencode-v2-native-adapter); no future usage authorization; next was M8 item 3.
 
-## 2026-10-17 — M8 item 3: Pi/Codex capability revisit
+## 2026-10-17 — M8 item 3: Pi/Codex capability revisit (archived)
 
-- Installed Codex **0.163.0** (M4 live Lead used 0.162.1) and Pi **1.3.0** (unchanged; oh-my-pi installs `omp`, not `pi`). Regenerated Codex schemas/types and re-read Pi RPC docs in scratch; no model turn, login, credential read, dependency or toolchain change.
-- Real difference fixed in `codex.ts`: `experimentalFeature/list` is paginated; startup read one page, so a delegation feature enabled on a later page passed vacuously. Now reads every page and refuses unless all 14 disabled features are reported disabled. `codex-events.ts` maps the new native `sleep` tool item. Stale "Steering arrives with M6" diagnostic replaced by explicit unsupported controls (worker sessions, live steering; native `turn/steer` deliberately unused).
-- `pi.ts`: discovery states unsupported per-call approvals, resume and coordinator sessions; stale "M3" refusal text removed. README no longer claims Pi lacks steering.
-- New `src/shared/native-controls.ts`: per-harness live-input and assignment-resume availability with reasons (resume reasons moved from `context-policy.ts`). Adapters derive `supportsLiveSteer` from it; `worker-messages.ts` refuses unsupported harnesses before any native call; `worker-message-panel.tsx`/`context-panel.tsx` disable Send/Resume with the reason. Also fixes Claude/OpenCode sessions that offered a steering control which always ended `unsupported`.
-- Regressions (each failed on the previous code): later-page enabled / unreported feature refuses Codex startup with no thread; busy Claude-shaped worker gets its harness reason with zero `steer` calls; `sleep` item mapping. Codex fixture now reports every flag and can page.
-- PASS: `mise x -- pnpm typecheck`; `mise x -- pnpm lint`; `mise x -- pnpm test` **423/423**; `mise x -- pnpm test:fixtures` **3/3**; `mise x -- pnpm build`; `mise x -- pnpm smoke` development/production.
-- Native no-model PASS through updated adapters, fresh disposable app dirs: [receipt](evidence/m8-pi-codex-capabilities.json) — Codex installed/auth false (fresh home)/8 models, Pi installed/auth unknown/2 models, personal-config metadata unchanged, zero surviving processes.
-- Browser PASS (cached Playwright + `/usr/bin/chromium`; MCP Chrome absent, not installed), inert scripted session, desktop/390px: [readback](evidence/m8-pi-codex-controls-browser.json), [desktop](evidence/m8-pi-codex-controls-browser-desktop.png), [mobile](evidence/m8-pi-codex-controls-browser-mobile.png). Only console error: existing favicon 404.
-- One interrupted local verification run (new test hung against swapped-in old code) left three disposable `/tmp/lao-*` fixtures; inspected and removed. The test now releases its held prompt in `finally`.
-- Intentionally omitted (cost): native Codex Lead turn on 0.163.0 and all live Pi turns. Next **M8 item 4 only**: installed/missing/auth-required/available state with actionable diagnostics per harness. [Recon](adapter-recon.md#m8-item-3--picodex-capability-revisit-2026-10-17).
+- Codex 0.163.0 feature pagination now fails closed across all pages; native sleep mapping and shared unsupported-control diagnostics/UI corrected. No-model capabilities/browser fixtures verified; default 423/423, fixtures 3/3 and standard checks passed, with no paid turn or login.
+- [Original files, commands, regressions, screenshots and limits](progress-m8-history.md#2026-10-17--m8-item-3-picodex-capability-revisit); Pi 1.3.0 unchanged; next was M8 item 4.
 
 ## 2026-10-17 — M8 item 4: harness installed/auth state and diagnostics
 
@@ -198,3 +190,11 @@
 - Moved item 2 verbatim to the existing M8 history with a five-line summary here to retain the progress size bound. Removed this continuation's throwaway probes/owned scratch state after evidence preservation; older test-fixture debt untouched.
 - Exact next remains **M8 item 8**: `mise current`, then [matrix prerequisites](adapter-smoke-matrix.md#blockers-and-exact-continuation). Obtain fresh scoped spending/native auth before missing live checks; candidate review and a separate explicit integration approval must precede apply.
 
+
+## 2026-10-18 — M8 item 8: cross-assignment gateway preparation; spending HOLD
+
+- Owner chose **Continue cost-free preparation**. `live-workers.ts --verify-gateway-denial` adds one foreign-task override attempt inside its reader turn; `native-smoke-evidence.ts` binds successful assignment → one server `INVALID_INPUT` → result to the same task/attempt/session, with unchanged foreign task/no dispatch. Seven regressions added. Archived old item 3 verbatim in existing M8 history to keep this file bounded.
+- [Inert proof](evidence/m8-gateway-scope-fixtures.json): Pi/Claude/OpenCode positive probes PASS; three valid readers claiming an unobserved denial correctly exit 1, retain state and do not retry. [Actual no-prompt preflight](evidence/m8-gateway-scope-preflight.json): Pi/Claude auth required, OpenCode 2.0.32 unknown/requested DeepSeek unavailable; zero prompts, no control run, owner checkout and checked personal metadata unchanged. Own scratch evidence preserved before ownership-checked cleanup.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **455/455**, focused `mise x -- node --test tests/native-smoke-evidence.test.ts` **11/11**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production.
+- Schema/scope rejection is **not worker-to-Lead role denial**; absent Lead tools were not exposed or replaced with a weaker native PASS. Native client pre-validation remains untested. No adapter policy, dependency, toolchain, spec or ADR change, native model turn, login, writer/integration approval or milestone check-off; M9 untouched. README/matrix/recon/handoff updated.
+- Exact next remains **M8 item 8**: `mise current`, then [matrix prerequisites](adapter-smoke-matrix.md#blockers-and-exact-continuation). Native checks stay blocked until fresh scoped spending/auth approval; native writer/candidate/review evidence and separate post-review integration approval remain missing.

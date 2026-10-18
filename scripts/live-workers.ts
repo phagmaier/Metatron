@@ -6,13 +6,14 @@ import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { startApp } from "../src/server/app.ts";
 import { appLocations } from "../src/server/storage/database.ts";
-import { harnessSchema } from "../src/shared/domain/entities.ts";
+import { harnessSchema, type Task } from "../src/shared/domain/entities.ts";
 import { DomainError } from "../src/shared/domain/states.ts";
-import { harnessLabel } from "../src/shared/native.ts";
+import { harnessLabel, nativeTeam } from "../src/shared/native.ts";
 import { createGitFixture } from "../tests/helpers/git-fixture.ts";
 import {
   cancelAfterText,
   cancellationEvidence,
+  gatewayScopeEvidence,
   settleSmoke,
   smokeEvents,
   streamEvidence,
@@ -24,6 +25,7 @@ const { values } = parseArgs({
   options: {
     "allow-live": { type: "boolean" },
     "verify-cancel": { type: "boolean" },
+    "verify-gateway-denial": { type: "boolean" },
     harness: { type: "string" },
     model: { type: "string" },
     thinking: { type: "string" },
@@ -31,7 +33,7 @@ const { values } = parseArgs({
   },
 });
 const usage =
-  "Usage: mise x -- env XDG_DATA_HOME=/tmp/<disposable> pnpm test:live:workers --harness codex|claude-code|opencode|pi --model <discovered model> [--thinking <level>] --output <new evidence.json> [--allow-live] [--verify-cancel]. Opt-in sends one paid reader turn; --verify-cancel is Pi-only and adds at most one paid turn.";
+  "Usage: mise x -- env XDG_DATA_HOME=/tmp/<disposable> pnpm test:live:workers --harness codex|claude-code|opencode|pi --model <discovered model> [--thinking <level>] --output <new evidence.json> [--allow-live] [--verify-gateway-denial] [--verify-cancel]. Opt-in sends one paid reader turn; gateway denial is a cross-assignment schema-rejection probe in that turn. Pi-only --verify-cancel adds at most one paid turn.";
 assert.ok(values.harness && values.model && values.output, usage);
 const harness = harnessSchema.parse(values.harness);
 assert.ok(
@@ -127,6 +129,7 @@ try {
     requestedChecks: {
       streamedReader: true,
       activeCancellation: !!values["verify-cancel"],
+      crossAssignmentGatewayDenial: !!values["verify-gateway-denial"],
     },
     maximumRequestedTurns: values["allow-live"]
       ? values["verify-cancel"]
@@ -142,6 +145,7 @@ try {
       thinkingChoices: selected?.thinking.map((t) => t.id) ?? [],
     },
     submittedPrompts: 0,
+    gatewayScopeProbe: null,
   };
   if (!values["allow-live"] || !available) {
     passed = !values["allow-live"];
@@ -149,13 +153,49 @@ try {
       ? null
       : `Selection unavailable: ${discovery.nextStep ?? "model/thinking not in native discovery"}`;
   } else {
+    let controlTask: Task | null = null;
+    if (values["verify-gateway-denial"]) {
+      // A real unassigned task gives the override a distinct target, but no
+      // dispatch, process, worker tool or authority is added for this control.
+      const controlRun = engine.store.createRun(
+        {
+          projectId: project.id,
+          title: "M8 unassigned scope control (never dispatched)",
+          initialPrompt:
+            "Control task for a rejected cross-assignment override",
+          mode: "supervised",
+          execution: "native",
+          repository: project.repository,
+          teamSnapshot: {
+            ...nativeTeam(model, thinking, harness),
+            roles: engine.presets().roles,
+          },
+        },
+        randomUUID(),
+      );
+      controlTask = engine.createTask(
+        {
+          runId: controlRun.id,
+          title: "Unassigned foreign scope control",
+          objective:
+            "This task must remain unassigned and unchanged throughout the gateway probe",
+        },
+        randomUUID(),
+      );
+    }
     const run = await engine.startNativeRun(
       {
         projectId: project.id,
         harness,
         title: `M8 live ${label} reader`,
-        initialPrompt:
+        initialPrompt: [
           "Read native-proof.txt in this worktree. Put the exact nonce it contains in your result summary. Do not create, change or delete any file.",
+          ...(controlTask
+            ? [
+                `Cross-assignment scope probe: after your normal read_assignment call, invoke that same worker gateway tool exactly once with the extra top-level argument taskId: "${controlTask.id}". This names an unassigned task in another run. Expect INVALID_INPUT because workers cannot choose an assignment. Do not use shell/HTTP, change tools, retry the malformed request or obtain another token. If the native client refuses before the gateway, report that limitation; do not claim the gateway denied it. Continue only your own read-only assignment and submit_result once with the nonce and observed outcome.`,
+              ]
+            : []),
+        ].join("\n\n"),
         model,
         thinking,
         permission: "read_only",
@@ -190,6 +230,35 @@ try {
       settings.length === 1 &&
       (harness === "claude-code" || settings[0]?.model === model) &&
       (thinking === null || settings[0]?.thinking === thinking);
+    const target = controlTask;
+    const gatewayScopeProbe =
+      target && attempt && session
+        ? {
+            boundary:
+              "caller-supplied taskId rejected by gateway schema; not Lead-role denial",
+            foreignRunId: target.runId,
+            foreignTaskId: target.id,
+            targetUnchanged:
+              JSON.stringify(store.getTask(target.id)) ===
+              JSON.stringify(target),
+            targetAttempts: store
+              .listAttempts()
+              .filter((a) => a.taskId === target.id).length,
+            targetDispatches: engine.scheduling
+              .list()
+              .filter((d) => d.taskId === target.id).length,
+            evidence: gatewayScopeEvidence(events, {
+              taskId: task.id,
+              attemptId: attempt.id,
+              sessionId: session.id,
+            }),
+          }
+        : null;
+    const scopeProbePassed =
+      gatewayScopeProbe?.targetUnchanged === true &&
+      gatewayScopeProbe.targetAttempts === 0 &&
+      gatewayScopeProbe.targetDispatches === 0 &&
+      Object.values(gatewayScopeProbe.evidence.checks).every(Boolean);
     receipt = {
       ...receipt,
       run: {
@@ -204,6 +273,7 @@ try {
       settingsVerified: settings,
       stream,
       gatewayDenials: payloads("gateway.denied"),
+      gatewayScopeProbe,
       nonceReported: JSON.stringify(report).includes(nonce),
       report,
       gatewayTools: payloads("gateway.tool_call"),
@@ -226,6 +296,7 @@ try {
       settingsMatch &&
       stream.streamedBeforeTerminal &&
       stream.terminals[0]?.nativeStatus === "completed" &&
+      (!values["verify-gateway-denial"] || scopeProbePassed) &&
       JSON.stringify(report).includes(nonce) &&
       Array.isArray(captured?.files) &&
       captured.files.length === 0 &&
@@ -307,7 +378,7 @@ receipt.retained = retain
   ? { database, fixture: fixture.directory, worktrees: [...worktreeRoots] }
   : null;
 receipt.limitations = [
-  "Reader plus optional Pi active cancellation through the real engine/gateway/Git; no native writer, review, integration, Lead or gateway role-denial probe",
+  "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
   "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
   "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads",
 ];

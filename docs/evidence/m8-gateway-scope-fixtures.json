@@ -1,0 +1,891 @@
+{
+  "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence",
+  "nativeModelPrompts": 0,
+  "authorization": "Owner chose Continue cost-free preparation; spending HOLD remains. No native login, writer, review or integration authorization.",
+  "boundary": "Valid worker read_assignment followed by one read_assignment with caller-supplied taskId for an actual unassigned task in another run. Gateway schema returns INVALID_INPUT; same-binding worker result follows; foreign task remains identical with no dispatch or attempt. This is not worker-to-Lead role-denial proof and closes no native matrix row.",
+  "technique": "Ephemeral Node module hooks injected actual Pi/OpenCode adapters backed by existing inert RPC/HTTP fixtures, plus actual Claude adapter backed by its SDK fixture. Only approved worker methods were called; adapter policies/catalogs were unchanged. Native client schema pre-validation was not exercised.",
+  "commands": [
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-scope-9Y1Hso node --import /tmp/metatron-m8-scope-9Y1Hso/hooks.mjs scripts/live-workers.ts --harness pi --model fixture/model --thinking off --verify-gateway-denial --allow-live --output /tmp/metatron-m8-scope-9Y1Hso/pi-observed.json",
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-scope-9Y1Hso node --import /tmp/metatron-m8-scope-9Y1Hso/hooks.mjs scripts/live-workers.ts --harness claude-code --model fixture-sonnet --thinking low --verify-gateway-denial --allow-live --output /tmp/metatron-m8-scope-9Y1Hso/claude-observed.json",
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-scope-9Y1Hso node --import /tmp/metatron-m8-scope-9Y1Hso/hooks.mjs scripts/live-workers.ts --harness opencode --model fixture/model --thinking low --verify-gateway-denial --allow-live --output /tmp/metatron-m8-scope-9Y1Hso/opencode-observed.json"
+  ],
+  "negativeCommands": "Same inert commands with METATRON_SCOPE_MODE=omitted and new *-unobserved.json outputs. Each exited 1 with a valid completed reader but no server-observed denial; no retry or second prompt. These are expected negative outcomes, not native failures.",
+  "scratchRetention": "Original failed-fixture paths in receipts were retained until independent journal/ownership verification, then removed after preserving this evidence. No failed native model state was deleted.",
+  "cases": {
+    "pi": {
+      "observedGatewayRejection": {
+        "harness": "pi",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture/model",
+          "thinking": "off"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": false,
+          "crossAssignmentGatewayDenial": true
+        },
+        "maximumRequestedTurns": 1,
+        "discovery": {
+          "state": "available",
+          "version": null,
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "off",
+            "low"
+          ]
+        },
+        "submittedPrompts": 1,
+        "gatewayScopeProbe": {
+          "boundary": "caller-supplied taskId rejected by gateway schema; not Lead-role denial",
+          "foreignRunId": "b7f0e825-26dc-40f7-aec7-3556ef2ce8a4",
+          "foreignTaskId": "b6f5da43-440c-4df1-ae3f-663c1c50eebb",
+          "targetUnchanged": true,
+          "targetAttempts": 0,
+          "targetDispatches": 0,
+          "evidence": {
+            "checks": {
+              "assignmentBeforeRejection": true,
+              "oneScopeRejection": true,
+              "resultAfterRejection": true,
+              "noPrivilegedToolSucceeded": true
+            },
+            "assignmentSequence": 18,
+            "rejection": {
+              "taskId": "3651320a-2292-4006-8bcf-a71f3e840560",
+              "attemptId": "cbf1d7f0-159e-4a16-8f1c-9f65db54b010",
+              "sessionId": "245d282f-44cb-46d0-bebd-dced6803df0a",
+              "sequence": 19,
+              "tool": "read_assignment",
+              "code": "INVALID_INPUT"
+            },
+            "rejectionCount": 1,
+            "resultSequence": 20
+          }
+        },
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "pi",
+          "nativeSessionId": "fixture-129512",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 22,
+          "lastDeltaSequence": 22,
+          "samples": [
+            {
+              "sequence": 22,
+              "text": "Protocol fixture report"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 24,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [
+          {
+            "tool": "read_assignment",
+            "code": "INVALID_INPUT",
+            "message": "input: Unrecognized key: \"taskId\""
+          }
+        ],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "610109c6-b15a-42a3-8dba-ed5dec7ba3a8; scope denial claimed",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "passed": true,
+        "retained": null,
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ],
+        "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+      },
+      "unobservedDenialRejected": {
+        "harness": "pi",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture/model",
+          "thinking": "off"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": false,
+          "crossAssignmentGatewayDenial": true
+        },
+        "maximumRequestedTurns": 1,
+        "discovery": {
+          "state": "available",
+          "version": null,
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "off",
+            "low"
+          ]
+        },
+        "submittedPrompts": 1,
+        "gatewayScopeProbe": {
+          "boundary": "caller-supplied taskId rejected by gateway schema; not Lead-role denial",
+          "foreignRunId": "0cabd0c0-3e76-468b-9777-e45654864fb0",
+          "foreignTaskId": "6445ca4a-1b79-4db6-99b4-34b240fa50c1",
+          "targetUnchanged": true,
+          "targetAttempts": 0,
+          "targetDispatches": 0,
+          "evidence": {
+            "checks": {
+              "assignmentBeforeRejection": false,
+              "oneScopeRejection": false,
+              "resultAfterRejection": false,
+              "noPrivilegedToolSucceeded": true
+            },
+            "assignmentSequence": 18,
+            "rejection": null,
+            "rejectionCount": 0,
+            "resultSequence": 19
+          }
+        },
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "pi",
+          "nativeSessionId": "fixture-130550",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "off",
+            "source": "Pi get_state after set_model/set_thinking_level"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 21,
+          "lastDeltaSequence": 21,
+          "samples": [
+            {
+              "sequence": 21,
+              "text": "Protocol fixture report"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 23,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "e27151cd-6e19-4346-809e-22aed87a8b2b; scope denial claimed",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "passed": false,
+        "retained": {
+          "database": "/tmp/metatron-m8-scope-9Y1Hso/local-agent-orchestrator/live-workers-ff8686b1-de57-4146-8cdc-6a566e6e880f.sqlite",
+          "fixture": "/tmp/lao-git-fixture-rsxOWp/repo with spaces",
+          "worktrees": [
+            "/tmp/metatron-m8-scope-9Y1Hso/local-agent-orchestrator/worktrees/6de9298a-2ed2-47d6-a531-b86be183c5c5-0b09f615-7074-46b7-a923-ade43e2ec9a9"
+          ]
+        },
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ],
+        "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+      }
+    },
+    "claude": {
+      "observedGatewayRejection": {
+        "harness": "claude-code",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture-sonnet",
+          "thinking": "low"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": false,
+          "crossAssignmentGatewayDenial": true
+        },
+        "maximumRequestedTurns": 1,
+        "discovery": {
+          "state": "available",
+          "version": "0.0.0-fixture",
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "low"
+          ]
+        },
+        "submittedPrompts": 1,
+        "gatewayScopeProbe": {
+          "boundary": "caller-supplied taskId rejected by gateway schema; not Lead-role denial",
+          "foreignRunId": "f1fccf2f-6c5b-4572-bca9-39730047ef92",
+          "foreignTaskId": "6ee81a67-44a5-4b30-80c9-93a188ec20ba",
+          "targetUnchanged": true,
+          "targetAttempts": 0,
+          "targetDispatches": 0,
+          "evidence": {
+            "checks": {
+              "assignmentBeforeRejection": true,
+              "oneScopeRejection": true,
+              "resultAfterRejection": true,
+              "noPrivilegedToolSucceeded": true
+            },
+            "assignmentSequence": 18,
+            "rejection": {
+              "taskId": "2f7c0c18-7006-4b42-8d28-17023802a937",
+              "attemptId": "79f19c6f-cfe4-4f5b-afd8-2837b32fd443",
+              "sessionId": "7eb0cb34-f9bc-48be-9168-08dd6375ce07",
+              "sequence": 19,
+              "tool": "read_assignment",
+              "code": "INVALID_INPUT"
+            },
+            "rejectionCount": 1,
+            "resultSequence": 21
+          }
+        },
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "claude-code",
+          "nativeSessionId": "c8f67dce-afd8-4497-be07-c034b0c5ff89",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture-sonnet",
+            "thinking": "low",
+            "source": "Claude init model; effort from native init report"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 20,
+          "lastDeltaSequence": 20,
+          "samples": [
+            {
+              "sequence": 20,
+              "text": "Inert reader fa7ad717-ba03-41e5-a5c1-e39266259bba"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 27,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [
+          {
+            "tool": "read_assignment",
+            "code": "INVALID_INPUT",
+            "message": "input: Unrecognized key: \"taskId\""
+          }
+        ],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "fa7ad717-ba03-41e5-a5c1-e39266259bba; INVALID_INPUT observed",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "Not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [
+          {
+            "type": "usage",
+            "inputTokens": 11,
+            "outputTokens": 7,
+            "source": "Claude native root-turn result"
+          }
+        ],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "passed": true,
+        "retained": null,
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ],
+        "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+      },
+      "unobservedDenialRejected": {
+        "harness": "claude-code",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture-sonnet",
+          "thinking": "low"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": false,
+          "crossAssignmentGatewayDenial": true
+        },
+        "maximumRequestedTurns": 1,
+        "discovery": {
+          "state": "available",
+          "version": "0.0.0-fixture",
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "low"
+          ]
+        },
+        "submittedPrompts": 1,
+        "gatewayScopeProbe": {
+          "boundary": "caller-supplied taskId rejected by gateway schema; not Lead-role denial",
+          "foreignRunId": "91c5c96f-4f1b-4f4e-93e5-eb0c5f6e9210",
+          "foreignTaskId": "4730b502-652d-433f-b818-972740245619",
+          "targetUnchanged": true,
+          "targetAttempts": 0,
+          "targetDispatches": 0,
+          "evidence": {
+            "checks": {
+              "assignmentBeforeRejection": false,
+              "oneScopeRejection": false,
+              "resultAfterRejection": false,
+              "noPrivilegedToolSucceeded": true
+            },
+            "assignmentSequence": 18,
+            "rejection": null,
+            "rejectionCount": 0,
+            "resultSequence": 20
+          }
+        },
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "claude-code",
+          "nativeSessionId": "ed463280-1cc3-42cf-a78b-6012df2041d6",
+          "sessionState": "exited",
+          "exitCode": 0,
+          "processExit": [
+            {
+              "exitCode": 0,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture-sonnet",
+            "thinking": "low",
+            "source": "Claude init model; effort from native init report"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 19,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "Inert reader ae290e18-6af9-4a77-9319-05b4a3ffc787"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 26,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "ae290e18-6af9-4a77-9319-05b4a3ffc787; claimed denial without gateway call",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "Not run",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [
+          {
+            "type": "usage",
+            "inputTokens": 11,
+            "outputTokens": 7,
+            "source": "Claude native root-turn result"
+          }
+        ],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "passed": false,
+        "retained": {
+          "database": "/tmp/metatron-m8-scope-9Y1Hso/local-agent-orchestrator/live-workers-8d4461f3-a95b-496b-bd4a-c0928a0766c8.sqlite",
+          "fixture": "/tmp/lao-git-fixture-sooOMU/repo with spaces",
+          "worktrees": [
+            "/tmp/metatron-m8-scope-9Y1Hso/local-agent-orchestrator/worktrees/d4f7b218-d0e7-4641-ba01-4da7ac8a6a3c-462b1854-b6f1-4b60-ad7f-1cc4edb117f0"
+          ]
+        },
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ],
+        "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+      }
+    },
+    "opencode": {
+      "observedGatewayRejection": {
+        "harness": "opencode",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture/model",
+          "thinking": "low"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": false,
+          "crossAssignmentGatewayDenial": true
+        },
+        "maximumRequestedTurns": 1,
+        "discovery": {
+          "state": "available",
+          "version": "2.0.29-fixture",
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "low",
+            "high"
+          ]
+        },
+        "submittedPrompts": 1,
+        "gatewayScopeProbe": {
+          "boundary": "caller-supplied taskId rejected by gateway schema; not Lead-role denial",
+          "foreignRunId": "e5752875-5c1b-4284-b00e-b93224b92378",
+          "foreignTaskId": "4fd53dad-009a-4dfe-8d32-e21e2eb5741f",
+          "targetUnchanged": true,
+          "targetAttempts": 0,
+          "targetDispatches": 0,
+          "evidence": {
+            "checks": {
+              "assignmentBeforeRejection": true,
+              "oneScopeRejection": true,
+              "resultAfterRejection": true,
+              "noPrivilegedToolSucceeded": true
+            },
+            "assignmentSequence": 18,
+            "rejection": {
+              "taskId": "4a8d46f1-770c-4228-8db6-4c0bb35ae127",
+              "attemptId": "452d36ce-5f9a-49e4-818f-14cfbd548838",
+              "sessionId": "42532096-3848-43e6-8328-3f870c08bed6",
+              "sequence": 19,
+              "tool": "read_assignment",
+              "code": "INVALID_INPUT"
+            },
+            "rejectionCount": 1,
+            "resultSequence": 22
+          }
+        },
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "opencode",
+          "nativeSessionId": "ses_a0f788709c62438a959f65596b4d65b2",
+          "sessionState": "exited",
+          "exitCode": 130,
+          "processExit": [
+            {
+              "exitCode": 130,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "low",
+            "source": "OpenCode native step model/variant"
+          }
+        ],
+        "stream": {
+          "deltaCount": 2,
+          "firstDeltaSequence": 20,
+          "lastDeltaSequence": 21,
+          "samples": [
+            {
+              "sequence": 20,
+              "text": "  native\n"
+            },
+            {
+              "sequence": 21,
+              "text": "end\n"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 27,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [
+          {
+            "tool": "read_assignment",
+            "code": "INVALID_INPUT",
+            "message": "input: Unrecognized key: \"taskId\""
+          }
+        ],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "242a3db4-1456-4002-8037-ef940345dd0a; scope denial claimed",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "Fixture: no test execution",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "passed": true,
+        "retained": null,
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ],
+        "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+      },
+      "unobservedDenialRejected": {
+        "harness": "opencode",
+        "liveAuthorized": true,
+        "selected": {
+          "model": "fixture/model",
+          "thinking": "low"
+        },
+        "requestedChecks": {
+          "streamedReader": true,
+          "activeCancellation": false,
+          "crossAssignmentGatewayDenial": true
+        },
+        "maximumRequestedTurns": 1,
+        "discovery": {
+          "state": "available",
+          "version": "2.0.29-fixture",
+          "authenticated": "unknown",
+          "nextStep": null,
+          "selectionAvailable": true,
+          "thinkingChoices": [
+            "low",
+            "high"
+          ]
+        },
+        "submittedPrompts": 1,
+        "gatewayScopeProbe": {
+          "boundary": "caller-supplied taskId rejected by gateway schema; not Lead-role denial",
+          "foreignRunId": "d84e38a0-8aa7-41ee-8257-a7f9d1c3844a",
+          "foreignTaskId": "d734d499-9052-400c-bfbd-e394dacaba51",
+          "targetUnchanged": true,
+          "targetAttempts": 0,
+          "targetDispatches": 0,
+          "evidence": {
+            "checks": {
+              "assignmentBeforeRejection": false,
+              "oneScopeRejection": false,
+              "resultAfterRejection": false,
+              "noPrivilegedToolSucceeded": true
+            },
+            "assignmentSequence": 18,
+            "rejection": null,
+            "rejectionCount": 0,
+            "resultSequence": 21
+          }
+        },
+        "run": {
+          "taskStatus": "AWAITING_REVIEW",
+          "attemptStatus": "completed",
+          "adapter": "opencode",
+          "nativeSessionId": "ses_22e97c894dad437ba97cebe81505b4bd",
+          "sessionState": "exited",
+          "exitCode": 130,
+          "processExit": [
+            {
+              "exitCode": 130,
+              "signal": null,
+              "interrupted": false
+            }
+          ]
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture/model",
+            "thinking": "low",
+            "source": "OpenCode native step model/variant"
+          }
+        ],
+        "stream": {
+          "deltaCount": 2,
+          "firstDeltaSequence": 19,
+          "lastDeltaSequence": 20,
+          "samples": [
+            {
+              "sequence": 19,
+              "text": "  native\n"
+            },
+            {
+              "sequence": 20,
+              "text": "end\n"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 26,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayDenials": [],
+        "nonceReported": true,
+        "report": {
+          "outcome": "completed",
+          "summary": "22aba038-05ee-4168-b2f0-5b9788024fba; scope denial claimed",
+          "changedFiles": [],
+          "tests": [
+            {
+              "command": "Fixture: no test execution",
+              "result": "not_run"
+            }
+          ],
+          "findings": [],
+          "knownRisks": [],
+          "questions": [],
+          "artifactRefs": [],
+          "revisionOrCommit": null
+        },
+        "gatewayTools": [
+          {
+            "tool": "read_assignment",
+            "outcome": "ok"
+          },
+          {
+            "tool": "submit_result",
+            "outcome": "ok"
+          }
+        ],
+        "nativeTools": [],
+        "sessionErrors": [],
+        "usage": [],
+        "worktree": {
+          "changedFiles": [],
+          "headUnchanged": true
+        },
+        "ownerCheckoutUnchanged": true,
+        "personalConfigMetadataUnchanged": true,
+        "passed": false,
+        "retained": {
+          "database": "/tmp/metatron-m8-scope-9Y1Hso/local-agent-orchestrator/live-workers-8976eab5-d678-4dcd-9472-c862200fbe8f.sqlite",
+          "fixture": "/tmp/lao-git-fixture-unmlTS/repo with spaces",
+          "worktrees": [
+            "/tmp/metatron-m8-scope-9Y1Hso/local-agent-orchestrator/worktrees/a61ec9ca-5a48-41f2-baa2-097809047e48-edd61c98-229a-4a0c-bcce-f9ecdcd5481f"
+          ]
+        },
+        "limitations": [
+          "Reader with optional cross-assignment gateway INVALID_INPUT probe and Pi cancellation; no native writer, review, integration, Lead or worker-to-Lead role-denial probe",
+          "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+          "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+        ],
+        "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+      }
+    }
+  }
+}
