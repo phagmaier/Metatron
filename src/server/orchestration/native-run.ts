@@ -43,7 +43,7 @@ export async function createNativeRun(
   )
     throw new DomainError(
       "UNSUPPORTED",
-      `${label} model/thinking or supported authentication is unavailable; refresh native capabilities`,
+      `${label} model/thinking or supported authentication is unavailable. ${capabilities.nextStep ?? "Refresh native capabilities."}`,
     );
   return mutate(engine.store.db, key, "startNativeRun", data, runSchema, () => {
     const snapshot = {

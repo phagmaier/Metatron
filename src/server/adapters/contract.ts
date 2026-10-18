@@ -27,6 +27,10 @@ export const capabilitiesSchema = z.strictObject({
   supportsCancel: z.boolean(),
   supportsPermissionPrompts: z.boolean(),
   supportsToolGateway: z.boolean(),
+  // Native version as the harness itself reported it; null when unreported.
+  version: textSchema.nullable(),
+  // The owner's next setup step when the harness cannot be used as is.
+  nextStep: textSchema.nullable(),
   diagnostics: z.array(textSchema),
 });
 export type AdapterCapabilities = z.infer<typeof capabilitiesSchema>;

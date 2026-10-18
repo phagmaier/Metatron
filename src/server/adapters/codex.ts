@@ -3,6 +3,8 @@ import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
 import { DomainError } from "../../shared/domain/states.ts";
+import { steeringUnsupported } from "../../shared/native-controls.ts";
+import { findExecutable, notInstalled, unreadyStep } from "./availability.ts";
 import { CodexEvents } from "./codex-events.ts";
 import { denyCodexPermission } from "./codex-permissions.ts";
 import { type CodexNotification, CodexRpc } from "./codex-rpc.ts";
@@ -37,6 +39,7 @@ const disabledFeatures = [
 ];
 const featuresSchema = z.object({
   data: z.array(z.object({ name: z.string(), enabled: z.boolean() })),
+  nextCursor: z.string().nullable().optional(),
 });
 const accountSchema = z.object({
   account: z.object({ type: z.string() }).loose().nullable(),
@@ -85,7 +88,7 @@ export type CodexSpawn = (
   args: string[],
   cwd: string,
   env: NodeJS.ProcessEnv,
-) => CodexRpc;
+) => CodexRpc | Promise<CodexRpc>;
 
 export class CodexAdapter implements HarnessAdapter {
   readonly home: string;
@@ -94,15 +97,15 @@ export class CodexAdapter implements HarnessAdapter {
   private readonly sessions = new Map<string, Active>();
   constructor(
     directory: string,
-    spawnRpc: CodexSpawn = (args, cwd, env) =>
-      new CodexRpc("codex", args, cwd, env),
+    spawnRpc: CodexSpawn = async (args, cwd, env) =>
+      new CodexRpc(await findExecutable("codex", "Codex"), args, cwd, env),
   ) {
     this.directory = resolve(directory);
     this.home = join(this.directory, "codex");
     this.spawnRpc = spawnRpc;
   }
-  loginCommand() {
-    return `CODEX_HOME='${this.home}' codex login`;
+  private loginStep() {
+    return `Codex is not logged in for this app. Run \`CODEX_HOME='${this.home}' codex login\` in a terminal, then check again. This app-owned Codex home never reuses your personal login.`;
   }
   private async launch(cwd: string, token: string | null) {
     await mkdir(this.home, { recursive: true, mode: 0o700 });
@@ -111,7 +114,7 @@ export class CodexAdapter implements HarnessAdapter {
     if (token) env.LAO_GATEWAY_TOKEN = token;
     for (const key of Object.keys(env))
       if (key.startsWith("GIT_")) delete env[key];
-    const rpc = this.spawnRpc(
+    const rpc = await this.spawnRpc(
       [
         "app-server",
         "--listen",
@@ -125,7 +128,7 @@ export class CodexAdapter implements HarnessAdapter {
     );
     try {
       const init = z
-        .object({ codexHome: z.string() })
+        .object({ codexHome: z.string(), userAgent: z.string().optional() })
         .loose()
         .parse(
           await rpc.request("initialize", {
@@ -144,19 +147,35 @@ export class CodexAdapter implements HarnessAdapter {
           "Codex did not use the app-owned CODEX_HOME; refusing",
         );
       rpc.notify("initialized");
-      const features = featuresSchema.parse(
-        await rpc.request("experimentalFeature/list", {}),
-      );
+      // Installed 0.163.0 paginates this list. A feature on an unread page or
+      // no longer reported is not proven disabled, so either one refuses.
+      const enabled = new Map<string, boolean>();
+      let cursor: string | null = null;
+      for (let page = 0; page < 20; page++) {
+        const list = featuresSchema.parse(
+          await rpc.request(
+            "experimentalFeature/list",
+            cursor ? { cursor } : {},
+          ),
+        );
+        for (const feature of list.data)
+          enabled.set(feature.name, feature.enabled);
+        cursor = list.nextCursor ?? null;
+        if (!cursor) break;
+      }
       if (
-        features.data.some(
-          (f) => disabledFeatures.includes(f.name) && f.enabled,
-        )
+        cursor ||
+        disabledFeatures.some((name) => enabled.get(name) !== false)
       )
         throw new DomainError(
           "POLICY_DENIED",
-          "Codex delegation/side-channel features remained enabled; refusing",
+          "Codex delegation/side-channel features remained enabled or were not reported disabled; refusing",
         );
-      return rpc;
+      // Codex reports its own version only in the user agent, right after the
+      // client name sent above.
+      const version =
+        /^[^\s/]+\/(\d+\.\d+\.\d+\S*)/.exec(init.userAgent ?? "")?.[1] ?? null;
+      return { rpc, version };
     } catch (error) {
       await rpc.close();
       throw error;
@@ -192,33 +211,40 @@ export class CodexAdapter implements HarnessAdapter {
       authenticated: "unknown",
       models: [],
       supportsResume: true,
-      supportsLiveSteer: false,
+      supportsLiveSteer: steeringUnsupported.codex === null,
       supportsCancel: true,
       supportsPermissionPrompts: false,
       supportsToolGateway: true,
+      version: null,
+      nextStep: null,
       diagnostics: [
         "Codex app-server Lead: app-owned CODEX_HOME, read-only sandbox without network, approvals never granted, session-scoped MCP tools. Not an OS isolation boundary for reads.",
         "Native permission requests are denied by policy and surfaced in Needs You; interactive permission grants are unsupported for the Lead.",
-        "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled. Steering arrives with M6.",
+        "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled; startup refuses unless every one is reported disabled.",
+        `Unsupported: Codex worker sessions; live steering (${steeringUnsupported.codex}). Supported: stopping a Lead turn and resuming the run's own Lead thread.`,
       ],
     };
     let rpc: CodexRpc | undefined;
     try {
-      rpc = await this.launch(this.home, null);
+      const launched = await this.launch(this.home, null);
+      rpc = launched.rpc;
       result.installed = true;
+      result.version = launched.version;
       const catalog = await this.catalog(rpc);
       result.authenticated = catalog.authenticated;
       result.models = catalog.models;
-      if (!catalog.authenticated)
-        result.diagnostics.push(
-          `Codex is not logged in for this app. Owner action: ${this.loginCommand()}`,
-        );
+      if (!catalog.authenticated) result.nextStep = this.loginStep();
     } catch (error) {
-      result.diagnostics.push(
-        error instanceof DomainError
-          ? error.message
-          : "Codex discovery failed; verify the installed codex executable",
-      );
+      result.installed = !notInstalled(error);
+      if (notInstalled(error)) result.nextStep = error.message;
+      else {
+        result.nextStep = unreadyStep("Codex");
+        result.diagnostics.push(
+          error instanceof DomainError
+            ? error.message
+            : "Codex discovery failed; verify the installed codex executable",
+        );
+      }
     } finally {
       if (rpc) await rpc.close();
     }
@@ -237,14 +263,11 @@ export class CodexAdapter implements HarnessAdapter {
         "UNSUPPORTED",
         "Codex runs only as a gateway-connected coordinator Lead",
       );
-    const rpc = await this.launch(data.cwd, token);
+    const { rpc } = await this.launch(data.cwd, token);
     try {
       const catalog = await this.catalog(rpc);
       if (!catalog.authenticated)
-        throw new DomainError(
-          "UNSUPPORTED",
-          `Codex is not logged in for this app. Owner action: ${this.loginCommand()}`,
-        );
+        throw new DomainError("UNSUPPORTED", this.loginStep());
       const model = catalog.models.find((m) => m.id === data.model);
       if (
         !model ||

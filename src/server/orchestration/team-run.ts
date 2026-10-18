@@ -60,7 +60,7 @@ export async function createTeamRun(
       if (catalogs.codex.authenticated !== true)
         throw new DomainError(
           "UNSUPPORTED",
-          "The team's Codex Lead requires app-owned login; check Codex discovery",
+          `The team's Codex Lead requires app-owned login. ${catalogs.codex.nextStep ?? "Check Codex in Harness setup."}`,
         );
       for (const profile of resolved.profiles) {
         const catalog =

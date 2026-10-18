@@ -15,7 +15,10 @@ import type { ManagedSession, SessionEvent } from "./contract.ts";
 import type { AdapterQueue } from "./queue.ts";
 
 export type ClaudeQuery = AsyncIterable<unknown> &
-  Pick<Query, "supportedModels" | "accountInfo" | "close">;
+  Pick<
+    Query,
+    "supportedModels" | "accountInfo" | "initializationResult" | "close"
+  >;
 export type ClaudeQueryFactory = (input: {
   prompt: AsyncIterable<SDKUserMessage>;
   options: Options;

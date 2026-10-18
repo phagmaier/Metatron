@@ -286,15 +286,18 @@ const server = createServer(async (request, response) => {
       });
     if (path === "/api/model")
       return send({
-        data: [
-          {
-            id: "model",
-            providerID: "fixture",
-            name: "Inert fixture, not native",
-            enabled: true,
-            variants: [{ id: "low" }, { id: "high" }],
-          },
-        ],
+        data:
+          scenario === "no-models"
+            ? []
+            : [
+                {
+                  id: "model",
+                  providerID: "fixture",
+                  name: "Inert fixture, not native",
+                  enabled: true,
+                  variants: [{ id: "low" }, { id: "high" }],
+                },
+              ],
       });
     if (path === "/api/event") {
       response.writeHead(200, {

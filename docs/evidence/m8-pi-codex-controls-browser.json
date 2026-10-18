@@ -1,0 +1,23 @@
+{
+  "desktop": {
+    "status": "Native claude-code worker · Claude Code Reviewer · busy",
+    "note": "unsupported · This app sends no live input to Claude workers; stop or reassign the task to change its instructions. No automatic restart or resume.",
+    "sendDisabled": true,
+    "resumeLabel": "Resume session c5ecdd65 · unsupported",
+    "resumeDisabled": true,
+    "resumeNote": "Resume unsupported: Claude SDK resume requires the original checkout; assignments create a fresh isolated worktree",
+    "horizontalOverflow": false
+  },
+  "mobile": {
+    "status": "Native claude-code worker · Claude Code Reviewer · busy",
+    "note": "unsupported · This app sends no live input to Claude workers; stop or reassign the task to change its instructions. No automatic restart or resume.",
+    "sendDisabled": true,
+    "resumeLabel": "Resume session c5ecdd65 · unsupported",
+    "resumeDisabled": true,
+    "resumeNote": "Resume unsupported: Claude SDK resume requires the original checkout; assignments create a fresh isolated worktree",
+    "horizontalOverflow": false
+  },
+  "consoleErrors": [
+    "desktop: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}

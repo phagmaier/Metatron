@@ -1,12 +1,11 @@
 import { spawn } from "node:child_process";
-import { constants } from "node:fs";
-import { access, realpath } from "node:fs/promises";
-import { delimiter, isAbsolute, join } from "node:path";
+import { realpath } from "node:fs/promises";
 import type {
   SpawnedProcess,
   SpawnOptions,
 } from "@anthropic-ai/claude-agent-sdk";
 import { DomainError } from "../../shared/domain/states.ts";
+import { findExecutable } from "./availability.ts";
 
 export type ClaudeExit = { code: number | null; signal: string | null };
 export type ClaudeChild = SpawnedProcess & { pid?: number | undefined };
@@ -24,26 +23,7 @@ export const spawnClaude: ClaudeSpawn = (options) => {
 };
 
 export async function claudeExecutable(explicit?: string): Promise<string> {
-  const candidates = explicit
-    ? isAbsolute(explicit)
-      ? [explicit]
-      : []
-    : (process.env.PATH ?? "")
-        .split(delimiter)
-        .filter((entry) => isAbsolute(entry))
-        .map((entry) => join(entry, "claude"));
-  for (const candidate of candidates) {
-    try {
-      await access(candidate, constants.X_OK);
-      return await realpath(candidate);
-    } catch {
-      /* Continue only through explicit absolute PATH entries. */
-    }
-  }
-  throw new DomainError(
-    "UNSUPPORTED",
-    "Installed Claude Code executable was not found on the absolute PATH",
-  );
+  return realpath(await findExecutable("claude", "Claude Code", explicit));
 }
 
 export class ClaudeProcess {

@@ -364,3 +364,44 @@ label.check input {
   border-top: 1px solid #d5ddd6;
   padding: 10px 0;
 }
+.harnesses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+.harness {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d5ddd6;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+.harness h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.diagnostics {
+  padding-left: 18px;
+  font-size: 0.85rem;
+  color: #4c6359;
+}
+.next-step {
+  border-left: 3px solid #9b3d13;
+  padding-left: 10px;
+  font-size: 0.9rem;
+}
+.badge.state-available {
+  background: #e1f0e4;
+  border-color: #5f9a6e;
+}
+.badge.state-missing,
+.badge.state-unknown {
+  background: #f8e3dc;
+  border-color: #c4734f;
+}
+.badge.state-installed {
+  background: #eceeea;
+  border-color: #8aa99a;
+}

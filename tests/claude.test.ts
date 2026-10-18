@@ -64,6 +64,7 @@ test("Claude discovers and initializes without a model prompt, streams whitespac
     assert.equal(capabilities.installed, true);
     assert.equal(capabilities.adapter, "claude-code");
     assert.equal(capabilities.authenticated, "unknown");
+    assert.equal(capabilities.version, "0.0.0-fixture");
     assert.deepEqual(
       capabilities.models[0]?.thinking.map((level) => level.id),
       ["high", "max"],
@@ -841,11 +842,9 @@ for (const mode of [
         assert.equal(caps.authenticated, denied ? false : "unknown");
         assert.equal(JSON.stringify(caps).includes(secret), false);
         if (mode === "unsupported-bearer")
-          assert.ok(
-            caps.diagnostics.some((line) =>
-              line.startsWith("AUTH_POLICY_UNSUPPORTED:"),
-            ),
-          );
+          assert.ok(caps.nextStep?.startsWith("AUTH_POLICY_UNSUPPORTED:"));
+        if (mode === "rejected-token")
+          assert.ok(caps.nextStep?.startsWith("AUTH_ROUTE_REJECTED:"));
         if (denied || mode === "metadata-failure") {
           await assert.rejects(f.adapter.startSession(f.input));
         } else {
@@ -900,7 +899,10 @@ test("Claude initialization failure never submits a model or leaks native creden
       },
     });
     const caps = await adapter.discover();
-    assert.equal(caps.authenticated, false);
+    assert.equal(caps.installed, true);
+    assert.equal(caps.authenticated, "unknown");
+    assert.deepEqual(caps.models, []);
+    assert.ok(caps.nextStep);
     assert.equal(JSON.stringify(caps).includes(secret), false);
     await assert.rejects(
       adapter.startSession(f.input),

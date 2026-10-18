@@ -24,6 +24,7 @@ import { hasNativeLead } from "../shared/native.ts";
 import { type Dispatch, dispatchSchema } from "../shared/orchestration.ts";
 import { readApi } from "./api.ts";
 import { SessionContext } from "./context-panel.tsx";
+import { HarnessesPanel } from "./harnesses-panel.tsx";
 import { LeadPanel } from "./lead-panel.tsx";
 import { NeedsYouPanel } from "./needs-you-panel.tsx";
 import { ProfilesPanel } from "./profiles-panel.tsx";
@@ -235,6 +236,7 @@ function App() {
         </p>
       )}
       <EmergencyStop onError={setError} />
+      <HarnessesPanel />
       <RolesPanel />
       <ProfilesPanel />
       <TeamsPanel />

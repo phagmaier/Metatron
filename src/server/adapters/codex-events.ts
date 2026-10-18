@@ -35,6 +35,7 @@ const tools = new Set([
   "webSearch",
   "imageGeneration",
   "imageView",
+  "sleep",
 ]);
 const delegation = new Set(["collabAgentToolCall", "subAgentActivity"]);
 function classify(info: unknown) {

@@ -1,9 +1,16 @@
+import { execFile } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { z } from "zod";
 import { idSchema, textSchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import {
+  resumeUnsupported,
+  steeringUnsupported,
+} from "../../shared/native-controls.ts";
+import { findExecutable, notInstalled, unreadyStep } from "./availability.ts";
 import {
   type AdapterCapabilities,
   type HarnessAdapter,
@@ -23,6 +30,37 @@ const modelsSchema = z.object({
   ),
 });
 const levelsSchema = z.object({ levels: z.array(z.string()) });
+const execute = promisify(execFile);
+export type PiSpawn = (
+  args: string[],
+  cwd: string,
+  env: NodeJS.ProcessEnv,
+) => PiRpc | Promise<PiRpc>;
+// Pi RPC has no version command; the CLI flag is read with the app-owned
+// agent directory so it cannot touch personal Pi settings.
+async function piVersion(config: string) {
+  try {
+    const { stdout } = await execute(
+      await findExecutable("pi", "Pi"),
+      ["--version"],
+      {
+        cwd: config,
+        env: {
+          ...process.env,
+          PI_CODING_AGENT_DIR: config,
+          PI_OFFLINE: "1",
+          PI_TELEMETRY: "0",
+        },
+        timeout: 10_000,
+        maxBuffer: 4096,
+      },
+    );
+    const line = stdout.trim().split("\n")[0]?.trim() ?? "";
+    return line && line.length <= 80 ? line : null;
+  } catch {
+    return null;
+  }
+}
 const stateSchema = z.object({
   sessionId: z.string().min(1),
   model: z.object({ id: z.string(), provider: z.string() }).optional(),
@@ -37,22 +75,17 @@ type Active = {
 };
 export class PiAdapter implements HarnessAdapter {
   private readonly directory: string;
-  private readonly spawnRpc: (
-    args: string[],
-    cwd: string,
-    env: NodeJS.ProcessEnv,
-  ) => PiRpc;
+  private readonly spawnRpc: PiSpawn;
+  // An injected launcher owns its executable, whose version is not Pi's.
+  private readonly reportsVersion: boolean;
   private readonly sessions = new Map<string, Active>();
-  constructor(
-    directory: string,
-    spawnRpc: (args: string[], cwd: string, env: NodeJS.ProcessEnv) => PiRpc = (
-      args,
-      cwd,
-      env,
-    ) => new PiRpc("pi", args, cwd, env),
-  ) {
+  constructor(directory: string, spawnRpc?: PiSpawn) {
     this.directory = resolve(directory);
-    this.spawnRpc = spawnRpc;
+    this.spawnRpc =
+      spawnRpc ??
+      (async (args, cwd, env) =>
+        new PiRpc(await findExecutable("pi", "Pi"), args, cwd, env));
+    this.reportsVersion = !spawnRpc;
   }
   private async launch(
     cwd: string,
@@ -134,23 +167,28 @@ export class PiAdapter implements HarnessAdapter {
       authenticated: "unknown",
       models: [],
       supportsResume: false,
-      supportsLiveSteer: true,
+      supportsLiveSteer: steeringUnsupported.pi === null,
       supportsCancel: true,
       supportsPermissionPrompts: false,
       supportsToolGateway: true,
+      version: null,
+      nextStep: null,
       diagnostics: [
         "App-owned Pi configuration; provider environment credentials or app-owned Pi login required. Catalog presence does not prove entitlement.",
-        "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Resume is not exposed. Steer/follow-up queue at native input boundaries; queue acceptance is not delivery.",
+        "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Steer/follow-up queue at native input boundaries; queue acceptance is not delivery.",
+        `Unsupported: owner approval prompts (allowed tools run without a native per-call callback; the tool allowlist and app guard extension enforce policy); resume (${resumeUnsupported.pi}; each attempt uses a new worktree); Lead/coordinator sessions.`,
       ],
     };
     let rpc: PiRpc | undefined;
+    let version: Promise<string | null> = Promise.resolve(null);
     try {
       await mkdir(this.directory, { recursive: true, mode: 0o700 });
       rpc = await this.launch(this.directory, "", null);
+      result.installed = true;
+      if (this.reportsVersion) version = piVersion(join(this.directory, "pi"));
       const models = modelsSchema.parse(
         await rpc.request("get_available_models"),
       );
-      result.installed = true;
       for (const model of models.models) {
         await rpc.request("set_model", {
           provider: model.provider,
@@ -165,14 +203,28 @@ export class PiAdapter implements HarnessAdapter {
           thinking: levels.levels.map((id) => ({ id, label: id })),
         });
       }
+      // Pi lists only models whose provider has usable credentials.
+      if (!result.models.length) {
+        result.authenticated = false;
+        result.nextStep =
+          "Pi lists no model with usable provider credentials. Export a provider API key Pi supports (for example DEEPSEEK_API_KEY; see Pi's providers documentation) in the shell that starts this app, restart the app and check again.";
+      }
     } catch (error) {
-      result.diagnostics.push(
-        error instanceof DomainError
-          ? error.message
-          : "Pi discovery failed; verify Pi installation and configuration",
-      );
+      // A partial catalog was never validated as a whole.
+      result.models = [];
+      result.installed = !notInstalled(error);
+      if (notInstalled(error)) result.nextStep = error.message;
+      else {
+        result.nextStep = unreadyStep("Pi");
+        result.diagnostics.push(
+          error instanceof DomainError
+            ? error.message
+            : "Pi discovery failed; verify Pi installation and configuration",
+        );
+      }
     } finally {
       if (rpc) await rpc.close();
+      result.version = await version;
     }
     return result;
   }
@@ -417,7 +469,7 @@ export class PiAdapter implements HarnessAdapter {
   async resume(_id: string, _input: ResumeInput): Promise<ManagedSession> {
     throw new DomainError(
       "UNSUPPORTED",
-      "Pi resume is not exposed in M3; retained sessions require an owner recovery decision",
+      `${resumeUnsupported.pi}; retained sessions require an owner recovery decision`,
     );
   }
   async respondToApproval(): Promise<void> {

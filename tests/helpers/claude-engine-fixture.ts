@@ -41,6 +41,8 @@ export class ScriptedClaude implements HarnessAdapter {
       supportsCancel: true,
       supportsPermissionPrompts: true,
       supportsToolGateway: true,
+      version: null,
+      nextStep: null,
       diagnostics: ["Scripted integration fixture, not a native harness"],
     };
   }

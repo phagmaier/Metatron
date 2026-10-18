@@ -101,6 +101,7 @@ export class DomainError extends Error {
     | "UNSUPPORTED"
     | "NATIVE_REJECTED"
     | "NATIVE_TRANSPORT"
+    | "NOT_INSTALLED"
     | "STORAGE"
     | "POLICY_DENIED"
     | "BUDGET_EXCEEDED"

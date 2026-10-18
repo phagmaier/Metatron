@@ -46,6 +46,8 @@ class CatalogAdapter extends FakeAdapter {
       supportsCancel: true,
       supportsPermissionPrompts: false,
       supportsToolGateway: true,
+      version: null,
+      nextStep: null,
       diagnostics: ["Discovery fixture only; no provider contacted"],
     };
   }

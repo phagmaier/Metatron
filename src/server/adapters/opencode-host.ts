@@ -1,11 +1,11 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
-import { constants } from "node:fs";
-import { access, mkdir, realpath, writeFile } from "node:fs/promises";
-import { delimiter, isAbsolute, join, resolve } from "node:path";
+import { mkdir, realpath, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { OpenCode, type OpenCodeClient } from "@opencode/client";
 import { z } from "zod";
 import { DomainError } from "../../shared/domain/states.ts";
+import { findExecutable } from "./availability.ts";
 import type { StartSessionInput } from "./contract.ts";
 
 export type OpenCodeExit = {
@@ -21,6 +21,13 @@ export type OpenCodeHostOptions = {
     options: { cwd: string; env: NodeJS.ProcessEnv },
   ) => ChildProcessWithoutNullStreams;
 };
+// The only provider credentials forwarded to the app-owned server.
+export const openCodeProviderKeys = [
+  "DEEPSEEK_API_KEY",
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "GOOGLE_API_KEY",
+];
 export const openCodeGatewayTools = [
   "read_assignment",
   "report_progress",
@@ -89,28 +96,9 @@ export class OpenCodeHost {
   }> {
     const root = resolve(directory);
     await mkdir(root, { recursive: true, mode: 0o700 });
-    const candidates = options.executable
-      ? [options.executable]
-      : (process.env.PATH ?? "")
-          .split(delimiter)
-          .filter(isAbsolute)
-          .map((entry) => join(entry, "opencode"));
-    let executable: string | undefined;
-    for (const candidate of candidates) {
-      if (!isAbsolute(candidate)) continue;
-      try {
-        await access(candidate, constants.X_OK);
-        executable = await realpath(candidate);
-        break;
-      } catch {
-        /* Only try explicit absolute executable candidates. */
-      }
-    }
-    if (!executable)
-      throw new DomainError(
-        "UNSUPPORTED",
-        "OpenCode native executable is missing from the absolute PATH",
-      );
+    const executable = await realpath(
+      await findExecutable("opencode", "OpenCode", options.executable),
+    );
     const env: NodeJS.ProcessEnv = {};
     for (const key of [
       "PATH",
@@ -122,10 +110,7 @@ export class OpenCodeHost {
       "HTTPS_PROXY",
       "HTTP_PROXY",
       "NO_PROXY",
-      "DEEPSEEK_API_KEY",
-      "OPENAI_API_KEY",
-      "ANTHROPIC_API_KEY",
-      "GOOGLE_API_KEY",
+      ...openCodeProviderKeys,
     ])
       if (process.env[key] !== undefined) env[key] = process.env[key];
     Object.assign(env, {

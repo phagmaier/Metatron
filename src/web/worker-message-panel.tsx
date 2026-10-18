@@ -7,6 +7,7 @@ import {
   type WorkerMessage,
   workerMessageSchema,
 } from "../shared/domain/entities.ts";
+import { steeringUnsupported } from "../shared/native-controls.ts";
 import { readApi, writeApi } from "./api.ts";
 
 export function WorkerMessagePanel({
@@ -38,7 +39,9 @@ export function WorkerMessagePanel({
       });
     return () => controller.abort();
   }, [task.id, session.updatedAt, onError]);
+  const unsupported = steeringUnsupported[session.adapter];
   const available =
+    unsupported === null &&
     run.status === "active" &&
     run.mode !== "chat_plan" &&
     task.status === "RUNNING" &&
@@ -72,11 +75,13 @@ export function WorkerMessagePanel({
   return (
     <details>
       <summary>Message worker</summary>
-      <p className="note">
-        Steer at the next native input boundary, or follow up after current
-        work. Queued means accepted by the native queue; delivered confirms
-        input receipt, not that instructions were followed.
-      </p>
+      {unsupported === null && (
+        <p className="note">
+          Steer at the next native input boundary, or follow up after current
+          work. Queued means accepted by the native queue; delivered confirms
+          input receipt, not that instructions were followed.
+        </p>
+      )}
       <label>
         Delivery
         <select
@@ -106,8 +111,8 @@ export function WorkerMessagePanel({
       </button>
       {!available && (
         <p className="note">
-          unsupported · This session cannot accept input now. No automatic
-          restart or resume.
+          unsupported · {unsupported ?? "This session cannot accept input now"}.
+          No automatic restart or resume.
         </p>
       )}
       <ol>

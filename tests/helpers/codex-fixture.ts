@@ -375,6 +375,7 @@ async function handle(
   log({
     method,
     ...(params.threadId ? { threadId: params.threadId } : {}),
+    ...(params.cursor ? { cursor: params.cursor } : {}),
     ...(typeof params.developerInstructions === "string"
       ? { developerInstructions: params.developerInstructions }
       : {}),
@@ -382,18 +383,34 @@ async function handle(
   let result: unknown = {};
   switch (method) {
     case "initialize":
-      result = { codexHome: home, platformOs: "linux" };
-      break;
-    case "experimentalFeature/list":
       result = {
-        data: ["multi_agent", "apps", "plugins", "hooks"].map((name) => ({
+        codexHome: home,
+        platformOs: "linux",
+        userAgent: "local-agent-orchestrator/0.163.0-fixture (Linux; x86_64)",
+      };
+      break;
+    case "experimentalFeature/list": {
+      // Installed Codex reports every known flag and pages the list.
+      const mode = process.env.LAO_CODEX_FIXTURE_FEATURES ?? "";
+      const names = ["shell_tool", ...disabled].filter(
+        (name) => mode !== "missing" || name !== disabled[0],
+      );
+      const pages = mode.startsWith("paged")
+        ? [names.slice(0, 3), names.slice(3)]
+        : [names];
+      const page = params.cursor === "page-2" ? 1 : 0;
+      result = {
+        data: (pages[page] ?? []).map((name) => ({
           name,
           enabled:
             process.env.LAO_CODEX_FIXTURE_FEATURES_ON === "1" ||
+            (mode === "paged-enabled" && name === names.at(-1)) ||
             !disabled.includes(name),
         })),
+        nextCursor: page + 1 < pages.length ? "page-2" : null,
       };
       break;
+    }
     case "account/read":
       result = {
         account:

@@ -4,7 +4,9 @@ import { join, resolve } from "node:path";
 import type { AccountInfo, ModelInfo } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { DomainError } from "../../shared/domain/states.ts";
+import { steeringUnsupported } from "../../shared/native-controls.ts";
 import { checkoutIdentity } from "../git/checkout-identity.ts";
+import { notInstalled, unreadyStep } from "./availability.ts";
 import { ClaudeEvents } from "./claude-events.ts";
 import {
   type Manifest,
@@ -44,15 +46,18 @@ export class ClaudeAdapter implements HarnessAdapter {
     this.directory = resolve(directory);
     this.options = options;
   }
-  private async metadata(
-    launched: Launched,
-  ): Promise<{ models: ModelInfo[]; account: AccountInfo }> {
+  private async metadata(launched: Launched): Promise<{
+    models: ModelInfo[];
+    account: AccountInfo;
+    version: string | null;
+  }> {
     let timer: NodeJS.Timeout | undefined;
     try {
-      const [models, account] = await Promise.race([
+      const [models, account, initialized] = await Promise.race([
         Promise.all([
           launched.query.supportedModels(),
           launched.query.accountInfo(),
+          launched.query.initializationResult(),
         ]),
         new Promise<never>((_resolve, reject) => {
           timer = setTimeout(
@@ -67,7 +72,11 @@ export class ClaudeAdapter implements HarnessAdapter {
           );
         }),
       ]);
-      return { models, account };
+      return {
+        models,
+        account,
+        version: initialized.claude_code_version ?? null,
+      };
     } finally {
       clearTimeout(timer);
     }
@@ -79,14 +88,22 @@ export class ClaudeAdapter implements HarnessAdapter {
       authenticated: false,
       models: [],
       supportsResume: true,
-      supportsLiveSteer: false,
+      supportsLiveSteer: steeringUnsupported["claude-code"] === null,
       supportsCancel: true,
       supportsPermissionPrompts: true,
       supportsToolGateway: true,
+      version: null,
+      nextStep: null,
       diagnostics: [
         "Official Agent SDK with the installed Claude Code CLI and app-owned configuration. Owner-supplied setup-token, API key or supported cloud provider route; no personal credential files copied. Subscription SDK-product policy applicability requires owner/vendor resolution. Catalog presence does not prove entitlement.",
         "Exact file tools and optional app gateway only; no shell, delegation, discovered settings, plugins, skills or MCP servers. This is an application guard, not an OS sandbox. Resume accepts only clean app-owned same-checkout sessions; interrupted work is never replayed.",
       ],
+    };
+    // A refused route is the owner's next step; an unverified one is context.
+    const record = (auth: ReturnType<ClaudeAdapter["authentication"]>) => {
+      result.authenticated = auth.authenticated;
+      if (auth.authenticated === false) result.nextStep = auth.diagnostic;
+      else result.diagnostics.push(auth.diagnostic);
     };
     let launched: Launched | undefined;
     try {
@@ -96,7 +113,8 @@ export class ClaudeAdapter implements HarnessAdapter {
         this.directory,
       );
       result.installed = true;
-      const { models, account } = await this.metadata(launched);
+      const { models, account, version } = await this.metadata(launched);
+      result.version = version;
       result.models = models.map((model) => ({
         id: model.value,
         label: model.displayName,
@@ -105,16 +123,18 @@ export class ClaudeAdapter implements HarnessAdapter {
           label: id,
         })),
       }));
-      const auth = this.authentication(launched, account);
-      result.authenticated = auth.authenticated;
-      result.diagnostics.push(auth.diagnostic);
-    } catch {
-      const auth = launched ? this.authentication(launched) : undefined;
-      result.authenticated = auth?.authenticated ?? false;
-      if (auth) result.diagnostics.push(auth.diagnostic);
-      result.diagnostics.push(
-        "AUTH_METADATA_UNAVAILABLE: Claude no-prompt discovery failed; verify the installed CLI and selected authentication route. Native error contents are redacted; no model prompt was submitted.",
-      );
+      record(this.authentication(launched, account));
+    } catch (error) {
+      result.installed = !notInstalled(error);
+      if (notInstalled(error)) result.nextStep = error.message;
+      else {
+        result.authenticated = "unknown";
+        result.nextStep = unreadyStep("Claude Code");
+        if (launched) record(this.authentication(launched));
+        result.diagnostics.push(
+          "AUTH_METADATA_UNAVAILABLE: Claude no-prompt discovery failed; verify the installed CLI and selected authentication route. Native error contents are redacted; no model prompt was submitted.",
+        );
+      }
     } finally {
       if (launched) {
         launched.input.close();

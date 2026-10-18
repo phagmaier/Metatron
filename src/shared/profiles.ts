@@ -33,8 +33,21 @@ export const profilesResponseSchema = z.strictObject({
 export const profileDiscoverySchema = z.strictObject({
   harness: harnessSchema,
 });
+// Setup state from fresh no-model discovery: "installed" means the executable
+// was found but cannot be used yet; "unknown" means discovery itself failed.
+export const harnessStateSchema = z.enum([
+  "missing",
+  "installed",
+  "auth_required",
+  "available",
+  "unknown",
+]);
+export type HarnessState = z.infer<typeof harnessStateSchema>;
 export const profileCapabilitiesSchema = z.strictObject({
   harness: harnessSchema,
+  state: harnessStateSchema,
+  version: textSchema.nullable(),
+  nextStep: textSchema.nullable(),
   implemented: z.boolean(),
   installed: z.union([z.boolean(), z.literal("unknown")]),
   authenticated: z.union([z.boolean(), z.literal("unknown")]),

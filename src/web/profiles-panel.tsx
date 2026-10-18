@@ -14,6 +14,7 @@ import {
 } from "../shared/profiles.ts";
 import { rolesResponseSchema } from "../shared/roles.ts";
 import { readApi, writeApi } from "./api.ts";
+import { NextStep, stateLabel } from "./harnesses-panel.tsx";
 
 function ProfileEditor({
   profile,
@@ -140,10 +141,11 @@ function ProfileEditor({
         {catalog && (
           <>
             <p className="note">
-              Adapter {catalog.implemented ? "implemented" : "unavailable"} ·
-              installed {String(catalog.installed)} · authenticated{" "}
-              {String(catalog.authenticated)}
+              {stateLabel[catalog.state]}
+              {catalog.version && ` · version ${catalog.version}`} ·
+              authenticated {String(catalog.authenticated)}
             </p>
+            <NextStep text={catalog.nextStep} />
             {catalog.diagnostics.map((message) => (
               <p className="note" key={message}>
                 {message}

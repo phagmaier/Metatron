@@ -77,6 +77,10 @@ export class Profiles {
     } catch (error) {
       return profileCapabilitiesSchema.parse({
         harness,
+        state: "unknown",
+        version: null,
+        nextStep:
+          "Check again. If discovery keeps failing, compare the installed version with the one recorded in docs/adapter-recon.md.",
         implemented: true,
         installed: "unknown",
         authenticated: "unknown",
@@ -91,10 +95,26 @@ export class Profiles {
       capability.adapter === harness &&
       capability.installed &&
       capability.supportsToolGateway;
+    // Available only when validate() can accept some selection. Unknown
+    // authentication still is not entitlement.
+    const state = !capability.installed
+      ? "missing"
+      : capability.authenticated === false
+        ? "auth_required"
+        : usable && capability.models.length
+          ? "available"
+          : "installed";
     // These are the implemented adapters' enforced tool policies, not grants
     // inferred from model names or supplied by a browser/role prompt.
     return profileCapabilitiesSchema.parse({
       harness,
+      state,
+      version: capability.version,
+      nextStep:
+        capability.nextStep ??
+        (state === "installed"
+          ? "No usable model or tool gateway was discovered; check the diagnostics, then check again."
+          : null),
       implemented: true,
       installed: capability.installed,
       authenticated: capability.authenticated,
@@ -109,11 +129,6 @@ export class Profiles {
         harness === "codex"
           ? "Profiles support the read-only Codex coordinator only; Codex worker execution is not implemented yet."
           : `${harness} profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement.`,
-        ...(!usable
-          ? [
-              "Native adapter/gateway capability is unavailable; refresh discovery after fixing setup.",
-            ]
-          : []),
       ],
     });
   }

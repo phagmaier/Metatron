@@ -30,6 +30,8 @@ class CatalogAdapter extends FakeAdapter {
       supportsCancel: true,
       supportsPermissionPrompts: false,
       supportsToolGateway: true,
+      version: null,
+      nextStep: null,
       diagnostics: ["Discovery fixture only; no provider contacted"],
     };
   }
@@ -381,6 +383,37 @@ test("profile deletion checks saved team lead/worker and workflow references; ro
       ),
       { code: "NOT_FOUND" },
     );
+  } finally {
+    await f.close();
+  }
+});
+
+test("harness setup state follows discovery, and only an available harness admits a new profile", async () => {
+  const f = await fixture();
+  try {
+    const base = f.pi.catalog;
+    const cases: [Partial<AdapterCapabilities>, string, boolean][] = [
+      [
+        { installed: false, models: [], nextStep: "Install Pi" },
+        "missing",
+        true,
+      ],
+      [{ authenticated: false, nextStep: "Log in" }, "auth_required", true],
+      [{ models: [] }, "installed", true],
+      [{ supportsToolGateway: false }, "installed", true],
+      [{ models: [{ id: "bad", label: " ", thinking: [] }] }, "unknown", true],
+      [{}, "available", false],
+    ];
+    for (const [index, [change, state, needsStep]] of cases.entries()) {
+      f.pi.catalog = { ...base, ...change };
+      const discovered = await f.engine.profiles.discover({ harness: "pi" });
+      assert.equal(discovered.state, state);
+      assert.equal(discovered.nextStep !== null, needsStep);
+      if (change.nextStep) assert.equal(discovered.nextStep, change.nextStep);
+      const created = f.engine.profiles.create(f.content, `state-${index}`);
+      if (state === "available") await created;
+      else await assert.rejects(created, { code: "UNSUPPORTED" });
+    }
   } finally {
     await f.close();
   }

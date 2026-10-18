@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { textSchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import { steeringUnsupported } from "../../shared/native-controls.ts";
 import {
   type ApprovalDecision,
   capabilitiesSchema,
@@ -80,10 +81,12 @@ export class FakeAdapter implements HarnessAdapter {
         },
       ],
       supportsResume: true,
-      supportsLiveSteer: true,
+      supportsLiveSteer: steeringUnsupported.fake === null,
       supportsCancel: true,
       supportsPermissionPrompts: true,
       supportsToolGateway: false,
+      version: null,
+      nextStep: null,
       diagnostics: [
         "Simulation only. No native harness, tools, billing, or filesystem isolation.",
       ],

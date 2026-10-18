@@ -3,6 +3,7 @@ import {
   contextPolicySchema,
   type Session,
 } from "../shared/domain/entities.ts";
+import { resumeUnsupported } from "../shared/native-controls.ts";
 
 export type ContextChoiceValue = {
   contextPolicy: ContextPolicy;
@@ -12,7 +13,8 @@ export type ContextChoiceValue = {
 const short = (id: string) => id.slice(0, 8);
 
 // Resume can name only the task's latest session; the server decides whether
-// the adapter and checkout allow it and refuses otherwise.
+// the profile and checkout allow it and refuses otherwise. A harness that can
+// never resume an assignment is not offered.
 export function ContextChoice({
   value,
   sessions,
@@ -23,6 +25,7 @@ export function ContextChoice({
   onChange: (value: ContextChoiceValue) => void;
 }) {
   const latest = sessions.at(-1);
+  const blocked = latest ? resumeUnsupported[latest.adapter] : null;
   return (
     <label>
       Context
@@ -38,10 +41,12 @@ export function ContextChoice({
       >
         <option value="auto">Auto</option>
         <option value="fresh">Fresh + checkpoint</option>
-        <option value="resume" disabled={!latest}>
+        <option value="resume" disabled={!latest || blocked !== null}>
           Resume {latest ? `session ${short(latest.id)}` : "(no session)"}
+          {blocked && " · unsupported"}
         </option>
       </select>
+      {blocked && <small className="note">Resume unsupported: {blocked}</small>}
     </label>
   );
 }

@@ -7,22 +7,11 @@ import type {
   Task,
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import { resumeUnsupported } from "../../shared/native-controls.ts";
 import type { Dispatch } from "../../shared/orchestration.ts";
 import { mutate } from "../storage/mutations.ts";
 import type { Store } from "../storage/store.ts";
 import type { Engine } from "./engine.ts";
-
-// Worker resume across attempts. Pi keeps native session files, but this
-// adapter does not reopen them, and every native attempt gets a new worktree.
-const resumeUnsupported: Record<Attempt["adapter"], string | null> = {
-  fake: null,
-  pi: "This Pi adapter does not reopen native sessions",
-  codex: "Codex is not a worker harness in this build",
-  "claude-code":
-    "Claude SDK resume requires the original checkout; assignments create a fresh isolated worktree",
-  opencode:
-    "OpenCode native resume requires the original checkout; assignments create a fresh isolated worktree",
-};
 
 type Earlier = { attempt: Attempt; session: Session | undefined };
 type Plan = {

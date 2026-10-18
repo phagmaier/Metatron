@@ -73,10 +73,18 @@ process.stdin.on("data", (chunk) => {
     let data: unknown = {};
     switch (command.type) {
       case "get_available_models":
+        // Native Pi lists only models whose provider has usable credentials.
         data = {
-          models: [
-            { id: "model", name: "Protocol fixture", provider: "fixture" },
-          ],
+          models:
+            process.env.LAO_FIXTURE_SCENARIO === "no-models"
+              ? []
+              : [
+                  {
+                    id: "model",
+                    name: "Protocol fixture",
+                    provider: "fixture",
+                  },
+                ],
         };
         break;
       case "set_model":

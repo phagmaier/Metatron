@@ -53,7 +53,7 @@ export async function createLeadRun(
   if (codex.authenticated !== true)
     throw new DomainError(
       "UNSUPPORTED",
-      codex.diagnostics.at(-1) ?? "Codex app-owned login is required",
+      codex.nextStep ?? "Codex app-owned login is required",
     );
   requireSelection(codex, data.lead, "Codex Lead");
   requireSelection(pi, data.worker, "Pi worker");

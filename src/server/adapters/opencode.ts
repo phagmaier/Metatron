@@ -10,7 +10,9 @@ import {
 import { basename, dirname, join, resolve } from "node:path";
 import { z } from "zod";
 import { DomainError } from "../../shared/domain/states.ts";
+import { steeringUnsupported } from "../../shared/native-controls.ts";
 import { checkoutIdentity } from "../git/checkout-identity.ts";
+import { notInstalled, unreadyStep } from "./availability.ts";
 import type {
   AdapterCapabilities,
   ApprovalDecision,
@@ -25,6 +27,7 @@ import { OpenCodeEvents } from "./opencode-events.ts";
 import {
   OpenCodeHost,
   type OpenCodeHostOptions,
+  openCodeProviderKeys,
   openCodeRules,
 } from "./opencode-host.ts";
 import { inspectOpenCodePermission } from "./opencode-permissions.ts";
@@ -72,8 +75,10 @@ export class OpenCodeAdapter implements HarnessAdapter {
       supportsResume: true,
       supportsCancel: true,
       supportsPermissionPrompts: true,
-      supportsLiveSteer: false,
+      supportsLiveSteer: steeringUnsupported.opencode === null,
       supportsToolGateway: true,
+      version: null,
+      nextStep: null,
       diagnostics: [
         "Official OpenCode v2 HTTP client and an app-owned password-protected loopback server; personal service/config/sessions are not reused. Provider access remains unknown until a native turn succeeds.",
         "File-tool workers only, every allowed operation asks the app for path/checkout validation; no shell, delegation, Code Mode, browser or discovered project customization. These are application guards, not an OS sandbox.",
@@ -91,6 +96,7 @@ export class OpenCodeAdapter implements HarnessAdapter {
       const launched = await OpenCodeHost.launch(probe, this.options);
       host = launched.host;
       result.installed = true;
+      result.version = launched.version;
       const models = catalog
         .parse(
           await launched.client.model.list(
@@ -109,16 +115,19 @@ export class OpenCodeAdapter implements HarnessAdapter {
       }));
       result.authenticated = models.length ? "unknown" : false;
       result.diagnostics.push(
-        `Installed OpenCode ${launched.version}; native model/variant catalog is not entitlement or price authorization.`,
+        "The native model/variant catalog is not entitlement or price authorization.",
       );
       if (!models.length)
-        result.diagnostics.push(
-          "AUTH_REQUIRED: configure an app-owned supported OpenCode provider route; no model prompt was submitted",
-        );
+        result.nextStep = `OpenCode lists no enabled model for this app. Export one of ${openCodeProviderKeys.join(", ")} (the only provider keys forwarded to the app-owned server) in the shell that starts this app, restart the app and check again. No model prompt was submitted.`;
     } catch (error) {
-      result.diagnostics.push(
-        `OpenCode no-model discovery failed (${error instanceof DomainError ? error.code : "NATIVE_CONTROL"}); native details redacted. Check installed v2 CLI and app-owned provider configuration.`,
-      );
+      result.installed = !notInstalled(error);
+      if (notInstalled(error)) result.nextStep = error.message;
+      else {
+        result.nextStep = unreadyStep("OpenCode");
+        result.diagnostics.push(
+          `OpenCode no-model discovery failed (${error instanceof DomainError ? error.code : "NATIVE_CONTROL"}); native details redacted. Check installed v2 CLI and app-owned provider configuration.`,
+        );
+      }
     } finally {
       if (host) {
         try {

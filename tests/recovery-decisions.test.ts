@@ -465,6 +465,8 @@ class VanishingWorktree implements HarnessAdapter {
       supportsCancel: true,
       supportsPermissionPrompts: false,
       supportsToolGateway: false,
+      version: null,
+      nextStep: null,
       diagnostics: ["Test stub; no process"],
     };
   }

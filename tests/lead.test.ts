@@ -686,6 +686,41 @@ test("emergency stop closes the owned Codex Lead process without a cooperative i
   }
 });
 
+test("Codex startup reads every feature page and refuses a delegation feature enabled on a later page or no longer reported", async () => {
+  const paged = await leadFixture({
+    codexEnv: { LAO_CODEX_FIXTURE_FEATURES: "paged" },
+  });
+  try {
+    assert.equal((await paged.engine.codex.discover()).installed, true);
+    assert.ok(
+      (await paged.log()).some(
+        (l) => l.method === "experimentalFeature/list" && l.cursor === "page-2",
+      ),
+    );
+  } finally {
+    await paged.close();
+  }
+  for (const mode of ["paged-enabled", "missing"]) {
+    const f = await leadFixture({
+      codexEnv: { LAO_CODEX_FIXTURE_FEATURES: mode },
+    });
+    try {
+      const capabilities = await f.engine.codex.discover();
+      assert.equal(capabilities.installed, true);
+      assert.deepEqual(capabilities.models, []);
+      assert.ok(capabilities.nextStep);
+      assert.ok(
+        capabilities.diagnostics.some((d) => /not reported disabled/.test(d)),
+      );
+      await assert.rejects(f.start("autonomous_bounded"));
+      assert.equal(f.store.listRuns().length, 0);
+      assert.ok(!(await f.log()).some((l) => l.method === "thread/start"));
+    } finally {
+      await f.close();
+    }
+  }
+});
+
 test("Lead startup fails closed without app-owned login, with delegation enabled, for delegating efforts or native sub-agents", async () => {
   const unauthenticated = await leadFixture({
     codexEnv: { LAO_CODEX_FIXTURE_AUTH: "none" },
@@ -704,7 +739,9 @@ test("Lead startup fails closed without app-owned login, with delegation enabled
   });
   try {
     const capabilities = await features.engine.codex.discover();
-    assert.equal(capabilities.installed, false);
+    assert.equal(capabilities.installed, true);
+    assert.deepEqual(capabilities.models, []);
+    assert.ok(capabilities.nextStep);
     assert.ok(capabilities.diagnostics.some((d) => /remained enabled/.test(d)));
     await assert.rejects(features.start("autonomous_bounded"));
   } finally {

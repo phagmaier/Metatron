@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import type { SessionEvent } from "../src/server/adapters/contract.ts";
 import { PiAdapter } from "../src/server/adapters/pi.ts";
 import { PiRpc } from "../src/server/adapters/pi-rpc.ts";
 import { startApp } from "../src/server/app.ts";
@@ -13,7 +14,9 @@ import { leadDigest } from "../src/server/orchestration/lead-run.ts";
 import { mutate } from "../src/server/storage/mutations.ts";
 import { Store } from "../src/server/storage/store.ts";
 import { workerMessageSchema } from "../src/shared/domain/entities.ts";
+import { steeringUnsupported } from "../src/shared/native-controls.ts";
 import { fakeTeamSnapshot } from "../src/shared/presets.ts";
+import { claudeEngineFixture } from "./helpers/claude-engine-fixture.ts";
 import { createGitFixture } from "./helpers/git-fixture.ts";
 
 async function until(check: () => boolean) {
@@ -295,6 +298,51 @@ test("owner-only worker messages refuse foreign sessions, Chat/Plan, paused, sto
     assert.equal((await f.log()).length, 0);
     assert.equal(f.store.listAttempts().length, 1);
   } finally {
+    await f.close();
+  }
+});
+
+test("a busy worker on a harness without live input gets that harness's reason and the adapter is never asked to steer", async () => {
+  const f = await claudeEngineFixture();
+  let release = () => {};
+  let steers = 0;
+  f.adapter.prompt = async function* (): AsyncIterable<SessionEvent> {
+    await new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    yield { type: "turn_completed", nativeStatus: "interrupted" };
+  };
+  f.adapter.steer = async () => {
+    steers++;
+    return "unsupported";
+  };
+  try {
+    const run = await f.run("read_only");
+    const task = f.store.listTasks(run.id)[0];
+    assert.ok(task);
+    await until(() => f.store.listSessions()[0]?.state === "busy");
+    const session = f.store.listSessions()[0];
+    assert.ok(session);
+    const message = workerMessageSchema.parse(
+      await (
+        await f.send("worker-messages", {
+          taskId: task.id,
+          sessionId: session.id,
+          kind: "steer",
+          text: "Change direction",
+        })
+      ).json(),
+    );
+    assert.equal(message.status, "unsupported");
+    assert.equal(
+      message.diagnostic,
+      `${steeringUnsupported["claude-code"]}. No message sent, task started or session resumed.`,
+    );
+    assert.equal(steers, 0);
+    f.engine.cancel(task.id, "stop-held-worker");
+  } finally {
+    release();
+    await f.engine.idle();
     await f.close();
   }
 });

@@ -1,0 +1,283 @@
+{
+  "item": "M8 item 4 \u2014 installed/missing/auth-required/available harness state",
+  "modelPromptsSubmitted": 0,
+  "method": "Actual app (production mode, fresh disposable app data per run) calling GET /api/agent-profiles/discover for each harness through the real installed binaries, then Chromium (cached playwright-core 1.62.1 driving /usr/bin/chromium) pressing Enter on 'Check harnesses' in the Harness setup panel. Personal harness config checked by size/mtime metadata only; credential-like environment values checked by exact-value exclusion, reported as booleans.",
+  "ambient": {
+    "native": {
+      "checkedAt": "2026-10-18T02:50:13.466Z",
+      "modelPromptsSubmitted": 0,
+      "path": "GET /api/agent-profiles/discover per harness on a production-mode app with fresh disposable app data",
+      "pathOverride": "ambient PATH and environment",
+      "harnesses": {
+        "codex": {
+          "httpStatus": 200,
+          "state": "auth_required",
+          "version": "0.163.0",
+          "installed": true,
+          "authenticated": false,
+          "modelCount": 8,
+          "nextStep": "Codex is not logged in for this app. Run `CODEX_HOME='/tmp/lao-m8-availability-MFKe16/codex' codex login` in a terminal, then check again. This app-owned Codex home never reuses your personal login.",
+          "diagnostics": [
+            "Codex app-server Lead: app-owned CODEX_HOME, read-only sandbox without network, approvals never granted, session-scoped MCP tools. Not an OS isolation boundary for reads.",
+            "Native permission requests are denied by policy and surfaced in Needs You; interactive permission grants are unsupported for the Lead.",
+            "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled; startup refuses unless every one is reported disabled.",
+            "Unsupported: Codex worker sessions; live steering (Codex runs only as the Lead; this app does not use its native turn/steer, so owner messages wait for the next Lead turn). Supported: stopping a Lead turn and resuming the run's own Lead thread.",
+            "Profiles support the read-only Codex coordinator only; Codex worker execution is not implemented yet."
+          ],
+          "durationMs": 168
+        },
+        "claude-code": {
+          "httpStatus": 200,
+          "state": "auth_required",
+          "version": "2.1.302",
+          "installed": true,
+          "authenticated": false,
+          "modelCount": 5,
+          "nextStep": "AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+          "diagnostics": [
+            "Official Agent SDK with the installed Claude Code CLI and app-owned configuration. Owner-supplied setup-token, API key or supported cloud provider route; no personal credential files copied. Subscription SDK-product policy applicability requires owner/vendor resolution. Catalog presence does not prove entitlement.",
+            "Exact file tools and optional app gateway only; no shell, delegation, discovered settings, plugins, skills or MCP servers. This is an application guard, not an OS sandbox. Resume accepts only clean app-owned same-checkout sessions; interrupted work is never replayed.",
+            "claude-code profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement."
+          ],
+          "durationMs": 468
+        },
+        "opencode": {
+          "httpStatus": 200,
+          "state": "available",
+          "version": "2.0.29",
+          "installed": true,
+          "authenticated": "unknown",
+          "modelCount": 12,
+          "nextStep": null,
+          "diagnostics": [
+            "Official OpenCode v2 HTTP client and an app-owned password-protected loopback server; personal service/config/sessions are not reused. Provider access remains unknown until a native turn succeeds.",
+            "File-tool workers only, every allowed operation asks the app for path/checkout validation; no shell, delegation, Code Mode, browser or discovered project customization. These are application guards, not an OS sandbox.",
+            "Approve grants one native request. OpenCode reject affects every pending request in that session, so denial also stops the owned turn. No persistent native approvals or automatic replay; live-only stream loss requires recovery. Resume is clean same-checkout only.",
+            "The native model/variant catalog is not entitlement or price authorization.",
+            "opencode profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement."
+          ],
+          "durationMs": 885
+        },
+        "pi": {
+          "httpStatus": 200,
+          "state": "available",
+          "version": "1.3.0",
+          "installed": true,
+          "authenticated": "unknown",
+          "modelCount": 2,
+          "nextStep": null,
+          "diagnostics": [
+            "App-owned Pi configuration; provider environment credentials or app-owned Pi login required. Catalog presence does not prove entitlement.",
+            "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Steer/follow-up queue at native input boundaries; queue acceptance is not delivery.",
+            "Unsupported: owner approval prompts (allowed tools run without a native per-call callback; the tool allowlist and app guard extension enforce policy); resume (This Pi adapter does not reopen native sessions; each attempt uses a new worktree); Lead/coordinator sessions.",
+            "pi profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement."
+          ],
+          "durationMs": 420
+        }
+      },
+      "personalConfigMetadataUnchanged": true,
+      "appOwnedProcessesAtClose": [],
+      "appOwnedProcessesThreeSecondsLater": [],
+      "disposableAppDataRemoved": true
+    },
+    "browser": {
+      "consoleErrors": [
+        "1280: Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "pageErrors": [],
+      "w1280": {
+        "cards": [
+          {
+            "harness": "Codex",
+            "badge": "Login required",
+            "note": "Version 0.163.0 \u00b7 no usable login \u00b7 8 model(s) listed",
+            "nextStep": "Next step: Codex is not logged in for this app. Run `CODEX_HOME='/tmp/lao-m8-availability-MFKe16/codex' codex login` in a terminal, then check again. This app-owned Codex home never reuses your personal login.",
+            "diagnosticsSummary": "Diagnostics (5)"
+          },
+          {
+            "harness": "Claude Code",
+            "badge": "Login required",
+            "note": "Version 2.1.302 \u00b7 no usable login \u00b7 5 model(s) listed",
+            "nextStep": "Next step: AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+            "diagnosticsSummary": "Diagnostics (3)"
+          },
+          {
+            "harness": "OpenCode",
+            "badge": "Available",
+            "note": "Version 2.0.29 \u00b7 login unverified \u00b7 12 model(s) listed",
+            "nextStep": null,
+            "diagnosticsSummary": "Diagnostics (5)"
+          },
+          {
+            "harness": "Pi",
+            "badge": "Available",
+            "note": "Version 1.3.0 \u00b7 login unverified \u00b7 2 model(s) listed",
+            "nextStep": null,
+            "diagnosticsSummary": "Diagnostics (4)"
+          }
+        ],
+        "horizontalOverflow": false
+      }
+    }
+  },
+  "restricted": {
+    "native": {
+      "checkedAt": "2026-10-18T02:50:23.558Z",
+      "modelPromptsSubmitted": 0,
+      "path": "GET /api/agent-profiles/discover per harness on a production-mode app with fresh disposable app data",
+      "pathOverride": "PATH without ~/.opencode/bin; DEEPSEEK_API_KEY and MUSE_SPARK_API_KEY unset",
+      "harnesses": {
+        "codex": {
+          "httpStatus": 200,
+          "state": "auth_required",
+          "version": "0.163.0",
+          "installed": true,
+          "authenticated": false,
+          "modelCount": 8,
+          "nextStep": "Codex is not logged in for this app. Run `CODEX_HOME='/tmp/lao-m8-availability-5Crrm7/codex' codex login` in a terminal, then check again. This app-owned Codex home never reuses your personal login.",
+          "diagnostics": [
+            "Codex app-server Lead: app-owned CODEX_HOME, read-only sandbox without network, approvals never granted, session-scoped MCP tools. Not an OS isolation boundary for reads.",
+            "Native permission requests are denied by policy and surfaced in Needs You; interactive permission grants are unsupported for the Lead.",
+            "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled; startup refuses unless every one is reported disabled.",
+            "Unsupported: Codex worker sessions; live steering (Codex runs only as the Lead; this app does not use its native turn/steer, so owner messages wait for the next Lead turn). Supported: stopping a Lead turn and resuming the run's own Lead thread.",
+            "Profiles support the read-only Codex coordinator only; Codex worker execution is not implemented yet."
+          ],
+          "durationMs": 167
+        },
+        "claude-code": {
+          "httpStatus": 200,
+          "state": "auth_required",
+          "version": "2.1.302",
+          "installed": true,
+          "authenticated": false,
+          "modelCount": 5,
+          "nextStep": "AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+          "diagnostics": [
+            "Official Agent SDK with the installed Claude Code CLI and app-owned configuration. Owner-supplied setup-token, API key or supported cloud provider route; no personal credential files copied. Subscription SDK-product policy applicability requires owner/vendor resolution. Catalog presence does not prove entitlement.",
+            "Exact file tools and optional app gateway only; no shell, delegation, discovered settings, plugins, skills or MCP servers. This is an application guard, not an OS sandbox. Resume accepts only clean app-owned same-checkout sessions; interrupted work is never replayed.",
+            "claude-code profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement."
+          ],
+          "durationMs": 482
+        },
+        "opencode": {
+          "httpStatus": 200,
+          "state": "missing",
+          "version": null,
+          "installed": false,
+          "authenticated": false,
+          "modelCount": 0,
+          "nextStep": "OpenCode executable `opencode` was not found on the app server's absolute PATH. Install OpenCode, make sure `opencode` resolves in the shell that starts this app, restart the app and check again.",
+          "diagnostics": [
+            "Official OpenCode v2 HTTP client and an app-owned password-protected loopback server; personal service/config/sessions are not reused. Provider access remains unknown until a native turn succeeds.",
+            "File-tool workers only, every allowed operation asks the app for path/checkout validation; no shell, delegation, Code Mode, browser or discovered project customization. These are application guards, not an OS sandbox.",
+            "Approve grants one native request. OpenCode reject affects every pending request in that session, so denial also stops the owned turn. No persistent native approvals or automatic replay; live-only stream loss requires recovery. Resume is clean same-checkout only.",
+            "opencode profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement."
+          ],
+          "durationMs": 5
+        },
+        "pi": {
+          "httpStatus": 200,
+          "state": "auth_required",
+          "version": "1.3.0",
+          "installed": true,
+          "authenticated": false,
+          "modelCount": 0,
+          "nextStep": "Pi lists no model with usable provider credentials. Export a provider API key Pi supports (for example DEEPSEEK_API_KEY; see Pi's providers documentation) in the shell that starts this app, restart the app and check again.",
+          "diagnostics": [
+            "App-owned Pi configuration; provider environment credentials or app-owned Pi login required. Catalog presence does not prove entitlement.",
+            "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Steer/follow-up queue at native input boundaries; queue acceptance is not delivery.",
+            "Unsupported: owner approval prompts (allowed tools run without a native per-call callback; the tool allowlist and app guard extension enforce policy); resume (This Pi adapter does not reopen native sessions; each attempt uses a new worktree); Lead/coordinator sessions.",
+            "pi profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement."
+          ],
+          "durationMs": 422
+        }
+      },
+      "personalConfigMetadataUnchanged": true,
+      "appOwnedProcessesAtClose": [],
+      "appOwnedProcessesThreeSecondsLater": [],
+      "disposableAppDataRemoved": true
+    },
+    "browser": {
+      "consoleErrors": [
+        "1280: Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "pageErrors": [],
+      "w1280": {
+        "cards": [
+          {
+            "harness": "Codex",
+            "badge": "Login required",
+            "note": "Version 0.163.0 \u00b7 no usable login \u00b7 8 model(s) listed",
+            "nextStep": "Next step: Codex is not logged in for this app. Run `CODEX_HOME='/tmp/lao-m8-availability-5Crrm7/codex' codex login` in a terminal, then check again. This app-owned Codex home never reuses your personal login.",
+            "diagnosticsSummary": "Diagnostics (5)"
+          },
+          {
+            "harness": "Claude Code",
+            "badge": "Login required",
+            "note": "Version 2.1.302 \u00b7 no usable login \u00b7 5 model(s) listed",
+            "nextStep": "Next step: AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+            "diagnosticsSummary": "Diagnostics (3)"
+          },
+          {
+            "harness": "OpenCode",
+            "badge": "Missing",
+            "note": null,
+            "nextStep": "Next step: OpenCode executable `opencode` was not found on the app server's absolute PATH. Install OpenCode, make sure `opencode` resolves in the shell that starts this app, restart the app and check again.",
+            "diagnosticsSummary": "Diagnostics (4)"
+          },
+          {
+            "harness": "Pi",
+            "badge": "Login required",
+            "note": "Version 1.3.0 \u00b7 no usable login \u00b7 0 model(s) listed",
+            "nextStep": "Next step: Pi lists no model with usable provider credentials. Export a provider API key Pi supports (for example DEEPSEEK_API_KEY; see Pi's providers documentation) in the shell that starts this app, restart the app and check again.",
+            "diagnosticsSummary": "Diagnostics (4)"
+          }
+        ],
+        "horizontalOverflow": false
+      },
+      "w390": {
+        "cards": [
+          {
+            "harness": "Codex",
+            "badge": "Login required",
+            "note": "Version 0.163.0 \u00b7 no usable login \u00b7 8 model(s) listed",
+            "nextStep": "Next step: Codex is not logged in for this app. Run `CODEX_HOME='/tmp/lao-m8-availability-5Crrm7/codex' codex login` in a terminal, then check again. This app-owned Codex home never reuses your personal login.",
+            "diagnosticsSummary": "Diagnostics (5)"
+          },
+          {
+            "harness": "Claude Code",
+            "badge": "Login required",
+            "note": "Version 2.1.302 \u00b7 no usable login \u00b7 5 model(s) listed",
+            "nextStep": "Next step: AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+            "diagnosticsSummary": "Diagnostics (3)"
+          },
+          {
+            "harness": "OpenCode",
+            "badge": "Missing",
+            "note": null,
+            "nextStep": "Next step: OpenCode executable `opencode` was not found on the app server's absolute PATH. Install OpenCode, make sure `opencode` resolves in the shell that starts this app, restart the app and check again.",
+            "diagnosticsSummary": "Diagnostics (4)"
+          },
+          {
+            "harness": "Pi",
+            "badge": "Login required",
+            "note": "Version 1.3.0 \u00b7 no usable login \u00b7 0 model(s) listed",
+            "nextStep": "Next step: Pi lists no model with usable provider credentials. Export a provider API key Pi supports (for example DEEPSEEK_API_KEY; see Pi's providers documentation) in the shell that starts this app, restart the app and check again.",
+            "diagnosticsSummary": "Diagnostics (4)"
+          }
+        ],
+        "horizontalOverflow": false
+      }
+    }
+  },
+  "previousLauncherCheck": {
+    "what": "Pre-change Pi default launcher (spawn by bare name) with PATH='planted' and an inert executable at <app>/planted/pi",
+    "result": {
+      "installed": true,
+      "plantedExecutableRan": true
+    },
+    "now": "tests/harness-availability.test.ts: relative PATH entries are ignored for all four harnesses; discovery reports missing and the planted file never runs"
+  },
+  "consoleNote": "The single console 404 was not a page request seen by Playwright (no failed response recorded), consistent with Chromium's automatic /favicon.ico fetch; the app serves no favicon.",
+  "limits": "No login, setup-token or provider credential was created or used. 'Available' means no-model discovery passed with authentication unknown; provider access is proven only by a native turn (M8 items 5-8)."
+}

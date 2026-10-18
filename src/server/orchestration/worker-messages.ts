@@ -5,6 +5,7 @@ import {
   workerMessageSchema,
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import { steeringUnsupported } from "../../shared/native-controls.ts";
 import type { Actor } from "../../shared/orchestration.ts";
 import { sendWorkerMessageSchema } from "../../shared/worker-messages.ts";
 import type { HarnessAdapter, ManagedSession } from "../adapters/contract.ts";
@@ -154,7 +155,9 @@ export class WorkerMessages {
             "Session owner-message limit reached",
           );
         const target = this.active.get(session.id);
+        const unsupported = steeringUnsupported[session.adapter];
         const eligible =
+          unsupported === null &&
           run.status === "active" &&
           run.mode !== "chat_plan" &&
           !this.engine.isStopping() &&
@@ -180,7 +183,7 @@ export class WorkerMessages {
             status: eligible ? "sending" : "unsupported",
             diagnostic: eligible
               ? "Submitting once to the current worker; native acceptance is not yet confirmed."
-              : "No eligible live worker in this mode/session. No message sent, task started or session resumed.",
+              : `${unsupported ?? "No eligible live worker in this mode/session"}. No message sent, task started or session resumed.`,
           }),
         );
       },

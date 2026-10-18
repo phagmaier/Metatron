@@ -102,6 +102,16 @@ export function claudeSdkFixture(config: ClaudeSdkFixtureOptions = {}) {
               apiProvider: "firstParty",
               apiKeySource: "ANTHROPIC_API_KEY",
             },
+      // Only the version is read from here; account checks use accountInfo.
+      initializationResult: async () => ({
+        commands: [],
+        agents: [],
+        output_style: "default",
+        available_output_styles: [],
+        models,
+        account: {},
+        claude_code_version: "0.0.0-fixture",
+      }),
       close: () => {},
       async *[Symbol.asyncIterator]() {
         for await (const message of prompt) {

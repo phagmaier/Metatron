@@ -42,6 +42,13 @@ test("Codex completes only on its own turn/completed and maps statuses, tools an
       },
     ],
   );
+  // Installed 0.163.0 enables a native sleep tool; a silent wait still shows.
+  assert.deepEqual(
+    mapper.consume(
+      item("item/completed", { id: "sleep-1", type: "sleep", durationMs: 5 }),
+    ),
+    [{ type: "tool_finished", toolId: "sleep-1", summary: "sleep · done" }],
+  );
   assert.deepEqual(
     mapper.consume({
       method: "thread/tokenUsage/updated",

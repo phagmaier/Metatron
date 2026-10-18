@@ -114,6 +114,7 @@ const adapter = new ClaudeAdapter(directory, {
     return {
       supportedModels: () => native.supportedModels(),
       accountInfo: () => native.accountInfo(),
+      initializationResult: () => native.initializationResult(),
       close: () => native.close(),
       async *[Symbol.asyncIterator]() {
         for await (const message of native) {
