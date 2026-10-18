@@ -1,0 +1,686 @@
+{
+  "mode": "NO_MODEL_DISCOVERY_AND_REFUSALS_ONLY",
+  "observedAt": "2026-10-18T05:14:21.215Z",
+  "command": "mise x -- node /tmp/metatron-m8-matrix-probe.mjs docs/evidence/m8-smoke-matrix-discovery.json",
+  "dataScope": "Fresh app-owned homes; no personal login copied and no retained Codex login reused",
+  "submittedPrompts": 0,
+  "liveMatrixComplete": false,
+  "capabilities": {
+    "codex": {
+      "adapter": "codex",
+      "installed": true,
+      "authenticated": false,
+      "models": [
+        {
+          "id": "gpt-6.1-sol",
+          "label": "GPT-6.1-Sol",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "gpt-6-astra",
+          "label": "GPT-6-Astra",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "gpt-6-sol",
+          "label": "GPT-6-Sol",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "gpt-6-luna",
+          "label": "GPT-6-Luna",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "gpt-5.6-sol",
+          "label": "GPT-5.6-Sol",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "gpt-5.6-terra",
+          "label": "GPT-5.6-Terra",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "gpt-5.6-luna",
+          "label": "GPT-5.6-Luna",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "gpt-5.5",
+          "label": "GPT-5.5",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        }
+      ],
+      "supportsResume": true,
+      "supportsLiveSteer": false,
+      "supportsCancel": true,
+      "supportsPermissionPrompts": false,
+      "supportsToolGateway": true,
+      "version": "0.163.0",
+      "nextStep": "Codex is not logged in for this app. Run `CODEX_HOME='/tmp/lao-m8-matrix-O3aSpQ/local-agent-orchestrator/codex' codex login` in a terminal, then check again. This app-owned Codex home never reuses your personal login.",
+      "diagnostics": [
+        "Codex app-server Lead or reader: app-owned CODEX_HOME, read-only sandbox without network, approvals never granted, session-scoped MCP tools. Reads are not confined to the worktree.",
+        "Native permission requests are denied by policy and surfaced in Needs You; interactive permission grants are unsupported.",
+        "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled; startup refuses unless every one is reported disabled. A native model reroute interrupts the turn.",
+        "Unsupported: Codex writers; worker resume (This app starts every Codex worker assignment as a fresh read-only thread); live steering (This app does not use Codex's native turn/steer; stop or reassign a Codex worker's task to change its instructions, and owner messages to a Codex Lead wait for its next turn). Supported: stopping a turn and resuming the run's own Lead thread."
+      ]
+    },
+    "claude-code": {
+      "adapter": "claude-code",
+      "installed": true,
+      "authenticated": false,
+      "models": [
+        {
+          "id": "default",
+          "label": "Default (recommended)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "opus",
+          "label": "Opus",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "fable",
+          "label": "Fable",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "sonnet",
+          "label": "Sonnet",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "haiku",
+          "label": "Haiku",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        }
+      ],
+      "supportsResume": true,
+      "supportsLiveSteer": false,
+      "supportsCancel": true,
+      "supportsPermissionPrompts": true,
+      "supportsToolGateway": true,
+      "version": "2.1.302",
+      "nextStep": "AUTH_ABSENT: privately supply CLAUDE_CODE_OAUTH_TOKEN from setup-token, ANTHROPIC_API_KEY or an approved Bedrock/Vertex/Foundry route to the app process. Ambient personal login and arbitrary bearer/profile routes are not admitted; no model prompt was submitted.",
+      "diagnostics": [
+        "Official Agent SDK with the installed Claude Code CLI and app-owned configuration. Owner-supplied setup-token, API key or supported cloud provider route; no personal credential files copied. Subscription SDK-product policy applicability requires owner/vendor resolution. Catalog presence does not prove entitlement.",
+        "Exact file tools and optional app gateway only; no shell, delegation, discovered settings, plugins, skills or MCP servers. This is an application guard, not an OS sandbox. Resume accepts only clean app-owned same-checkout sessions; interrupted work is never replayed."
+      ]
+    },
+    "opencode": {
+      "adapter": "opencode",
+      "installed": true,
+      "authenticated": "unknown",
+      "models": [
+        {
+          "id": "deepseek/deepseek-flash",
+          "label": "DeepSeek V4.1 Flash 1017 (deepseek)",
+          "thinking": [
+            {
+              "id": "none",
+              "label": "none"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "opencode/nemotron-3.5-super-vl-free",
+          "label": "Nemotron 3.5 Super VL Free (opencode)",
+          "thinking": [
+            {
+              "id": "none",
+              "label": "none"
+            },
+            {
+              "id": "minimal",
+              "label": "minimal"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            }
+          ]
+        },
+        {
+          "id": "opencode/beam-free",
+          "label": "Beam Free (opencode)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "opencode/longcat-2.5-preview-free",
+          "label": "LongCat 2.5 Preview Free (opencode)",
+          "thinking": []
+        },
+        {
+          "id": "opencode/space-bunny-free",
+          "label": "Space Bunny Free (opencode)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "medium",
+              "label": "medium"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "xhigh",
+              "label": "xhigh"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "opencode/mimo-v2.6-flash-free",
+          "label": "MiMo-V2.6-Flash Free (opencode)",
+          "thinking": []
+        },
+        {
+          "id": "opencode/deepseek-v4.1-flash-free",
+          "label": "DeepSeek V4.1 Flash Free (opencode)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "opencode/glm-5.3-flash-free",
+          "label": "GLM-5.3-Flash Free (opencode)",
+          "thinking": [
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "deepseek/deepseek-v4-pro",
+          "label": "DeepSeek V4 Pro (deepseek)",
+          "thinking": [
+            {
+              "id": "none",
+              "label": "none"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "opencode/nemotron-3.5-lightning-free",
+          "label": "Nemotron 3.5 Lightning Free (opencode)",
+          "thinking": []
+        },
+        {
+          "id": "opencode/nemotron-3-ultra-free",
+          "label": "Nemotron 3 Ultra Free (opencode)",
+          "thinking": []
+        },
+        {
+          "id": "opencode/big-pickle",
+          "label": "Big Pickle (opencode)",
+          "thinking": []
+        }
+      ],
+      "supportsResume": true,
+      "supportsLiveSteer": false,
+      "supportsCancel": true,
+      "supportsPermissionPrompts": true,
+      "supportsToolGateway": true,
+      "version": "2.0.29",
+      "nextStep": null,
+      "diagnostics": [
+        "Official OpenCode v2 HTTP client and an app-owned password-protected loopback server; personal service/config/sessions are not reused. Provider access remains unknown until a native turn succeeds.",
+        "File-tool workers only, every allowed operation asks the app for path/checkout validation; no shell, delegation, Code Mode, browser or discovered project customization. These are application guards, not an OS sandbox.",
+        "Approve grants one native request. OpenCode reject affects every pending request in that session, so denial also stops the owned turn. No persistent native approvals or automatic replay; live-only stream loss requires recovery. Resume is clean same-checkout only.",
+        "The native model/variant catalog is not entitlement or price authorization."
+      ]
+    },
+    "pi": {
+      "adapter": "pi",
+      "installed": true,
+      "authenticated": "unknown",
+      "models": [
+        {
+          "id": "deepseek/deepseek-flash",
+          "label": "DeepSeek V4.1 Flash (deepseek)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "low",
+              "label": "low"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        },
+        {
+          "id": "deepseek/deepseek-v4-pro",
+          "label": "DeepSeek V4 Pro (deepseek)",
+          "thinking": [
+            {
+              "id": "off",
+              "label": "off"
+            },
+            {
+              "id": "high",
+              "label": "high"
+            },
+            {
+              "id": "max",
+              "label": "max"
+            }
+          ]
+        }
+      ],
+      "supportsResume": false,
+      "supportsLiveSteer": true,
+      "supportsCancel": true,
+      "supportsPermissionPrompts": false,
+      "supportsToolGateway": true,
+      "version": "1.3.0",
+      "nextStep": null,
+      "diagnostics": [
+        "App-owned Pi configuration; provider environment credentials or app-owned Pi login required. Catalog presence does not prove entitlement.",
+        "File tools plus the session-scoped app gateway (report tools) only; shell, personal MCP servers and discovered extensions are disabled. No OS sandbox. Steer/follow-up queue at native input boundaries; queue acceptance is not delivery.",
+        "Unsupported: owner approval prompts (allowed tools run without a native per-call callback; the tool allowlist and app guard extension enforce policy); resume (This Pi adapter does not reopen native sessions; each attempt uses a new worktree); Lead/coordinator sessions."
+      ]
+    }
+  },
+  "refusals": {
+    "codex.writer": {
+      "code": "UNSUPPORTED",
+      "message": "Codex runs only as a gateway-connected coordinator Lead or a fresh read-only worker"
+    },
+    "codex.workerResume": {
+      "code": "UNSUPPORTED",
+      "message": "Codex runs only as a gateway-connected coordinator Lead or a fresh read-only worker"
+    },
+    "claude-code.coordinator": {
+      "code": "UNSUPPORTED",
+      "message": "Claude supports isolated file-tool workers with only the app loopback gateway overlay"
+    },
+    "opencode.coordinator": {
+      "code": "UNSUPPORTED",
+      "message": "OpenCode accepts only file-worker profiles and an app loopback gateway overlay"
+    },
+    "pi.coordinator": {
+      "code": "UNSUPPORTED",
+      "message": "Pi supports fresh file-tool workers with only the app's loopback gateway overlay"
+    },
+    "pi.resume": {
+      "code": "UNSUPPORTED",
+      "message": "This Pi adapter does not reopen native sessions; retained sessions require an owner recovery decision"
+    }
+  },
+  "createdSessions": 0,
+  "createdAttempts": 0,
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "survivingOwnedCommandLinesAtClose": [],
+  "survivingOwnedCommandLinesAfter3s": [],
+  "limitations": [
+    "Discovery/control-refusal success is not model access, entitlement, live streaming, active cancellation, gateway denial or approved integration",
+    "Fresh Codex home is intentionally logged out; the previously owner-authenticated disposable home was not read or copied",
+    "Personal checks cover metadata of the seven named files only; process checks match app-owned command lines, not all descendants",
+    "No provider authentication, login, model prompt, approval decision or integration was attempted"
+  ]
+}

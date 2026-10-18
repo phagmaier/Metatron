@@ -173,6 +173,12 @@ The smoke refuses existing output files. It creates disposable seeded personal h
 
 Nine new failing-before/passing-after regressions cover inheritance/preload, cloud credential routing and the Claude successor-lease race. [Decision and exact limits](docs/adr/2026-10-17-harness-environment-isolation.md); [audit evidence](docs/adapter-recon.md#m8-item-7--config-session-and-credential-isolation-2026-10-17). This is bounded source/native observation, not syscall tracing or an OS sandbox. The earlier personal Pi writes remain unattributed. Descendant cleanup, live cloud entitlement and the full smoke matrix are not claimed.
 
+## Per-adapter smoke matrix — M8 item 8
+
+**Incomplete; new model turns are explicitly on hold.** [Seven-check support/evidence matrix and exact blockers](docs/adapter-smoke-matrix.md) separates fresh discovery, prior native receipts, unsupported controls and unverified scenarios. [Fresh four-harness zero-prompt receipt](docs/evidence/m8-smoke-matrix-discovery.json): installed versions/catalogs, six unsupported-operation refusals, no attempts/sessions/prompts, unchanged fixture and checked personal metadata, no matching owned process after close.
+
+Outstanding: retained Codex/Pi streaming observations, current Codex Lead resume/cancel, Pi active cancellation, Pi/Claude/OpenCode native gateway-denial evidence, and one real writer → candidate review → separately owner-approved integration. Claude needs private approved authentication; a fresh Codex home is deliberately logged out. Earlier model-spend or native Write approvals authorize neither new turns nor integration. M8 item 8 stays unchecked; M9/beta are not complete.
+
 ## Team presets
 
 Expand **Team presets**, choose **New team**, then pick a coordinator Lead profile, one or more worker profiles, available workflows (workflow authoring is currently backend-only), a default mode and resource limits, and choose **Create team**. Saving dispatches nothing. Stale saves/deletes are refused; **Reload teams and profiles** before editing again. The seeded **Fake demo team** is fixed playback configuration.
