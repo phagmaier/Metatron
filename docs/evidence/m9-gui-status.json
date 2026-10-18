@@ -1,0 +1,355 @@
+{
+  "milestone": "M9 item 4",
+  "result": "PASS",
+  "date": "2026-10-18",
+  "mode": "Deterministic protocol/adapter fixtures in the real app and GUI; NOT live native harness evidence",
+  "browser": "Playwright, explicitly authorized after computer-use reported no available browser",
+  "versions": {
+    "node": "v26.7.0",
+    "pnpm": "11.22.0"
+  },
+  "scope": [
+    "emergency stop",
+    "app restart",
+    "pending approval",
+    "conflict",
+    "credit exhaustion",
+    "context refresh",
+    "pending/failed/uncertain stop history",
+    "missing/inaccessible/replaced worktree recovery"
+  ],
+  "observations": [
+    "/tmp/lao-gui-status-h8VOJw/observation-1792361919861.json",
+    "/tmp/lao-gui-status-7N3LoA/observation-1792362155495.json"
+  ],
+  "fixtures": [
+    {
+      "database": "/tmp/lao-gui-status-h8VOJw/state.sqlite",
+      "repository": {
+        "path": "/tmp/lao-git-fixture-uuGrqH/repo with spaces",
+        "baseline": "6e9adf88c798b5a98fc94ec9aa727b5551669501",
+        "head": "8693fbaf8d4993fe74c25442ed8f282d7c1b10cf",
+        "status": ""
+      },
+      "checks": [
+        {
+          "name": "emergency stop preserved unrelated manual process",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "abrupt app restart did not launch another attempt",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "conflict preserved disposable destination",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "abrupt app restart did not launch another attempt",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "states": [
+        {
+          "name": "emergency stop",
+          "runId": "4d6f11a6-3ec7-47a4-ac20-28a50c3df7c7",
+          "runStatus": "paused",
+          "tasks": [
+            {
+              "id": "cfa0de17-cc5d-4cdc-b5f4-9f96301256d9",
+              "status": "RETRY_DECISION"
+            }
+          ],
+          "attemptIds": [
+            "53eef514-fa07-4bb1-9022-d2fa46d3287d"
+          ]
+        },
+        {
+          "name": "approval",
+          "runId": "908df023-ba26-492d-a8be-433cb9775653",
+          "runStatus": "active",
+          "tasks": [
+            {
+              "id": "2cdfd3c2-b724-46df-b57a-677a98ae762b",
+              "status": "RETRY_DECISION"
+            }
+          ],
+          "attemptIds": [
+            "b68397f2-4957-4376-af56-c67a37906740"
+          ]
+        },
+        {
+          "name": "credit exhaustion",
+          "runId": "efa29307-b1bf-4389-95b2-b12a0ae0ee57",
+          "runStatus": "active",
+          "tasks": [
+            {
+              "id": "e9b48f2e-51ca-4ae3-9aff-2496e020cc10",
+              "status": "WAITING_HUMAN"
+            }
+          ],
+          "attemptIds": [
+            "6cfa8973-73a6-4ce7-b5b4-6b50295dc930"
+          ]
+        },
+        {
+          "name": "context refresh",
+          "runId": "412606ee-b209-415c-bf60-bbe0e0899b0f",
+          "runStatus": "active",
+          "tasks": [
+            {
+              "id": "8022a847-fc12-4b29-bae0-4e7ebfc27ac7",
+              "status": "AWAITING_REVIEW"
+            }
+          ],
+          "attemptIds": [
+            "ec413686-18e4-436c-a756-1cbdd2c091d9",
+            "30b24a40-6f10-4b55-9dc2-326c328ca9ce"
+          ]
+        },
+        {
+          "name": "conflict",
+          "runId": "d5080ce2-8eb7-4913-91c5-3dfac58ae067",
+          "runStatus": "active",
+          "tasks": [
+            {
+              "id": "bb68e8a3-c7ae-45a1-9a82-8c547ff9048c",
+              "status": "AWAITING_REVIEW"
+            },
+            {
+              "id": "8a4bcb8a-9d19-4f23-b5f2-d5ee18f99a42",
+              "status": "AWAITING_REVIEW"
+            }
+          ],
+          "attemptIds": [
+            "3bc69827-7213-4d86-afa3-d89896128556",
+            "4ef3cb29-5583-45c9-bdc8-d318f036e3a0"
+          ]
+        },
+        {
+          "name": "missing worktree",
+          "runId": "f61c66d6-d33a-4f16-9393-b200331542af",
+          "runStatus": "active",
+          "tasks": [
+            {
+              "id": "1b46f2e1-8847-4ce4-b0a4-2e376a118576",
+              "status": "RETRY_DECISION"
+            }
+          ],
+          "attemptIds": [
+            "83ebcc27-6865-4e32-88dd-48c66cffa275"
+          ]
+        }
+      ]
+    },
+    {
+      "database": "/tmp/lao-gui-status-7N3LoA/state.sqlite",
+      "repository": {
+        "path": "/tmp/lao-git-fixture-MAqPFk/repo with spaces",
+        "baseline": "ae2121d40d189af61da76fce8ddc971712278cae",
+        "head": "ae2121d40d189af61da76fce8ddc971712278cae",
+        "status": ""
+      },
+      "checks": [
+        {
+          "name": "abrupt app restart did not launch another attempt",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "abrupt app restart did not launch another attempt",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "states": [
+        {
+          "name": "failed",
+          "runId": "e583e6c4-dded-4b39-b7d8-5e8854c8afcf",
+          "runStatus": "stopped",
+          "tasks": [
+            {
+              "id": "071894d3-d322-4dbe-b151-d84fd7656dec",
+              "status": "CANCELLED"
+            }
+          ],
+          "attemptIds": [
+            "cd46e271-a549-4f5c-ba0e-0c2fd79b8b76"
+          ]
+        },
+        {
+          "name": "uncertain",
+          "runId": "23a3a4ca-5caf-4c69-8a1f-8e2e8ecf994b",
+          "runStatus": "stopped",
+          "tasks": [
+            {
+              "id": "b58c6c7e-e2a0-48a6-b2f7-6dae733b7357",
+              "status": "CANCELLED"
+            }
+          ],
+          "attemptIds": [
+            "cb73fced-d8d2-4d90-a9c4-e654d6dedb25"
+          ]
+        },
+        {
+          "name": "pending",
+          "runId": "6698e932-6c61-4c7b-b704-32c099ee681d",
+          "runStatus": "stopped",
+          "tasks": [
+            {
+              "id": "ae605d1f-2301-43c5-b153-cbcf198cca73",
+              "status": "CANCELLED"
+            }
+          ],
+          "attemptIds": [
+            "bb0c418e-cb54-4084-aa01-ee43d6f94925"
+          ]
+        },
+        {
+          "name": "missing worktree",
+          "runId": "12e531fb-3afb-48ee-a68a-f296ec0ae9f3",
+          "runStatus": "active",
+          "tasks": [
+            {
+              "id": "a2c14628-3fbc-46d7-aef7-433a84cb3aae",
+              "status": "RETRY_DECISION"
+            }
+          ],
+          "attemptIds": [
+            "395d6b2e-dff7-4afd-94ff-a2fc443ec8d6"
+          ]
+        },
+        {
+          "name": "approval",
+          "runId": "bb609d64-0f89-476f-9fd1-cc16b297dbfd",
+          "runStatus": "active",
+          "tasks": [
+            {
+              "id": "9b5f3573-691d-4ea3-8e55-96fc248d6b91",
+              "status": "AWAITING_REVIEW"
+            }
+          ],
+          "attemptIds": [
+            "1fd7eef9-a60a-443d-8c90-95fe5d748891"
+          ]
+        }
+      ]
+    }
+  ],
+  "verified": {
+    "emergency": {
+      "stop": {
+        "id": "fa1ba978-8fa9-4a9b-b4e5-76f78bee66b8",
+        "scope": "emergency",
+        "requestedAt": "2026-10-18T22:15:25.990Z",
+        "processId": 1292116,
+        "status": "confirmed",
+        "resolvedAt": "2026-10-18T22:15:26.067Z",
+        "evidence": "Owned pi process exit observed (exit code 0, signal none)",
+        "diagnostic": null
+      },
+      "manualProcessSurvived": true
+    },
+    "approval": {
+      "reloadRetainsPending": true,
+      "restartExpires": true,
+      "expiredControlsAbsent": true,
+      "approveOnceAccepted": true,
+      "onlyIsolatedFileChanged": true
+    },
+    "credits": {
+      "kind": "credits_exhausted",
+      "usage": "unavailable",
+      "balanceAndReset": "unknown",
+      "resolvedRequestDidNotResume": true,
+      "attempts": 1
+    },
+    "context": {
+      "successorSession": "f07de38c-b821-4958-ab97-788f396c6d3d",
+      "predecessorAttempt": "ec413686-18e4-436c-a756-1cbdd2c091d9",
+      "checkpointArtifact": "c1f90b52-4736-4620-bd30-b3986f14656a",
+      "transcriptPaths": [
+        "/tmp/lao-gui-status-h8VOJw/pi-sessions/ec413686-18e4-436c-a756-1cbdd2c091d9",
+        "/tmp/lao-gui-status-h8VOJw/pi-sessions/30b24a40-6f10-4b55-9dc2-326c328ca9ce"
+      ],
+      "separateWorktrees": true,
+      "restartRetainsLineage": true
+    },
+    "conflict": {
+      "previewId": "ea0dbad7-9ee5-4286-a137-552f77c68a9f",
+      "status": "conflict",
+      "paths": [
+        "README.md"
+      ],
+      "worktreePath": "/tmp/lao-gui-status-h8VOJw/worktrees/integration-ea0dbad7-9ee5-4286-a137-552f77c68a9f/checkout",
+      "tests": {
+        "name": "tests",
+        "status": "skipped",
+        "detail": "Not run because the merge conflicts"
+      },
+      "approvalDisabled": true,
+      "applied": false
+    },
+    "recovery": {
+      "states": [
+        "missing",
+        "missing",
+        "inaccessible",
+        "replaced",
+        "verified"
+      ],
+      "originalUnfinishedFilePreserved": true,
+      "attempts": 1,
+      "recheckNeverDispatched": true,
+      "unverifiedRetryDisabledUntilAcknowledged": true,
+      "guiProcessState": "not_running; surviving-worker variants covered by automated restart-reconciliation tests"
+    },
+    "mobile": {
+      "viewport": 390,
+      "contentWidth": 390
+    }
+  },
+  "screenshots": [
+    "m9-gui-emergency-stop.png",
+    "m9-gui-approval-pending.png",
+    "m9-gui-approval-expired.png",
+    "m9-gui-approval-mobile.png",
+    "m9-gui-approval-accepted.png",
+    "m9-gui-credit.png",
+    "m9-gui-context.png",
+    "m9-gui-conflict.png",
+    "m9-gui-missing.png",
+    "m9-gui-inaccessible.png",
+    "m9-gui-replaced.png",
+    "m9-gui-recovery-mobile.png",
+    "m9-gui-stop-failed.png",
+    "m9-gui-stop-uncertain.png",
+    "m9-gui-stop-pending.png",
+    "m9-gui-stop-restart.png"
+  ],
+  "validation": {
+    "typecheck": "PASS",
+    "lint": "PASS (245 files)",
+    "test": "PASS (475/475)",
+    "focused": "PASS (35/35)",
+    "fixtures": "PASS (3/3)",
+    "build": "PASS",
+    "smoke": "PASS (development and production)",
+    "liveHarnessTests": "intentionally omitted (cost); no model calls",
+    "runnerShutdown": "PASS: final fresh start/quit exited 0; no gui-status, acceptance-app or Pi fixture processes remained"
+  },
+  "limits": [
+    "Context refresh uses Pause worker → Recheck → Fresh + checkpoint → Retry. No dedicated Refresh session button exists; worker native resume remains unsupported.",
+    "Stop uncertainty fixtures have no OS child and intentionally provide no termination evidence. The confirmed emergency stop uses an actual owned Pi protocol child.",
+    "Existing direct-child emergency-stop, no OS sandbox and OpenCode refused-tool limitations are unchanged."
+  ],
+  "qaNotes": [
+    "Early GUI locator waits were adjusted for collapsed resolved history and exact backend reason wording; no product failure was found.",
+    "No product runtime change was required. Both fixture apps and manual sentinels were stopped; data/worktrees retained for inspection.",
+    "Fixed fixture stdin shutdown after quit; earlier already-stopped fixture apps/sentinels left idle driver terminals, closed with EOF. Final runner exits without EOF. Typecheck and targeted lint rerun passed."
+  ]
+}

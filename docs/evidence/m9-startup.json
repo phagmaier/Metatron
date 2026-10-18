@@ -1,0 +1,263 @@
+{
+  "milestone": "M9 item 5",
+  "result": "PASS",
+  "date": "2026-10-18",
+  "mode": "Actual local startup and zero-prompt installed-CLI checks; no live model turns",
+  "platform": {
+    "name": "Omarchy",
+    "version": "4.0.5",
+    "archDerived": true
+  },
+  "tools": {
+    "mise": "2026.10.12",
+    "node": "v26.7.0",
+    "nodeLts": false,
+    "sqlite": "3.53.4",
+    "pnpm": "11.22.0",
+    "git": "2.56.0"
+  },
+  "versions": {
+    "date": "2026-10-18T22:35:15.065Z",
+    "directory": "/tmp/lao-startup-yynxW3",
+    "mode": "CLI version probes only, isolated configuration, no authentication or model calls",
+    "results": [
+      {
+        "harness": "codex",
+        "executable": "/home/phagmaier/.local/share/mise/installs/codex/latest/bin/codex",
+        "resolved": "/home/phagmaier/.local/share/mise/installs/codex/0.163.0/bin/codex",
+        "exitCode": 0,
+        "version": "codex-cli 0.163.0",
+        "diagnostic": "WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir \"/tmp\" (codex_home: AbsolutePathBuf(\"/tmp/lao-startup-yynxW3/versions/codex/codex\"))"
+      },
+      {
+        "harness": "claude",
+        "executable": "/home/phagmaier/.local/share/mise/installs/claude/latest/claude",
+        "resolved": "/home/phagmaier/.local/share/mise/installs/claude/2.1.302/claude",
+        "exitCode": 0,
+        "version": "2.1.302 (Claude Code)",
+        "diagnostic": ""
+      },
+      {
+        "harness": "opencode",
+        "executable": "/home/phagmaier/.local/bin/opencode",
+        "resolved": "/home/phagmaier/.opencode/bin/opencode",
+        "exitCode": 0,
+        "version": "opencode v2.0.32",
+        "diagnostic": ""
+      },
+      {
+        "harness": "pi",
+        "executable": "/home/phagmaier/.local/share/mise/installs/pi/latest/pi/pi",
+        "resolved": "/home/phagmaier/.local/share/mise/installs/pi/1.3.0/pi/pi",
+        "exitCode": 0,
+        "version": "1.3.0",
+        "diagnostic": ""
+      }
+    ]
+  },
+  "commands": [
+    {
+      "command": "mise current",
+      "result": "PASS; project pins installed"
+    },
+    {
+      "command": "mise install node@26.7.0 pnpm@11.22.0",
+      "result": "PASS; 0 installed, 2 already installed"
+    },
+    {
+      "command": "mise x -- pnpm install --frozen-lockfile",
+      "result": "PASS; already up to date; existing dependency tree, normal user store/cache"
+    },
+    {
+      "command": "mise x -- pnpm dev",
+      "result": "PASS",
+      "receipt": {
+        "command": "mise x -- pnpm dev",
+        "isolatedXdg": "/tmp/lao-startup-yynxW3/app-data",
+        "origin": "http://127.0.0.1:4317",
+        "health": {
+          "status": "ok",
+          "app": "Local Agent Orchestrator",
+          "milestone": "M4"
+        },
+        "html": 200,
+        "scripts": [
+          "/@vite/client",
+          "/main.tsx"
+        ],
+        "projects": 0
+      }
+    },
+    {
+      "command": "mise x -- pnpm start while dev owns port 4317",
+      "result": "EXPECTED REFUSAL",
+      "exitCode": 1,
+      "code": "EADDRINUSE",
+      "address": "127.0.0.1:4317"
+    },
+    {
+      "command": "Ctrl-C in dev terminal",
+      "result": "PASS; socket released",
+      "pnpmWrapperExitCode": 1
+    },
+    {
+      "command": "mise x -- pnpm build",
+      "result": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm start",
+      "result": "PASS",
+      "receipt": {
+        "command": "mise x -- pnpm build; mise x -- pnpm start",
+        "origin": "http://127.0.0.1:4317",
+        "health": {
+          "status": "ok",
+          "app": "Local Agent Orchestrator",
+          "milestone": "M4"
+        },
+        "html": 200,
+        "scripts": [
+          "/assets/index-76KZkc4s.js"
+        ],
+        "database": "/tmp/lao-startup-yynxW3/app-data/local-agent-orchestrator/state.sqlite",
+        "projects": 0,
+        "sessions": 0,
+        "foreignOriginStatus": 403
+      }
+    },
+    {
+      "command": "Ctrl-C in production terminal",
+      "result": "PASS; socket released",
+      "pnpmWrapperExitCode": 1
+    }
+  ],
+  "gui": {
+    "browser": "Playwright (previously authorized fallback)",
+    "development": "Rendered, connected journal, No saved projects yet",
+    "production": "Rendered, connected journal, empty saved state",
+    "freshNativeDiscovery": [
+      {
+        "harness": "codex",
+        "state": "login_required",
+        "version": "0.163.0",
+        "models": 8
+      },
+      {
+        "harness": "claude-code",
+        "state": "login_required",
+        "version": "2.1.302",
+        "models": 5,
+        "reason": "AUTH_ABSENT"
+      },
+      {
+        "harness": "opencode",
+        "state": "available",
+        "authenticated": "unknown",
+        "version": "2.0.32",
+        "models": 10
+      },
+      {
+        "harness": "pi",
+        "state": "login_required",
+        "version": "1.3.0",
+        "models": 0
+      }
+    ],
+    "missingHarnessProbe": {
+      "health": 200,
+      "results": [
+        {
+          "harness": "codex",
+          "state": "missing",
+          "nextStep": "Codex executable `codex` was not found on the app server's absolute PATH. Install Codex, make sure `codex` resolves in the shell that starts this app, restart the app and check again."
+        },
+        {
+          "harness": "claude-code",
+          "state": "missing",
+          "nextStep": "Claude Code executable `claude` was not found on the app server's absolute PATH. Install Claude Code, make sure `claude` resolves in the shell that starts this app, restart the app and check again."
+        },
+        {
+          "harness": "opencode",
+          "state": "missing",
+          "nextStep": "OpenCode executable `opencode` was not found on the app server's absolute PATH. Install OpenCode, make sure `opencode` resolves in the shell that starts this app, restart the app and check again."
+        },
+        {
+          "harness": "pi",
+          "state": "missing",
+          "nextStep": "Pi executable `pi` was not found on the app server's absolute PATH. Install Pi, make sure `pi` resolves in the shell that starts this app, restart the app and check again."
+        }
+      ],
+      "sessions": 0,
+      "mode": "production startup with PATH containing only pinned Node and sh; harnesses and Git absent"
+    },
+    "screenshots": [
+      "m9-startup-harnesses.png",
+      "m9-startup-missing-harnesses.png"
+    ]
+  },
+  "databases": [
+    {
+      "path": "/tmp/lao-startup-yynxW3/app-data/local-agent-orchestrator/state.sqlite",
+      "counts": {
+        "projects": 0,
+        "runs": 0,
+        "tasks": 0,
+        "attempts": 0,
+        "sessions": 0
+      }
+    },
+    {
+      "path": "/tmp/lao-startup-yynxW3/no-harness-data/local-agent-orchestrator/state.sqlite",
+      "counts": {
+        "projects": 0,
+        "runs": 0,
+        "tasks": 0,
+        "attempts": 0,
+        "sessions": 0
+      }
+    },
+    {
+      "path": "/tmp/lao-startup-yynxW3/occupied-data/local-agent-orchestrator/state.sqlite",
+      "counts": {
+        "projects": 0,
+        "runs": 0,
+        "tasks": 0,
+        "attempts": 0,
+        "sessions": 0
+      }
+    }
+  ],
+  "validation": {
+    "typecheck": "PASS",
+    "lint": "PASS (245 files)",
+    "test": "PASS (475/475)",
+    "testLog": "/tmp/lao-startup-yynxW3/test.log",
+    "focused": "PASS (15/15): harness-availability.test.ts and server.test.ts",
+    "fixtures": "PASS (3/3)",
+    "build": "PASS",
+    "smoke": "PASS (development and production)",
+    "gitDiffCheck": "PASS"
+  },
+  "changes": {
+    "readme": "Verified normal frozen install replaces temporary cache/store override; pinned install, shell prerequisite, PATH/login, XDG, port and stop notes clarified",
+    "runtime": "none",
+    "toolchain": "unchanged",
+    "dependencies": "unchanged",
+    "lockfile": "unchanged",
+    "osPackagesInstalled": 0,
+    "globalPackagesInstalled": 0,
+    "adr": "none"
+  },
+  "qaNotes": [
+    "Artificial Node-only PATH launch failed before app startup: pnpm wrapper exit 254, child exit -2 (missing shell). Repeated successfully with only Node and existing /bin/sh symlinked onto a probe-only PATH. No package install.",
+    "Codex --version warned that helper aliases cannot be created under /tmp; exit 0. Native zero-prompt discovery succeeded separately.",
+    "Health milestone M4 is a legacy field and not a beta-readiness claim.",
+    "Control-C pnpm ELIFECYCLE messages and occupied-port exit 1 are expected checks."
+  ],
+  "limitations": [
+    "Existing installed dependencies were reused; no fresh-OS install or network package download was tested.",
+    "Fresh-home login-required states do not block GUI startup, but the owner must supply supported authentication before native work. No login, model turn, entitlement or spend claim.",
+    "Existing direct-child stop, no OS sandbox, worker resume and OpenCode refused-tool limitations are unchanged."
+  ],
+  "next": "M9 item 6: verify project switching cannot attach native sessions/worktrees to a different repository"
+}

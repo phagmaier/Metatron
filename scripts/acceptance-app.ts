@@ -7,6 +7,7 @@ import { CodexRpc } from "../src/server/adapters/codex-rpc.ts";
 import { PiAdapter } from "../src/server/adapters/pi.ts";
 import { PiRpc } from "../src/server/adapters/pi-rpc.ts";
 import { startApp } from "../src/server/app.ts";
+import { GuiStatusStops } from "./gui-status-stops.ts";
 
 // The real app in its own process for scripts/acceptance.ts, so a scenario
 // can kill it like a crash. --fixtures substitutes deterministic protocol
@@ -44,6 +45,7 @@ const app = await startApp({
   databasePath: values.database,
   adapters: queue
     ? {
+        claude: new GuiStatusStops(),
         pi: new PiAdapter(
           directory,
           (_args, cwd, env) =>

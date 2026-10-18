@@ -6,15 +6,20 @@ The application coordinates native **Codex, Claude Code, OpenCode and Pi** sessi
 
 ## Run the app
 
-Prerequisites: Git and mise with the existing `.mise.toml` pins installed (Node **26.7.0**, pnpm **11.22.0**). Use mise for every Node/pnpm command. The pinned Node release currently reports `lts: false`; it is retained as required by `AGENTS.md`. No global packages or harness configuration changes are needed.
+Prerequisites: Git, mise, a browser and the normal POSIX shell (`sh`) supplied by Arch/Omarchy. Run these commands from this repository's root. The existing `.mise.toml` pins Node **26.7.0** and pnpm **11.22.0**; use mise for every Node/pnpm command. The pinned Node release reports `lts: false`; it is retained as required by `AGENTS.md`.
 
 ```sh
 mise current
-mise x -- pnpm install --frozen-lockfile --store-dir /tmp/lao-pnpm-store --cache-dir /tmp/lao-pnpm-cache
+mise install node@26.7.0 pnpm@11.22.0
+mise x -- pnpm install --frozen-lockfile
 mise x -- pnpm dev
 ```
 
-Open **http://127.0.0.1:4317**. One Node process serves the health API and the React GUI through Vite middleware. Frontend edits reload through Vite; restart the command after backend edits. Stop with Ctrl-C. The install command above is the one verified in the restricted development environment; a fresh unrestricted checkout can also use `mise x -- pnpm install --frozen-lockfile` with pnpm's normal user cache/store. No global configuration is changed by either command.
+Open **http://127.0.0.1:4317**. One Node process serves the health API and the React GUI through Vite middleware. Frontend edits reload through Vite; restart the command after backend edits. Stop with Ctrl-C; pnpm may print `ELIFECYCLE` for that intentional interruption. Only one instance can use port 4317: `EADDRINUSE` means it is already occupied; stop your other app instance from its own terminal before retrying.
+
+The explicit `mise install` only satisfies the two project pins and skips already-installed versions. The normal frozen-lockfile install was verified on Omarchy 4.0.5 using pnpm's user store/cache; no OS packages, global package installs or desktop configuration changes were needed. Do not force a different `--store-dir` onto an existing dependency tree. [Startup verification and exact environment](docs/startup-verification.md).
+
+The GUI and labelled FAKE demos start without harness credentials or CLIs. Native work needs the desired `codex`, `claude`, `opencode` or `pi` executable on the **launching shell's absolute PATH**, plus that harness's supported app-owned authentication. Open **Harness setup → Check harnesses** for zero-prompt version/login/catalog diagnostics; restart the app after changing PATH or its credential environment. Missing login in a fresh app home is expected, and listed models do not prove provider access. See [Harness setup](#harness-setup).
 
 For the built GUI:
 
@@ -22,6 +27,8 @@ For the built GUI:
 mise x -- pnpm build
 mise x -- pnpm start
 ```
+
+Both launch modes use the same default database, `$XDG_DATA_HOME/local-agent-orchestrator/state.sqlite` (or `~/.local/share/local-agent-orchestrator/state.sqlite`). To try either mode with separate data, put the override **after** mise: `mise x -- env XDG_DATA_HOME=/absolute/path/to/scratch pnpm dev` (or `pnpm start`). Setting XDG variables before `mise x` can change where mise looks for its own installed tools. Build before `pnpm start`; no database service, SQLite CLI, container runtime or desktop launcher is required for the verified setup.
 
 `GET /api/health` returns:
 
