@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
@@ -28,7 +29,7 @@ async function until(check: () => boolean) {
 }
 async function fixture(scenario = "message-hold") {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-worker-messages-");
+  const data = await mkdtemp(join(tmpdir(), "lao-worker-messages-"));
   const logPath = join(data, "messages.jsonl");
   const controlLogPath = join(data, "controls.txt");
   const pi = new PiAdapter(

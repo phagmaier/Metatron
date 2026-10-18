@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
@@ -24,7 +25,7 @@ async function fixture(
 ) {
   const repo = await createGitFixture();
   await prepare?.(repo);
-  const data = await mkdtemp("/tmp/lao-native-engine-");
+  const data = await mkdtemp(join(tmpdir(), "lao-native-engine-"));
   const store = new Store(join(data, "state.sqlite"));
   const launches: string[][] = [];
   const pi = new PiAdapter(data, (args, cwd, env) => {
@@ -505,7 +506,7 @@ test("a candidate branch that no longer matches its record is refused before any
   }
 });
 test("Pi disposal releases its session even when diagnostics cannot be saved", async () => {
-  const data = await mkdtemp("/tmp/lao-pi-dispose-");
+  const data = await mkdtemp(join(tmpdir(), "lao-pi-dispose-"));
   try {
     const pi = new PiAdapter(
       data,

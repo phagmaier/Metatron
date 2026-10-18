@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PiAdapter } from "../../src/server/adapters/pi.ts";
@@ -18,7 +19,7 @@ export const writerId = "00000000-0000-4000-8000-000000000011";
 // The fixture starts no native harness and never contacts a provider.
 export async function reviewWorkflowFixture(scenario = "review-findings") {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-review-workflow-");
+  const data = await mkdtemp(join(tmpdir(), "lao-review-workflow-"));
   const baseSha = await repo.git("rev-parse", "HEAD");
   const open = () =>
     startApp({

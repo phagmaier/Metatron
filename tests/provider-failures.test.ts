@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import type {
@@ -63,7 +64,7 @@ const completed: SessionEvent = {
 
 async function fixture(events: SessionEvent[], cap = 24) {
   const repo = await createGitFixture();
-  const directory = await mkdtemp("/tmp/lao-provider-failure-");
+  const directory = await mkdtemp(join(tmpdir(), "lao-provider-failure-"));
   const path = join(directory, "state.sqlite");
   const playback = new FailurePlayback([events]);
   let store = new Store(path);

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
@@ -17,7 +18,7 @@ import { createGitFixture } from "./helpers/git-fixture.ts";
 
 async function fixture(scenario: string, permission = "workspace_write") {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-worker-help-");
+  const data = await mkdtemp(join(tmpdir(), "lao-worker-help-"));
   let sessions = 0;
   const pi = new PiAdapter(
     data,
@@ -364,7 +365,7 @@ test("restart during a durable help intent creates one recovery diagnostic witho
 
 test("owner cancellation during a fake worker's help stop keeps it cancelled and preserves its request", async () => {
   const repo = await createGitFixture();
-  const directory = await mkdtemp("/tmp/lao-fake-help-");
+  const directory = await mkdtemp(join(tmpdir(), "lao-fake-help-"));
   const store = new Store(join(directory, "state.sqlite"));
   const engine = new Engine(store, directory);
   try {

@@ -159,3 +159,139 @@
 - PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **456/456**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` dev/prod; initial lint assertion wrapping failed and was corrected. Receipt/order/retention checks, 34 matrix links and exact-environment-secret exclusion across 11 artifacts passed. Native retry/other live harness turns intentionally omitted (not authorized).
 - Next **M8 item 8**: strict native Pi cancellation remains open after the fixture-only fix; both Codex/Pi allowances exhausted. Resume `mise current`, [matrix prerequisites](adapter-smoke-matrix.md#blockers-and-exact-continuation); fresh scope needed before another turn, native worker role-denial and writer/review/integration still open, integration only after actual review and separate approval. M9 untouched.
 
+## 2026-10-18 — M8 item 8: fresh Pi native cancellation remains failed
+
+- Owner authorized up to two Pi `openai/gpt-6-luna` / low reader/cancellation turns, no retries/writes/other harnesses/writer/reviewer/integration. Fresh native OAuth readiness and [zero-prompt selection preflight](evidence/m8-pi-cancellation-fresh-preflight.json) passed.
+- Ran `mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:workers --allow-live --harness pi --model openai/gpt-6-luna --thinking low --verify-cancel --output /tmp/metatron-m8-auth-sjdG2wvR/pi-reader-cancel-fresh-native-20261018.json` once: **exit 1**, two prompts. [Unchanged fresh receipt](evidence/m8-pi-reader-cancel-fresh-native.json); reader/settings passed, abort normalization now natively confirmed with no session error.
+- Strict `noSuccessReport` remains false: [journal analysis](evidence/m8-pi-cancellation-fresh-analysis.json) result 109 → text 112 → stop 113 → interruption 117 → owned exit 119, task `CANCELLED`, clean worktrees. Both native failures/state retained, no replay; fixture/checked personal metadata unchanged.
+- README/matrix/recon/handoff/todo note updated, no checkbox/M9/app-code/test/dependency/toolchain/spec/ADR change. Archived two earlier preparation entries verbatim in existing M8 history to retain the progress bound.
+- Next **M8 item 8**: `mise current`, matrix prerequisites; investigate pre-stop submission before another scoped native run. All allowances exhausted; worker role-denial and writer/review/integration remain open, integration only after actual review and separate approval. Other live cost-bearing tests intentionally omitted (not authorized); default/typecheck/fixtures/build not rerun (evidence/docs-only).
+- PASS: `mise x -- pnpm lint`; throwaway `mise x -- node --input-type=module -e …` verified byte-identical receipts, exact retained journal order, two attempts/sessions with no candidate/review/integration, unchanged checkboxes/M9, both failed native states retained, verbatim history archival, 40 matrix links and exact-environment-secret exclusion across 10 artifacts.
+
+## 2026-10-18 — M8 item 8: approval-held writer/reviewer preparation
+
+- Added `scripts/live-writer.ts` / `pnpm test:live:writer`: Pi writer plus distinct read-only Reviewer, exact README/candidate checks, effective-fresh independent context and isolated tested preview. Both spend/disposable-write gates required for at most two future turns; default zero-turn discovery. Atomic fresh default database claim prevents replay; native success/failure retained for owner GUI inspection. No approve/apply path.
+- [Inert lifecycle/HTTP proof](evidence/m8-writer-held-fixtures.json): held preview passes; incorrect edits, requested changes and reviewer mutation stop before preview, either gate alone dispatches nothing, existing DB/integration option refuse without child spawn. Initial requested-vs-effective context check and throwaway diff-field mistake corrected without policy relaxation. [Actual Pi 1.3.0 preflight](evidence/m8-writer-preflight.json): auth required, zero attempts/sessions; owner checkout and checked personal metadata unchanged.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **455/455**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` dev/prod. No native turn/login/Write/integration/check-off or new ADR; M9 untouched. Next **M8 item 8**: `mise current`, [matrix prerequisites](adapter-smoke-matrix.md#blockers-and-exact-continuation), fresh native auth/spend/write authorization, then separate post-review integration approval. Archived item 4 verbatim in M8 history; own inert scratch removed after verification.
+
+## 2026-10-18 — M8 item 8: corrected Pi cancellation native PASS
+
+- `scripts/live-workers.ts` now uses a cancellation-only immutable read-only Reader snapshot with interim narration before normal final reporting; generic launcher's concise Reviewer guidance competed with the old objective. Exact model reasoning unknown; no worker policy/authority or strict-check change.
+- [Inert CLI proof](evidence/m8-pi-cancellation-narration-fixtures.json): positive PASS; premature-result/already-completed still fail with no retry. Initial fixture produced no receipt using nested XDG; corrected fixture-only paths, removed owned scratch/hooks after preservation.
+- Owner authorized a fresh two-turn Pi `openai/gpt-6-luna` / low reader/cancel scope, no retries/writes/other harnesses/writer/reviewer lifecycle/integration. Native OAuth and zero-prompt preflight passed.
+- Native PASS, exit 0, exactly two prompts: `mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:workers --allow-live --harness pi --model openai/gpt-6-luna --thinking low --verify-cancel --output /tmp/metatron-m8-auth-sjdG2wvR/pi-narration-cancel-native-20261018.json`. [Unchanged receipt](evidence/m8-pi-cancellation-narration-native.json), [scope/preflight/limits](evidence/m8-pi-cancellation-narration-scope.json): text 94 → stop 95 → interruption 99 → owned exit 0, `CANCELLED`, no error/report, all six cancellation checks true.
+- Both worktrees/fixture/checked personal metadata unchanged; successful native scratch cleaned, both earlier failed native states/login retained. README/matrix/recon/handoff/todo updated without check-off; archived two older lifecycle entries verbatim. No dependency/toolchain/spec/ADR or generic adapter change.
+- Next **M8 item 8**: `mise current`, matrix prerequisites; native worker role-denial and writer/independent review/separately approved integration remain open. All allowances exhausted; other live cost-bearing tests intentionally omitted (not authorized). M9 untouched; integration only after actual review and separate approval.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **456/456**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` dev/prod. Throwaway `mise x -- node --input-type=module -e …` verified native receipt/order/retention, unchanged checkboxes/M9, verbatim archival, scratch removal, 48 matrix links and exact-environment-secret exclusion across 15 artifacts.
+
+## Progress-log M8 entries moved verbatim at M9 start (2026-10-18)
+
+### 2026-10-17 — M8 item 1: Claude SDK implementation (archived)
+
+- Implemented official CLI/SDK workers, guarded native permissions, durable receipts, checkout identity and no-replay recovery; 383/383 tests and standard checks passed. Native auth initially blocked; no personal credential extraction.
+- [Original dependency justification, commands, fixtures and limitations](progress-m8-history.md#2026-10-17--m8-item-1-claude-sdk-implementation-authenticated-live-gate-blocked); later entries below resolve the gate.
+
+### 2026-10-17 — M8 item 1 Slice A: setup-token compatibility (archived)
+
+- Added narrow setup-token forwarding/classification with preserved provider precedence, vendor-policy caveat and five-scenario smoke; 392/392 tests, focused 61/61 and standard checks passed. Inert/no-model probes only; real auth initially absent.
+- [Original commands, authentication ADR, blockers and evidence](progress-m8-history.md#2026-10-17--m8-item-1-slice-a-setup-token-compatibility-native-model-gate-blocked); no entitlement inferred.
+
+### 2026-10-17 — M8 item 1 native gate completed (archived)
+
+- Owner-authorized Claude 2.1.302/SDK 0.3.302 five-turn smoke passed: streamed read, same-ID resume, one-shot approval/independent denial and active cancellation. Fixed observed skill/plugin/effort/stream differences; 400/400 tests and standard checks passed.
+- [Original commands, native receipts, prior failure chain, token cleanup and limits](progress-m8-history.md#2026-10-17--m8-item-1-native-gate-completed); no future usage authorization, entitlement or full matrix claim.
+
+### 2026-10-17 — M8 item 2: OpenCode v2 native adapter (archived)
+
+- Official client/native 2.0.29, private authenticated loopback host, permissions/resume/stream/cancel and engine integration verified with five authorized prompts plus no-model/browser fixtures. Default 421/421, focused 21/21 and standard checks passed; no OS sandbox or complete matrix claim.
+- [Original commands, dependency justification, ADR, diagnostics and evidence](progress-m8-history.md#2026-10-17--m8-item-2-opencode-v2-native-adapter); no future usage authorization; next was M8 item 3.
+
+### 2026-10-17 — M8 item 3: Pi/Codex capability revisit (archived)
+
+- Codex 0.163.0 feature pagination now fails closed across all pages; native sleep mapping and shared unsupported-control diagnostics/UI corrected. No-model capabilities/browser fixtures verified; default 423/423, fixtures 3/3 and standard checks passed, with no paid turn or login.
+- [Original files, commands, regressions, screenshots and limits](progress-m8-history.md#2026-10-17--m8-item-3-picodex-capability-revisit); Pi 1.3.0 unchanged; next was M8 item 4.
+
+### 2026-10-17 — M8 item 4: harness installed/auth state and diagnostics (archived)
+
+- Added Harness setup states, harness-reported versions and actionable auth/model diagnostics; shared absolute-PATH resolution fixed planted-executable launches. Default 427/427, fixtures 3/3, standard checks, four-native zero-prompt discovery and desktop/mobile fixture UI passed.
+- [Original files, commands, regression evidence and limitations](progress-m8-history.md#2026-10-17--m8-item-4-harness-installedauth-state-and-diagnostics); no login/token/dependency/ADR change; next was M8 item 5.
+
+### 2026-10-17 — M8 item 5: four harnesses as read-only workers (archived)
+
+- All four native read-only workers passed with confirmed model/thinking; Codex readers and `settings_verified` added. Default 432/432 and standard checks passed; first Pi receipt retains unexplained personal metadata writes and no PASS.
+- [Original files, authorizations, commands, failures and limitations](progress-m8-history.md#2026-10-17--m8-item-5-four-harnesses-as-read-only-workers); next was M8 item 6.
+
+### 2026-10-17 — M8 item 6: Lead support and tested worker fallbacks (archived)
+
+- Codex alone implements Lead; native scoped invocation/denial passed, Pi/Claude/OpenCode coordinator refusal and inert fallback 3/3 verified. Default 435/435 and standard checks passed; no all-four Lead claim.
+- [Original files, authorizations, commands, failures and limitations](progress-m8-history.md#2026-10-17--m8-item-6-lead-support-and-tested-worker-fallbacks); next was M8 item 7.
+
+### 2026-10-17 — M8 item 7: harness config/session/credential isolation (archived)
+
+- Fixed environment credential/preload leakage and Claude successor lease disposal; nine failing-before/passing-after regressions, default 444/444 and standard checks passed. Actual four-native zero-prompt isolation preserved seven watched roots and 10 existing process identities; no broad OS/cloud-entitlement claim.
+- [Original files, commands, ADR, native evidence and limitations](progress-m8-history.md#2026-10-17--m8-item-7-harness-configsessioncredential-isolation); next was M8 item 8; historical Pi writes remain unattributed.
+
+### 2026-10-17 — M8 item 8: smoke matrix recorded; native completion BLOCKED (archived)
+
+- Recorded the seven-check matrix and actual four-harness zero-prompt discovery/refusals; default 444/444 and standard checks passed. Owner chose spending HOLD; native streaming/lifecycle/denial/writer gates remained open.
+- [Original authorization decision, exact commands, evidence and limitations](progress-m8-history.md#2026-10-17--m8-item-8-smoke-matrix-recorded-native-completion-blocked); no box checked, M9 untouched.
+
+### 2026-10-17 — Desktop development readiness (no milestone development)
+
+- Verified pinned Node 26.7.0 / pnpm 11.22.0, Git 2.56.0; installed locked dependencies with `mise x -- pnpm install --frozen-lockfile` (offline metadata incomplete). No manifest, lockfile, pin or application-code changes.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **444/444**, `mise x -- pnpm test:fixtures`, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production. Tests/smoke require loopback permission outside the tool sandbox; interrupted the restricted run. [Test log](/tmp/metatron-desktop-tests-unrestricted.log).
+- Zero-prompt native discovery/refusals PASS: Codex 0.163.0, Claude 2.1.302, Pi 1.3.0, OpenCode **2.0.32** (previous receipt 2.0.29; paid compatibility unverified). [Desktop receipt](/tmp/metatron-desktop-harnesses-20261017.json); disposable Codex/Claude/Pi homes require auth, OpenCode entitlement unknown; checked personal-config metadata unchanged.
+- Origin main matches HEAD `be65ee6`; pre-existing `prompt.md` deletion untouched. No existing desktop app-data directory: laptop tasks/profiles/app-owned authentication are not migrated. No model turns, global configuration changes, ADR or milestone boxes checked.
+- Ready for fixture-based development: `mise x -- pnpm dev` → http://127.0.0.1:4317. Next remains **M8 item 8**, with the existing spending HOLD and separate native integration approval requirement intact.
+
+### 2026-10-18 — M8 item 8: cost-free smoke runner preparation; native HOLD (archived)
+
+- Added ordered worker/Lead stream/lifecycle runners with strict cancellation/no replay; inert positive/negative scenarios and four-native zero-prompt preflight passed. Default 448/448, fixtures 3/3 and standard checks passed; no native turn or check-off.
+- [Original files, commands, receipts and limitations](progress-m8-history.md#2026-10-18--m8-item-8-cost-free-smoke-runner-preparation-native-hold); next remained M8 item 8 with fresh spending scope and separate post-review integration approval.
+
+### 2026-10-18 — M8 item 8: cross-assignment gateway preparation; spending HOLD (archived)
+
+- Added a server-observed cross-assignment `INVALID_INPUT` probe, not worker-to-Lead role denial. Inert positive/negative and native zero-prompt preflights passed; default 455/455, focused 11/11, fixtures 3/3 and standard checks passed; no native turn/check-off.
+- [Original files, commands, receipts and limitations](progress-m8-history.md#2026-10-18--m8-item-8-cross-assignment-gateway-preparation-spending-hold); worker role-denial and native writer/review/integration remained open.
+
+### 2026-10-18 — M8 item 8: approval-held writer/reviewer preparation (archived)
+
+- Added `scripts/live-writer.ts` / `pnpm test:live:writer`: approval-held Pi writer plus independent read-only Reviewer, both gates required, at most two turns, no approve/apply path; inert lifecycle proof and zero-turn native preflight.
+- [Original details, evidence and checks](progress-m8-history.md#2026-10-18--m8-item-8-approval-held-writerreviewer-preparation); no native turn, next remained M8 item 8.
+
+### 2026-10-18 — M8 item 8: native Codex Lead lifecycle (archived)
+
+- Owner-authorized three-turn Codex lifecycle passed: settings/gateway denial, same-thread completed follow-up and strict cancellation. App-owned login retained; default checks not rerun for evidence/docs-only work.
+- [Original commands, auth history, native receipt and limitations](progress-m8-history.md#2026-10-18--m8-item-8-native-codex-lead-lifecycle); allowance exhausted, next remained M8 item 8, M9 untouched.
+
+### 2026-10-18 — M8 item 8: Pi reader passed; strict cancellation held (archived)
+
+- Owner-authorized two-turn Pi reader passed; cancellation failed on requested-abort error and pre-stop result. Normalization fixed with failing-before/passing-after regressions; default 456/456 and standard checks passed, original native failure retained.
+- [Original commands, OAuth/preflight, native ordering, inert proof and limitations](progress-m8-history.md#2026-10-18--m8-item-8-pi-reader-passed-strict-cancellation-held); allowance exhausted, next remained M8 item 8, M9 untouched.
+
+### 2026-10-18 — M8 item 8: fresh Pi native cancellation remains failed (archived)
+
+- Owner-authorized two-turn Pi reader/cancellation: reader passed, abort normalization natively confirmed, strict `noSuccessReport` still false (result before stop). Native state retained, no replay.
+- [Original commands, receipts, journal analysis and limitations](progress-m8-history.md#2026-10-18--m8-item-8-fresh-pi-native-cancellation-remains-failed); allowance exhausted, next remained M8 item 8, M9 untouched.
+
+### 2026-10-18 — M8 item 8: corrected Pi cancellation native PASS (archived)
+
+- Owner-authorized two-turn Pi reader/cancellation with a cancellation-only read-only Reader snapshot: native PASS, all six strict cancellation checks; earlier failures retained.
+- [Original commands, receipts, fixtures and checks](progress-m8-history.md#2026-10-18--m8-item-8-corrected-pi-cancellation-native-pass); allowance exhausted, next remained M8 item 8, M9 untouched.
+
+### 2026-10-18 — M8 item 8: zero-prompt native worker gateway catalog
+
+- Added `scripts/smoke-worker-catalog.ts` / `pnpm smoke:worker-catalog` (script only; no app/policy change). It starts a real read-only worker session without any prompt behind a recording loopback proxy, records the native client's own `initialize`/`tools/list`, then calls every Lead-only tool on that binding from the script.
+- Native PASS, zero prompts: Codex 0.163.0, OpenCode 2.0.32, Pi 1.3.0 clients fetched exactly the five worker tools and made no tool call; 12/12 Lead-only `POLICY_DENIED`, journaled, no state created ([Codex](evidence/m8-worker-catalog-codex.json), [OpenCode](evidence/m8-worker-catalog-opencode.json), [Pi](evidence/m8-worker-catalog-pi.json)). Claude **BLOCKED** on `AUTH_ABSENT` before the MCP handshake ([receipt](evidence/m8-worker-catalog-claude-code.json), DB retained).
+- Limitation: the denials come from the script, not a native Lead-tool call; a client's local handling of a model-requested unlisted tool would need a model turn, which is not authorized. Matrix row 6/blocker 4, recon, todo note updated; no checkbox, M9 untouched.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **456/456**, `mise x -- pnpm test:fixtures` **3/3**. Live cost-bearing tests intentionally omitted (not authorized); build/smoke not rerun (no app code changed).
+- Next **M8 item 8**: `mise current`, [matrix prerequisites](adapter-smoke-matrix.md#blockers-and-exact-continuation). Remaining: native writer → independent review → separately approved integration (fresh spend/write scope; integration only after actual review and separate approval); Claude auth.
+
+### 2026-10-18 — M8 item 8: native writer/review/integration and Claude catalog; item checked
+
+- Owner approved two Pi `openai/gpt-6-luna` / low turns: `mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm test:live:writer --model openai/gpt-6-luna --thinking low --allow-live --allow-disposable-write --output …/pi-writer-native-20261018.json` → native PASS, exit 0: exact README candidate, independent fresh read-only review `pass`, 8/8 preview checks, held for the owner ([receipt](evidence/m8-writer-native.json)).
+- Separate integration approval in chat (auto-mode refused the first agent-issued approve; owner re-approved explicitly). Owner decision/apply API on `pnpm dev` for that preview only: disposable fixture `main` fast-forwarded 775d4f8 → cd0b39f, re-apply blocked, owner checkout unchanged ([receipt](evidence/m8-writer-integration-native.json)). Not a GUI click; not a managed user repo.
+- Claude setup-token via the ADR's one-off private file handoff (deleted after use; exact-token search of receipt/app home/repo found nothing): zero-prompt catalog PASS, 5 worker tools only, 12/12 Lead-only `POLICY_DENIED` ([receipt](evidence/m8-worker-catalog-claude-code-setup-token.json)); earlier `AUTH_ABSENT` receipt kept. Reusing the owner's running Claude login was declined per the ADR.
+- Matrix, recon and todo updated; **M8 item 8 checked**: every §13.3 row is PASS or a recorded unsupported/limitation, one-writer row via Pi. Limitations: probe-originated Lead denials; Pi resume/Codex writer unsupported; Claude/OpenCode writers not run through review/integration. Two older entries archived verbatim. No app code/dependency/toolchain/spec/ADR change.
+- PASS: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **456/456**, `mise x -- pnpm test:fixtures` **3/3**. Build/smoke not rerun (no app code changed). All live allowances consumed; nothing else ran live.
+- Next: **M9** first item (`mise current`, then `todo.md` M9). Beta completion not claimed.

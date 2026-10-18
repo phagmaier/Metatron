@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -26,7 +27,7 @@ const fixturePath = (name: string) =>
 
 test("owner saves a native team over HTTP, starts a Codex Lead run that dispatches its custom Pi profile, and the run keeps its snapshot across edits, deletion and app restart", async () => {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-teams-");
+  const data = await mkdtemp(join(tmpdir(), "lao-teams-"));
   const log = join(data, "codex-fixture.log");
   const piArgs: string[][] = [];
   const options = {

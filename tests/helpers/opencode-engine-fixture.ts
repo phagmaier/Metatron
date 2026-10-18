@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
@@ -11,7 +12,7 @@ import { opencodeFixtureOptions } from "./opencode-fixture.ts";
 
 export async function opencodeEngineFixture(development = false) {
   const repo = await createGitFixture();
-  const directory = await mkdtemp("/tmp/lao-opencode-engine-");
+  const directory = await mkdtemp(join(tmpdir(), "lao-opencode-engine-"));
   const baseline = await repo.git("rev-parse", "HEAD");
   const options = {
     development,

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -45,7 +46,7 @@ after(() => {
 for (const harness of ["pi", "claude-code", "opencode"] as const) {
   test(`${harness} refuses coordinator authority; a saved Codex-Lead team instead dispatches its reader and consumes the report`, async () => {
     const repo = await createGitFixture();
-    const directory = await mkdtemp("/tmp/lao-lead-fallback-");
+    const directory = await mkdtemp(join(tmpdir(), "lao-lead-fallback-"));
     const baseline = await repo.git("rev-parse", "HEAD");
     const sdk = claudeSdkFixture({
       script: async function* (context) {

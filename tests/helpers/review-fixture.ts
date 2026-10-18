@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PiAdapter } from "../../src/server/adapters/pi.ts";
@@ -15,7 +16,7 @@ export async function reviewFixture(
   initialWriterScenario = "tracked",
 ) {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-review-result-");
+  const data = await mkdtemp(join(tmpdir(), "lao-review-result-"));
   let writerScenario = initialWriterScenario;
   const pi = new PiAdapter(
     data,

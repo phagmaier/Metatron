@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
@@ -154,7 +155,7 @@ export class ScriptedClaude implements HarnessAdapter {
 
 export async function claudeEngineFixture() {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-claude-engine-");
+  const data = await mkdtemp(join(tmpdir(), "lao-claude-engine-"));
   const baseline = await repo.git("rev-parse", "HEAD");
   const adapter = new ScriptedClaude();
   const options = {

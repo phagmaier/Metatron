@@ -1,0 +1,263 @@
+{
+  "harness": "claude-code",
+  "selected": {
+    "model": "haiku",
+    "thinking": "low"
+  },
+  "submittedPrompts": 0,
+  "boundary": "Native client catalog fetch plus probe-originated server-side Lead-tool denials on the same worker binding; not a native-client Lead-tool invocation",
+  "version": "2.1.302",
+  "nativeExchanges": [
+    {
+      "httpMethod": "POST",
+      "rpcMethod": "server/discover",
+      "issuedToken": true,
+      "status": 200
+    },
+    {
+      "httpMethod": "POST",
+      "rpcMethod": "initialize",
+      "issuedToken": true,
+      "status": 200,
+      "clientInfo": {
+        "name": "claude-code",
+        "title": "Claude Code",
+        "version": "2.1.302",
+        "description": "Anthropic's agentic coding tool",
+        "websiteUrl": "https://claude.com/claude-code"
+      }
+    },
+    {
+      "httpMethod": "POST",
+      "rpcMethod": "notifications/initialized",
+      "issuedToken": true,
+      "status": 202
+    },
+    {
+      "httpMethod": "GET",
+      "rpcMethod": null,
+      "issuedToken": true,
+      "status": 405
+    },
+    {
+      "httpMethod": "POST",
+      "rpcMethod": "tools/list",
+      "issuedToken": true,
+      "status": 200,
+      "listedTools": [
+        "read_assignment",
+        "report_progress",
+        "submit_result",
+        "report_issue",
+        "request_human_action"
+      ]
+    }
+  ],
+  "expectedWorkerCatalog": [
+    "read_assignment",
+    "report_issue",
+    "report_progress",
+    "request_human_action",
+    "submit_result"
+  ],
+  "leadOnlyTools": [
+    "get_run_status",
+    "list_tasks",
+    "get_task",
+    "get_worker_status",
+    "read_report",
+    "propose_task",
+    "escalate_issue",
+    "request_human_input",
+    "assign_task",
+    "request_revision",
+    "request_review",
+    "run_workflow"
+  ],
+  "probeLeadDenials": [
+    {
+      "tool": "get_run_status",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "list_tasks",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "get_task",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "get_worker_status",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "read_report",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "propose_task",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "escalate_issue",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "request_human_input",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "assign_task",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "request_revision",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "request_review",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "tool": "run_workflow",
+      "isError": true,
+      "code": "POLICY_DENIED"
+    }
+  ],
+  "gatewayJournal": [
+    {
+      "type": "gateway.connected",
+      "payload": {
+        "role": "worker",
+        "mode": "supervised",
+        "version": "lao-tools/5"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "get_run_status",
+        "code": "POLICY_DENIED",
+        "message": "get_run_status is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "list_tasks",
+        "code": "POLICY_DENIED",
+        "message": "list_tasks is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "get_task",
+        "code": "POLICY_DENIED",
+        "message": "get_task is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "get_worker_status",
+        "code": "POLICY_DENIED",
+        "message": "get_worker_status is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "read_report",
+        "code": "POLICY_DENIED",
+        "message": "read_report is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "propose_task",
+        "code": "POLICY_DENIED",
+        "message": "propose_task is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "escalate_issue",
+        "code": "POLICY_DENIED",
+        "message": "escalate_issue is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "request_human_input",
+        "code": "POLICY_DENIED",
+        "message": "request_human_input is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "assign_task",
+        "code": "POLICY_DENIED",
+        "message": "assign_task is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "request_revision",
+        "code": "POLICY_DENIED",
+        "message": "request_revision is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "request_review",
+        "code": "POLICY_DENIED",
+        "message": "request_review is not a worker tool"
+      }
+    },
+    {
+      "type": "gateway.denied",
+      "payload": {
+        "tool": "run_workflow",
+        "code": "POLICY_DENIED",
+        "message": "run_workflow is not a worker tool"
+      }
+    }
+  ],
+  "checks": {
+    "nativeSessionStarted": true,
+    "nativeClientInitialized": true,
+    "nativeClientListedTools": true,
+    "servedExactlyWorkerCatalog": true,
+    "noNativeToolCalls": true,
+    "everyLeadToolDenied": true,
+    "deniedJournaled": true,
+    "noStateCreatedByDenials": true
+  },
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "passed": true,
+  "limitations": [
+    "No model prompt: whether a model would attempt an unlisted Lead tool, and how the native client rejects it locally, is not observed",
+    "Lead-tool denials are sent by this script with the native session's binding, not by the native client"
+  ],
+  "retained": null
+}

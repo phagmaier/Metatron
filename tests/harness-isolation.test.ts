@@ -7,6 +7,7 @@ import {
   rm,
   writeFile,
 } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -17,7 +18,7 @@ import { PiRpc } from "../src/server/adapters/pi-rpc.ts";
 
 for (const harness of ["codex", "pi", "pi-version"] as const) {
   test(`${harness} cannot inherit a Claude setup-token, personal-session selectors or executable preload`, async () => {
-    const root = await mkdtemp("/tmp/lao-env-isolation-");
+    const root = await mkdtemp(join(tmpdir(), "lao-env-isolation-"));
     const marker = join(root, "preload-executed");
     const preload = join(root, "preload.mjs");
     await writeFile(

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
@@ -135,7 +136,7 @@ async function leadFixture(
   } = {},
 ) {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-lead-");
+  const data = await mkdtemp(join(tmpdir(), "lao-lead-"));
   const log = join(data, "codex-fixture.log");
   const piArgs: string[][] = [];
   const pi = new PiAdapter(data, (args, cwd, env) => {

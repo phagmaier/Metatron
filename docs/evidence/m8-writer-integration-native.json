@@ -1,0 +1,148 @@
+{
+  "scope": "M8 item 8 row 7: owner-approved integration of the reviewed Pi writer preview from m8-writer-native.json into its disposable fixture only",
+  "ownerAuthorization": "Owner approved in chat on 2026-10-18 after a plain-language summary of the one-line README change and its independent pass review. Claude Code auto-mode first refused the agent-issued approve call; the owner then explicitly re-approved and the agent issued the calls. A GUI click was offered but not used.",
+  "integrationId": "ac4816ed-966a-45d8-8459-31673dad2a43",
+  "candidateId": "39226c8e-c500-4570-8f5f-d5983d9ca37d",
+  "reviewId": "042695ba-f7e6-443b-a64b-60c3ddf408e3",
+  "commands": [
+    "GET /api/local-session (token kept in-process, never recorded)",
+    "GET /api/integrations/plan?integrationId=ac4816ed-966a-45d8-8459-31673dad2a43",
+    "POST /api/integrations/decision {decision:approve, rationale}",
+    "GET /api/integrations/plan (blockers must be empty)",
+    "POST /api/integrations/apply {confirm: method/expectedSha/resultSha/checkoutPath copied from that plan}",
+    "GET /api/integrations/plan"
+  ],
+  "planBefore": {
+    "integrationId": "ac4816ed-966a-45d8-8459-31673dad2a43",
+    "destinationBranch": "main",
+    "expectedSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "currentSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "resultSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "method": "fast_forward_checkout",
+    "checkoutPath": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+    "commands": [
+      {
+        "cwd": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+        "args": [
+          "-c",
+          "submodule.recurse=false",
+          "merge",
+          "--ff-only",
+          "--no-stat",
+          "--no-autostash",
+          "--no-overwrite-ignore",
+          "--no-verify-signatures",
+          "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011"
+        ]
+      }
+    ],
+    "blockers": [
+      "Only approved work that is ready to integrate, or blocked from it, can be applied"
+    ]
+  },
+  "planApproved": {
+    "integrationId": "ac4816ed-966a-45d8-8459-31673dad2a43",
+    "destinationBranch": "main",
+    "expectedSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "currentSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "resultSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "method": "fast_forward_checkout",
+    "checkoutPath": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+    "commands": [
+      {
+        "cwd": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+        "args": [
+          "-c",
+          "submodule.recurse=false",
+          "merge",
+          "--ff-only",
+          "--no-stat",
+          "--no-autostash",
+          "--no-overwrite-ignore",
+          "--no-verify-signatures",
+          "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011"
+        ]
+      }
+    ],
+    "blockers": []
+  },
+  "decision": {
+    "outcome": "approved",
+    "decidedAt": "2026-10-18T10:13:30.756Z",
+    "rationale": "Owner approved in chat on 2026-10-18 after a plain-language summary of the reviewed one-line disposable-fixture README change; applied by the coding agent on the owner's instruction."
+  },
+  "previewStatus": "passed",
+  "applications": [
+    {
+      "id": "d7c6fc7d-9f91-4417-9e22-4e46c4c07c1a",
+      "status": "applied",
+      "method": "fast_forward_checkout",
+      "checkoutPath": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+      "expectedSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+      "resultSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+      "commands": [
+        {
+          "cwd": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+          "args": [
+            "-c",
+            "submodule.recurse=false",
+            "merge",
+            "--ff-only",
+            "--no-stat",
+            "--no-autostash",
+            "--no-overwrite-ignore",
+            "--no-verify-signatures",
+            "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011"
+          ]
+        }
+      ],
+      "startedAt": "2026-10-18T10:13:30.869Z",
+      "finishedAt": "2026-10-18T10:13:30.900Z",
+      "observedSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+      "diagnostic": null
+    }
+  ],
+  "planAfter": {
+    "integrationId": "ac4816ed-966a-45d8-8459-31673dad2a43",
+    "destinationBranch": "main",
+    "expectedSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "currentSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "resultSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "method": "record_existing",
+    "checkoutPath": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+    "commands": [],
+    "blockers": [
+      "Only approved work that is ready to integrate, or blocked from it, can be applied"
+    ]
+  },
+  "git": {
+    "fixtureMain": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "fixtureHead": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "fixtureClean": true,
+    "readme": "# Disposable fixture\n\nM8 disposable writer proof 728470a2-0eb7-4c3b-9f7b-b4de53a2e719\n",
+    "ownerCheckout": {
+      "head": "42727ce43aa4d5d05778f57c0744401c555cbc11",
+      "statusSha256": "64ea286b60203c065edacb72b52b42d5f9491609bc8c2fbd7e02e177d48ec6c1",
+      "observed": "before the writer run, after the writer run, and immediately after apply; identical each time, before these evidence copies were added"
+    }
+  },
+  "checks": {
+    "planMatchedReviewedPreview": true,
+    "blockedBeforeApproval": true,
+    "unblockedOnlyAfterApproval": true,
+    "decisionApproved": true,
+    "appliedOnce": true,
+    "fixtureFastForwarded": true,
+    "fixtureClean": true,
+    "readmeMatchesReviewedCandidate": true,
+    "reapplyBlocked": true,
+    "ownerCheckoutUnchanged": true
+  },
+  "passed": true,
+  "limitations": [
+    "Destination is the disposable fixture main branch, not a managed user repository",
+    "Agent-issued owner API calls on explicit chat approval, not a GUI click",
+    "No tests beyond the preview exact-content command; writer/reviewer shell tools disabled",
+    "ownerCheckoutUnchanged is the recorded observation above, not recomputed after evidence files were added"
+  ]
+}

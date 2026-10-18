@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { inspectRepository } from "../../src/server/git/inspect.ts";
 import { Scheduling } from "../../src/server/storage/scheduling.ts";
@@ -16,7 +17,7 @@ export async function worktreeFixture(
 ) {
   const repo = await createGitFixture();
   await prepareBase?.(repo);
-  const data = await mkdtemp("/tmp/lao-worktree-test-");
+  const data = await mkdtemp(join(tmpdir(), "lao-worktree-test-"));
   const db = join(data, "state.sqlite");
   let store = new Store(db);
   const repository = await inspectRepository(repo.directory);

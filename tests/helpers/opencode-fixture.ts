@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
   ManagedSession,
@@ -29,7 +31,7 @@ export function opencodeFixtureOptions(scenario: string): OpenCodeHostOptions {
 }
 export async function opencodeFixture(scenario = "read") {
   const repo = await createGitFixture();
-  const directory = await mkdtemp("/tmp/lao-opencode-test-");
+  const directory = await mkdtemp(join(tmpdir(), "lao-opencode-test-"));
   const baseline = await repo.git("rev-parse", "HEAD");
   const options = opencodeFixtureOptions(scenario);
   const adapter = new OpenCodeAdapter(directory, options);

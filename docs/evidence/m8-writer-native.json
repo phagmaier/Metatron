@@ -1,0 +1,395 @@
+{
+  "harness": "pi",
+  "selected": {
+    "model": "openai/gpt-6-luna",
+    "thinking": "low"
+  },
+  "liveGate": true,
+  "disposableWriteGate": true,
+  "maximumRequestedTurns": 2,
+  "integrationAuthority": "none; separate owner review/approval/apply required",
+  "discovery": {
+    "state": "available",
+    "version": "1.3.0",
+    "authenticated": "unknown",
+    "nextStep": null,
+    "selectionAvailable": true,
+    "thinkingChoices": [
+      "off",
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ]
+  },
+  "runId": "72ee8fc8-583b-4635-869b-aeeb39e7d492",
+  "writer": {
+    "taskId": "b0a80056-e210-4f39-89cb-567c8ca9ad12",
+    "attemptId": "18d02da0-83c0-49e3-84ba-e9fa0b813e23",
+    "profileId": "00000000-0000-4000-8000-000000000011",
+    "worktreePath": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/b0a80056-e210-4f39-89cb-567c8ca9ad12-714e97d6-e8ac-4175-8fb0-1247a55be7a9/checkout",
+    "nativeSessionId": "01a14e71-8a78-715d-b6a4-7f525d2ae6fc",
+    "contextPolicy": "auto",
+    "effectiveContext": "fresh",
+    "checks": {
+      "completed": true,
+      "settingsMatch": true,
+      "noSessionError": true
+    },
+    "stream": {
+      "deltaCount": 37,
+      "firstDeltaSequence": 35,
+      "lastDeltaSequence": 71,
+      "samples": [
+        {
+          "sequence": 35,
+          "text": "Completed"
+        },
+        {
+          "sequence": 36,
+          "text": ":"
+        },
+        {
+          "sequence": 37,
+          "text": " appended"
+        }
+      ],
+      "terminals": [
+        {
+          "sequence": 74,
+          "nativeStatus": "completed"
+        }
+      ],
+      "streamedBeforeTerminal": true
+    },
+    "settingsVerified": [
+      {
+        "type": "settings_verified",
+        "model": "openai/gpt-6-luna",
+        "thinking": "low",
+        "source": "Pi get_state after set_model/set_thinking_level"
+      }
+    ],
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": false
+      }
+    ],
+    "report": {
+      "outcome": "completed",
+      "summary": "Appended the requested proof line to README.md, preserving the original heading and final newline. No other files were changed. Integration was not performed.",
+      "changedFiles": [
+        "README.md"
+      ],
+      "tests": [
+        {
+          "command": "Tests not run (shell disabled)",
+          "result": "not_run"
+        }
+      ],
+      "findings": [],
+      "knownRisks": [],
+      "questions": [],
+      "artifactRefs": [],
+      "revisionOrCommit": null
+    },
+    "captured": {
+      "attemptId": "18d02da0-83c0-49e3-84ba-e9fa0b813e23",
+      "path": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/b0a80056-e210-4f39-89cb-567c8ca9ad12-714e97d6-e8ac-4175-8fb0-1247a55be7a9/checkout",
+      "baseSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+      "headSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+      "files": [
+        {
+          "path": "README.md",
+          "status": " M",
+          "sensitive": false
+        }
+      ],
+      "stagedDiffStat": "",
+      "unstagedDiffStat": " README.md | 2 ++\n 1 file changed, 2 insertions(+)\n",
+      "diffCheck": "passed",
+      "tests": "not_run: shell tools are disabled in M3"
+    }
+  },
+  "candidate": {
+    "id": "39226c8e-c500-4570-8f5f-d5983d9ca37d",
+    "createdAt": "2026-10-18T09:57:23.486Z",
+    "updatedAt": "2026-10-18T09:57:33.753Z",
+    "taskId": "b0a80056-e210-4f39-89cb-567c8ca9ad12",
+    "attemptId": "18d02da0-83c0-49e3-84ba-e9fa0b813e23",
+    "baseSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "candidateSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "reportSubmitted": true,
+    "reviewIds": [
+      "042695ba-f7e6-443b-a64b-60c3ddf408e3"
+    ],
+    "status": "reviewed",
+    "humanDecision": null,
+    "decidedAt": null
+  },
+  "reviewer": {
+    "taskId": "bd2e3c88-a30a-43dd-8add-e57485850976",
+    "attemptId": "380f5545-3a2e-4761-b0b1-bf7751108d61",
+    "profileId": "00000000-0000-4000-8000-000000000012",
+    "worktreePath": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/bd2e3c88-a30a-43dd-8add-e57485850976-fbb9f4f6-2555-44fa-b27d-7bc9bc266479/checkout",
+    "nativeSessionId": "01a14e71-cf6e-7376-aece-790e86107398",
+    "contextPolicy": "auto",
+    "effectiveContext": "fresh",
+    "checks": {
+      "completed": true,
+      "settingsMatch": true,
+      "noSessionError": true
+    },
+    "stream": {
+      "deltaCount": 28,
+      "firstDeltaSequence": 111,
+      "lastDeltaSequence": 138,
+      "samples": [
+        {
+          "sequence": 111,
+          "text": "Review"
+        },
+        {
+          "sequence": 112,
+          "text": " submitted"
+        },
+        {
+          "sequence": 113,
+          "text": ":"
+        }
+      ],
+      "terminals": [
+        {
+          "sequence": 141,
+          "nativeStatus": "completed"
+        }
+      ],
+      "streamedBeforeTerminal": true
+    },
+    "settingsVerified": [
+      {
+        "type": "settings_verified",
+        "model": "openai/gpt-6-luna",
+        "thinking": "low",
+        "source": "Pi get_state after set_model/set_thinking_level"
+      }
+    ],
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": false
+      }
+    ],
+    "report": {
+      "summary": "Pass. README.md preserves the original heading and final newline, and appends exactly one blank line followed by the requested exact proof line. No other changed files are shown in the supplied change set. Tests were not run as instructed.",
+      "recommendation": "pass",
+      "findings": [],
+      "tests": [
+        {
+          "command": "Not run (shell disabled)",
+          "result": "not_run"
+        }
+      ]
+    },
+    "captured": {
+      "attemptId": "380f5545-3a2e-4761-b0b1-bf7751108d61",
+      "path": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/bd2e3c88-a30a-43dd-8add-e57485850976-fbb9f4f6-2555-44fa-b27d-7bc9bc266479/checkout",
+      "baseSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+      "headSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+      "files": [],
+      "stagedDiffStat": "",
+      "unstagedDiffStat": "",
+      "diffCheck": "passed",
+      "tests": "not_run: shell tools are disabled in M3"
+    }
+  },
+  "reviews": [
+    {
+      "summary": "Pass. README.md preserves the original heading and final newline, and appends exactly one blank line followed by the requested exact proof line. No other changed files are shown in the supplied change set. Tests were not run as instructed.",
+      "recommendation": "pass",
+      "findings": [],
+      "tests": [
+        {
+          "command": "Not run (shell disabled)",
+          "result": "not_run"
+        }
+      ],
+      "id": "042695ba-f7e6-443b-a64b-60c3ddf408e3",
+      "createdAt": "2026-10-18T09:57:33.753Z",
+      "updatedAt": "2026-10-18T09:57:33.753Z",
+      "taskId": "b0a80056-e210-4f39-89cb-567c8ca9ad12",
+      "reviewerAttemptId": "380f5545-3a2e-4761-b0b1-bf7751108d61",
+      "candidateId": "39226c8e-c500-4570-8f5f-d5983d9ca37d"
+    }
+  ],
+  "independence": {
+    "differentTask": true,
+    "differentAttempt": true,
+    "differentProfile": true,
+    "freshNativeSession": true,
+    "separateCandidateCheckout": true,
+    "unchangedReviewerCheckout": true,
+    "exactCandidatePacket": true,
+    "boundReview": true
+  },
+  "preview": {
+    "id": "ac4816ed-966a-45d8-8459-31673dad2a43",
+    "createdAt": "2026-10-18T09:57:33.781Z",
+    "updatedAt": "2026-10-18T09:57:33.904Z",
+    "runId": "72ee8fc8-583b-4635-869b-aeeb39e7d492",
+    "taskId": "b0a80056-e210-4f39-89cb-567c8ca9ad12",
+    "implementationTaskId": "b0a80056-e210-4f39-89cb-567c8ca9ad12",
+    "candidateId": "39226c8e-c500-4570-8f5f-d5983d9ca37d",
+    "reviewId": "042695ba-f7e6-443b-a64b-60c3ddf408e3",
+    "baseSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "candidateSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "destinationBranch": "main",
+    "destinationSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "worktreePath": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/integration-ac4816ed-966a-45d8-8459-31673dad2a43/checkout",
+    "branch": "lao/integration-ac4816ed-966a-45d8-8459-31673dad2a43",
+    "tests": [
+      [
+        "/home/phagmaier/.local/share/mise/installs/node/26.7.0/bin/node",
+        "-e",
+        "require('node:assert/strict').equal(require('node:fs').readFileSync('README.md','utf8'),\"# Disposable fixture\\n\\nM8 disposable writer proof 728470a2-0eb7-4c3b-9f7b-b4de53a2e719\\n\");"
+      ]
+    ],
+    "timeoutSeconds": 30,
+    "status": "passed",
+    "resultSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "files": [
+      {
+        "status": "M",
+        "path": "README.md"
+      }
+    ],
+    "drift": null,
+    "conflicts": [],
+    "checks": [
+      {
+        "name": "destination",
+        "status": "passed",
+        "detail": "main is at the candidate base 775d4f814abeef35fc99bcc2930c27181a680644"
+      },
+      {
+        "name": "candidate",
+        "status": "passed",
+        "detail": "Candidate branch still records cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011"
+      },
+      {
+        "name": "apply",
+        "status": "passed",
+        "detail": "Fast-forwarded lao/integration-ac4816ed-966a-45d8-8459-31673dad2a43 to cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011"
+      },
+      {
+        "name": "overlap",
+        "status": "passed",
+        "detail": "No file was changed on both sides"
+      },
+      {
+        "name": "diff",
+        "status": "passed",
+        "detail": "1 changed file, all from the reviewed candidate"
+      },
+      {
+        "name": "diff_check",
+        "status": "passed",
+        "detail": "git diff --check passed"
+      },
+      {
+        "name": "tests",
+        "status": "passed",
+        "detail": "1/1 declared commands passed"
+      },
+      {
+        "name": "final_destination",
+        "status": "passed",
+        "detail": "main unchanged during preparation"
+      }
+    ],
+    "testResults": [
+      {
+        "argv": [
+          "/home/phagmaier/.local/share/mise/installs/node/26.7.0/bin/node",
+          "-e",
+          "require('node:assert/strict').equal(require('node:fs').readFileSync('README.md','utf8'),\"# Disposable fixture\\n\\nM8 disposable writer proof 728470a2-0eb7-4c3b-9f7b-b4de53a2e719\\n\");"
+        ],
+        "result": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 29,
+        "artifactId": "c12f062d-3205-4468-8f26-8f7824e01899",
+        "outputTruncated": false
+      }
+    ],
+    "diffArtifactId": "3e2133b7-a468-4a43-b984-f422c4ea0286",
+    "diagnostic": null,
+    "decision": null,
+    "applications": []
+  },
+  "applyPlan": {
+    "integrationId": "ac4816ed-966a-45d8-8459-31673dad2a43",
+    "destinationBranch": "main",
+    "expectedSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "currentSha": "775d4f814abeef35fc99bcc2930c27181a680644",
+    "resultSha": "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011",
+    "method": "fast_forward_checkout",
+    "checkoutPath": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+    "commands": [
+      {
+        "cwd": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+        "args": [
+          "-c",
+          "submodule.recurse=false",
+          "merge",
+          "--ff-only",
+          "--no-stat",
+          "--no-autostash",
+          "--no-overwrite-ignore",
+          "--no-verify-signatures",
+          "cd0b39f4ee1b3a7976d5b61ed7fc3ce0a305b011"
+        ]
+      }
+    ],
+    "blockers": [
+      "Only approved work that is ready to integrate, or blocked from it, can be applied"
+    ]
+  },
+  "integrationHold": {
+    "previewUnapproved": true,
+    "candidateUnapproved": true,
+    "taskStillAwaitingReview": true,
+    "planBlocked": true,
+    "ownerCheckoutUnchanged": true
+  },
+  "persisted": {
+    "attempts": 2,
+    "sessions": 2
+  },
+  "worktrees": [
+    "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/b0a80056-e210-4f39-89cb-567c8ca9ad12-714e97d6-e8ac-4175-8fb0-1247a55be7a9/checkout",
+    "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/bd2e3c88-a30a-43dd-8add-e57485850976-fbb9f4f6-2555-44fa-b27d-7bc9bc266479/checkout"
+  ],
+  "stage": "awaiting_owner_integration_review",
+  "requestedTurns": 2,
+  "passed": true,
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "integrationApprovalGranted": false,
+  "integrationApplied": false,
+  "retained": {
+    "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/state.sqlite",
+    "fixture": "/tmp/lao-git-fixture-0iso4X/repo with spaces",
+    "inspectCommand": "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-auth-sjdG2wvR pnpm dev"
+  },
+  "limitations": [
+    "Pi only: one scoped file writer and an independent read-only reviewer, at most two paid turns only with BOTH explicit gates and fresh owner authorization",
+    "A passing independent review/isolated preview is not owner integration approval; this runner has no approve/apply operation",
+    "Successful native review/preview and all failed native work remain retained for owner inspection; existing databases cannot be replayed",
+    "Metadata checks cover seven named personal files, not all filesystem/session access or an OS sandbox"
+  ]
+}

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { setTimeout as delay } from "node:timers/promises";
@@ -84,7 +85,7 @@ async function fixture(
   scratch = false,
 ) {
   const repo = await createGitFixture();
-  const directory = await mkdtemp("/tmp/lao-runtime-fault-");
+  const directory = await mkdtemp(join(tmpdir(), "lao-runtime-fault-"));
   const playback = new FaultPlayback([events]);
   playback.scratch = scratch;
   const options = {

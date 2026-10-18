@@ -303,7 +303,7 @@ test("explicit resume names only the task's own cleanly ended session; refusals 
 
 test("Pi never resumes into a new worktree: resume is refused, and the owner's continuation runs fresh with a checkpoint while both transcripts stay linked", async () => {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-context-pi-");
+  const data = await mkdtemp(join(tmpdir(), "lao-context-pi-"));
   const prompts = join(data, "prompts.log");
   const launches: string[][] = [];
   const pi = new PiAdapter(data, (args, cwd, env) => {

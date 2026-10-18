@@ -1,0 +1,51 @@
+{
+  "milestone": "M9 item 1",
+  "date": "2026-10-18",
+  "toolchain": { "node": "26.7.0", "pnpm": "11.22.0", "cpus": 6 },
+  "liveModelTurns": 0,
+  "standardChecks": {
+    "typecheck": "pass",
+    "lint": "pass",
+    "test:fixtures": "pass 3/3",
+    "build": "pass",
+    "smoke": "pass (development + production)",
+    "smoke:workflow --fake": "pass (complete 4 reports, partial 3 reports + 1 deterministic failure; peak active 1)",
+    "demo:m2": "pass (AWAITING_REVIEW, RETRY_DECISION; isolated XDG_DATA_HOME)"
+  },
+  "flakeHunt": {
+    "sequentialFullSuite": { "runs": 6, "result": "456/456 each" },
+    "cpuContention": {
+      "command": "node --test --test-concurrency=10 tests/*.test.ts with 4 busy-loop burners",
+      "runs": 3,
+      "loadAverage": "about 20 on 6 CPUs",
+      "result": "456/456 each"
+    },
+    "timingSensitiveFiles": {
+      "files": 14,
+      "command": "node --test --test-concurrency=14 <files with bounded polls or fixed sleeps> with 8 burners",
+      "runs": 5,
+      "result": "115/115 each"
+    },
+    "randomizedOrder": {
+      "seeds": [1, 9137, 424242],
+      "result": "456/456 each"
+    },
+    "orphanedFixtureProcesses": 0,
+    "flakyStateTransitionsReproduced": 0
+  },
+  "tempLeak": {
+    "finding": "Each pnpm test run left fixtures in RAM-backed /tmp (tmpfs 5.8G); about 5000 lao-* directories / 1.5G had accumulated since boot",
+    "beforeFix": { "newDirectories": 223, "tmpfsDeltaMiB": 62 },
+    "fix": "tests/helpers/temp-root.ts via --test-global-setup gives each run one lao-test-run-* TMPDIR, removed only after a passing run; 23 hardcoded /tmp test paths now use tmpdir()",
+    "afterFix": {
+      "pnpmTest": { "result": "456/456", "newDirectories": 0, "tmpfsDeltaMiB": 0 },
+      "contendedRandomized": {
+        "seed": 777,
+        "result": "456/456",
+        "newDirectories": 0
+      },
+      "failingRun": "exit 1; root and its fixture retained with printed path"
+    },
+    "existingLeftovers": "not deleted; tmpfs clears on reboot"
+  }
+}

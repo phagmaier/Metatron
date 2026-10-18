@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { chmod, mkdir, mkdtemp, rm, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -36,7 +37,7 @@ async function withPath<T>(path: string, run: () => Promise<T>) {
 }
 
 test("a harness is missing only without an absolute PATH executable, and a relative PATH entry is never run", async () => {
-  const root = await mkdtemp("/tmp/lao-availability-");
+  const root = await mkdtemp(join(tmpdir(), "lao-availability-"));
   try {
     const app = join(root, "app");
     const marker = join(root, "executed");
@@ -66,7 +67,7 @@ test("a harness is missing only without an absolute PATH executable, and a relat
 });
 
 test("a found executable that fails discovery is installed but not ready, never missing", async () => {
-  const root = await mkdtemp("/tmp/lao-availability-");
+  const root = await mkdtemp(join(tmpdir(), "lao-availability-"));
   try {
     const bin = join(root, "bin");
     const marker = join(root, "executed");
@@ -89,7 +90,7 @@ test("a found executable that fails discovery is installed but not ready, never 
 });
 
 test("discovery names the owner's login step and reports the version the harness itself gives", async () => {
-  const root = await mkdtemp("/tmp/lao-availability-");
+  const root = await mkdtemp(join(tmpdir(), "lao-availability-"));
   try {
     const pi = await new PiAdapter(
       join(root, "pi"),

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { checkPiTool } from "../src/server/adapters/pi-guard.ts";
@@ -156,7 +157,7 @@ test("worktree creation refuses a dirty/drifted root and never replays an ambigu
   }
 });
 test("Pi file guard denies mutations to readers, path escapes, sensitive files, symlinks and shell/delegation tools", async () => {
-  const dir = await mkdtemp("/tmp/lao-guard-");
+  const dir = await mkdtemp(join(tmpdir(), "lao-guard-"));
   await writeFile(join(dir, "safe.txt"), "Safe");
   assert.equal(
     await checkPiTool(dir, "read_only", {

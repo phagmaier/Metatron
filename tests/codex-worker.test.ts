@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -15,7 +16,7 @@ const fixturePath = fileURLToPath(
 
 async function codexWorker(env: Record<string, string> = {}) {
   const repo = await createGitFixture();
-  const data = await mkdtemp("/tmp/lao-codex-worker-");
+  const data = await mkdtemp(join(tmpdir(), "lao-codex-worker-"));
   const log = join(data, "codex-fixture.log");
   const baseline = await repo.git("rev-parse", "HEAD");
   const app = await startApp({
