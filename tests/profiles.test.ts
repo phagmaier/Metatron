@@ -170,7 +170,6 @@ test("profile writes use fresh server discovery and reject unsupported selection
       { thinking: "ultra" },
       { model: "fixture/plain", thinking: "low" },
       { permission: "coordinator" },
-      { harness: "codex", permission: "read_only" },
       { harness: "codex", permission: "workspace_write" },
       { roleId: randomUUID() },
     ];
@@ -237,7 +236,7 @@ test("profile discovery reports actual adapter limits, missing/auth states and p
     );
     assert.deepEqual(
       (await f.engine.profiles.discover({ harness: "codex" })).permissions,
-      ["coordinator"],
+      ["coordinator", "read_only"],
     );
     await f.engine.profiles.create(
       { ...f.content, model: "fixture/plain", thinking: null },

@@ -49,6 +49,9 @@ export class ClaudeEvents {
   initialized = false;
   effortVerified = false;
   result: "success" | "failed" | undefined;
+  // The native model id init reported, and which signal first proved effort.
+  private nativeModel: string | null = null;
+  private effortProof: "init" | "hook" | null = null;
   private failed = false;
   private readonly streamed = new Set<string>();
   private currentStreamId: string | undefined;
@@ -84,10 +87,26 @@ export class ClaudeEvents {
         ]
       : [];
   }
-  observeEffort(level: string | null | undefined): boolean {
+  observeEffort(
+    level: string | null | undefined,
+    proof: "init" | "hook" = "hook",
+  ): boolean {
     this.effortVerified = this.effort === null || level === this.effort;
     if (!this.effortVerified) this.failed = true;
+    else this.effortProof ??= proof;
     return this.effortVerified;
+  }
+  settings(): SessionEvent | null {
+    if (!this.nativeModel || !this.effortVerified) return null;
+    return {
+      type: "settings_verified",
+      model: this.nativeModel,
+      thinking: this.effort,
+      source:
+        this.effort === null
+          ? "Claude init model; no effort requested"
+          : `Claude init model; effort from native ${this.effortProof} report`,
+    };
   }
   private text(text: string): SessionEvent[] {
     const events: SessionEvent[] = [];
@@ -162,8 +181,9 @@ export class ClaudeEvents {
             "Claude native identity or isolated configuration did not match the requested session",
           );
         this.initialized = true;
+        this.nativeModel = data.model;
         // Headless init may omit effort; native tool/Stop hooks must then prove it.
-        if (data.effort !== undefined) this.observeEffort(data.effort);
+        if (data.effort !== undefined) this.observeEffort(data.effort, "init");
         return [];
       }
       const subtype = z.object({ subtype: z.string() }).safeParse(value);

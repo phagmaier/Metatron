@@ -5,7 +5,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
 
 // Deterministic Codex app-server protocol fixture. It never contacts a model
-// provider; scripted "Lead" turns call the real session gateway over MCP.
+// provider; scripted Lead and reader turns call the real session gateway over MCP.
 const scenario = process.env.LAO_CODEX_FIXTURE_SCENARIO ?? "delegate";
 const home = process.env.CODEX_HOME ?? "";
 const disabled = process.argv.flatMap((arg, i) =>
@@ -22,6 +22,8 @@ const emit = (value: object) =>
   process.stdout.write(`${JSON.stringify(value)}\n`);
 const notify = (method: string, params: object) => emit({ method, params });
 let gateway: { url: string; token: string; approved: boolean } | null = null;
+// A worker token lists read_assignment; a Lead token lists get_run_status.
+let worker = false;
 let threadId = "";
 let active: { id: string; done: boolean } | null = null;
 let rpc = 0;
@@ -197,6 +199,27 @@ async function workflowLead(prompt: string) {
   say(`Workflow ${run?.status ?? "missing"}: ${reports.join("; ")}`);
   finish("completed");
 }
+async function reader() {
+  if (scenario === "reroute") {
+    notify("model/rerouted", {
+      threadId,
+      turnId: active?.id,
+      fromModel: "fixture-model",
+      toModel: "fixture-other-model",
+      reason: "highRiskCyberActivity",
+    });
+    return;
+  }
+  const assignment = await tool("read_assignment");
+  say("Protocol fixture reader: README heading is Disposable fixture");
+  const submitted = await tool("submit_result", {
+    outcome: "completed",
+    summary: "Protocol fixture Codex reader summary",
+    changedFiles: [],
+    tests: [{ command: "not run", result: "not_run" }],
+  });
+  finish(assignment.error || submitted.error ? "failed" : "completed");
+}
 async function lead(prompt: string) {
   if (scenario === "hold") return;
   if (scenario.startsWith("provider-")) {
@@ -350,6 +373,7 @@ function configure(params: Record<string, unknown>) {
           default_tools_approval_mode: z.string().optional(),
         }),
       }),
+      model_reasoning_effort: z.string().optional(),
     })
     .parse(params.config);
   gateway = {
@@ -357,6 +381,13 @@ function configure(params: Record<string, unknown>) {
     token: process.env[config.mcp_servers.lao.bearer_token_env_var] ?? "",
     approved: config.mcp_servers.lao.default_tools_approval_mode === "approve",
   };
+  log({
+    configured: {
+      sandbox: params.sandbox,
+      approvalPolicy: params.approvalPolicy,
+      effort: config.model_reasoning_effort ?? null,
+    },
+  });
   return {
     thread: { id: threadId },
     model: params.model,
@@ -365,6 +396,10 @@ function configure(params: Record<string, unknown>) {
       type: params.sandbox === "read-only" ? "readOnly" : "workspaceWrite",
       networkAccess: false,
     },
+    reasoningEffort:
+      process.env.LAO_CODEX_FIXTURE_EFFORT ??
+      config.model_reasoning_effort ??
+      "medium",
   };
 }
 async function handle(
@@ -455,6 +490,9 @@ async function handle(
       const listed = z
         .object({ tools: z.array(z.object({ name: z.string() })) })
         .safeParse((await mcp("tools/list")).result);
+      worker =
+        listed.success &&
+        listed.data.tools.some((t) => t.name === "read_assignment");
       result = {
         data: [
           {
@@ -474,10 +512,12 @@ async function handle(
       result = { turn: { id: active.id, status: "inProgress", items: [] } };
       emit({ id, result });
       log({ turn: "start", effort: params.effort ?? null });
-      void lead(input[0]?.text ?? "").catch((error: unknown) => {
-        log({ error: String(error) });
-        finish("failed");
-      });
+      void (worker ? reader() : lead(input[0]?.text ?? "")).catch(
+        (error: unknown) => {
+          log({ error: String(error) });
+          finish("failed");
+        },
+      );
       return;
     }
     case "turn/interrupt":

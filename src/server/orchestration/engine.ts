@@ -4,6 +4,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
 import {
   artifactSchema,
+  type Harness,
   projectSchema,
   type RecoveryCause,
   type RecoveryCheck,
@@ -73,6 +74,7 @@ export class Engine {
   readonly codex: HarnessAdapter;
   readonly claude: HarnessAdapter;
   readonly opencode: HarnessAdapter;
+  readonly adapters: Record<Harness, HarnessAdapter>;
   readonly profiles: Profiles;
   readonly gateway: Gateway;
   // Loopback MCP endpoint; null when no app server hosts the gateway.
@@ -106,12 +108,13 @@ export class Engine {
     this.codex = options.codex ?? new CodexAdapter(directory);
     this.claude = options.claude ?? new ClaudeAdapter(directory);
     this.opencode = options.opencode ?? new OpenCodeAdapter(directory);
-    this.profiles = new Profiles(store, {
+    this.adapters = {
       pi: this.pi,
       codex: this.codex,
       "claude-code": this.claude,
       opencode: this.opencode,
-    });
+    };
+    this.profiles = new Profiles(store, this.adapters);
     this.gatewayUrl = options.gatewayUrl ?? null;
     this.gateway = new Gateway(this);
     this.worktrees = new Worktrees(store, directory);

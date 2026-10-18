@@ -4,12 +4,13 @@ import { CodexEvents } from "../src/server/adapters/codex-events.ts";
 import { CodexRpc } from "../src/server/adapters/codex-rpc.ts";
 
 const threadId = "thread-1";
+const settings = { model: "fixture-model", thinking: "low" };
 const item = (method: string, value: object) => ({
   method,
   params: { threadId, turnId: "turn-1", item: value },
 });
 test("Codex completes only on its own turn/completed and maps statuses, tools and usage", () => {
-  const mapper = new CodexEvents(threadId);
+  const mapper = new CodexEvents(threadId, settings);
   mapper.start("turn-1");
   assert.deepEqual(
     mapper.consume({
@@ -83,7 +84,7 @@ test("Codex completes only on its own turn/completed and maps statuses, tools an
   );
 });
 test("Codex delegation items, final errors and exits never look like success", () => {
-  const mapper = new CodexEvents(threadId);
+  const mapper = new CodexEvents(threadId, settings);
   mapper.start("turn-1");
   assert.equal(
     mapper.consume(
@@ -147,7 +148,7 @@ test("Codex uses exact native error variants and keeps usage limits distinct fro
     [{ httpConnectionFailed: { httpStatusCode: 403 } }, "native_error"],
     [{ other: "unauthorized credits exhausted secret-token" }, "native_error"],
   ] as const) {
-    const mapper = new CodexEvents(threadId);
+    const mapper = new CodexEvents(threadId, settings);
     mapper.start("turn-1");
     assert.deepEqual(
       mapper.consume({
@@ -197,4 +198,30 @@ test("RPC separates a Codex request rejection from a process exit without leakin
   } finally {
     assert.equal((await rpc.close()).code, 3);
   }
+});
+
+test("A Codex turn that completes after a model reroute is failed and never reports verified settings", () => {
+  const mapper = new CodexEvents(threadId, settings);
+  mapper.start("turn-1");
+  const [rerouted] = mapper.consume({
+    method: "model/rerouted",
+    params: {
+      threadId,
+      turnId: "turn-1",
+      fromModel: "fixture-model",
+      toModel: "other-model",
+      reason: "highRiskCyberActivity",
+    },
+  });
+  assert.equal(
+    rerouted?.type === "session_error" && rerouted.code,
+    "model_rerouted",
+  );
+  const completed = mapper.consume({
+    method: "turn/completed",
+    params: { threadId, turn: { id: "turn-1", status: "completed" } },
+  });
+  assert.deepEqual(completed, [
+    { type: "turn_completed", nativeStatus: "failed" },
+  ]);
 });

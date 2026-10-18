@@ -1,0 +1,127 @@
+{
+  "harness": "pi",
+  "liveAuthorized": true,
+  "selected": {
+    "model": "deepseek/deepseek-flash",
+    "thinking": "off"
+  },
+  "discovery": {
+    "state": "available",
+    "version": "1.3.0",
+    "authenticated": "unknown",
+    "nextStep": null,
+    "selectionAvailable": true,
+    "thinkingChoices": [
+      "off",
+      "low",
+      "high",
+      "max"
+    ]
+  },
+  "submittedPrompts": 1,
+  "run": {
+    "taskStatus": "AWAITING_REVIEW",
+    "attemptStatus": "completed",
+    "adapter": "pi",
+    "nativeSessionId": "01a14d26-dcc2-712e-a47f-245eaa3f2c74",
+    "sessionState": "exited",
+    "exitCode": 0,
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": false
+      }
+    ]
+  },
+  "settingsVerified": [
+    {
+      "type": "settings_verified",
+      "model": "deepseek/deepseek-flash",
+      "thinking": "off",
+      "source": "Pi get_state after set_model/set_thinking_level"
+    }
+  ],
+  "nonceReported": true,
+  "report": {
+    "outcome": "completed",
+    "summary": "Read native-proof.txt at the worktree root. It contains a single line: nonce e3167b01-7a5b-4433-98b5-270fd02229ed\n\nExact nonce: e3167b01-7a5b-4433-98b5-270fd02229ed\n\nNo files were created, changed or deleted. Tests not run (shell disabled, and the task required a read-only operation).",
+    "changedFiles": [],
+    "tests": [
+      {
+        "command": "none (shell disabled; read-only task)",
+        "result": "not_run"
+      }
+    ],
+    "findings": [
+      {
+        "severity": "info",
+        "location": "native-proof.txt:1",
+        "text": "File contains exactly one line with a UUID-format nonce: e3167b01-7a5b-4433-98b5-270fd02229ed"
+      }
+    ],
+    "knownRisks": [
+      "Only the single line was read; no verification of file provenance or checksum was performed (out of scope)."
+    ],
+    "questions": [],
+    "artifactRefs": [
+      "native-proof.txt"
+    ],
+    "revisionOrCommit": null
+  },
+  "gatewayTools": [
+    {
+      "tool": "read_assignment",
+      "outcome": "ok"
+    },
+    {
+      "tool": "submit_result",
+      "outcome": "ok"
+    }
+  ],
+  "nativeTools": [
+    "mcp__lao__read_assignment",
+    "read",
+    "mcp__lao__submit_result"
+  ],
+  "sessionErrors": [],
+  "usage": [
+    {
+      "type": "usage",
+      "inputTokens": 2379,
+      "outputTokens": 39,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 356,
+      "outputTokens": 132,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 140,
+      "outputTokens": 365,
+      "source": "pi native assistant message (may be partial)"
+    },
+    {
+      "type": "usage",
+      "inputTokens": 600,
+      "outputTokens": 149,
+      "source": "pi native assistant message (may be partial)"
+    }
+  ],
+  "worktree": {
+    "changedFiles": [],
+    "headUnchanged": true
+  },
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "passed": true,
+  "retained": null,
+  "limitations": [
+    "One owner-directed read-only worker turn through the real engine, gateway and Git worktree; not the Lead or four-harness smoke matrix",
+    "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+    "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+  ]
+}

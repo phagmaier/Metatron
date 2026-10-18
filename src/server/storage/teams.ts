@@ -75,18 +75,20 @@ export function resolveTeam(store: Store, team: TeamContent) {
       "POLICY_DENIED",
       "Choose a coordinator Lead and read-only or writer workers",
     );
-  // Lead authority stays on Codex; file-worker tool policies exist on the other native harnesses.
+  // Lead authority stays on Codex; file-worker tool policies exist on the
+  // other native harnesses, and Codex workers only read in its sandbox.
   if (
     !fake &&
     (lead.harness !== "codex" ||
-      workers.some(
-        (profile) =>
-          !["pi", "claude-code", "opencode"].includes(profile.harness),
+      workers.some((profile) =>
+        profile.harness === "codex"
+          ? profile.permission !== "read_only"
+          : !["pi", "claude-code", "opencode"].includes(profile.harness),
       ))
   )
     throw new DomainError(
       "UNSUPPORTED",
-      "Native teams need a Codex Lead and Pi, Claude Code or OpenCode file workers",
+      "Native teams need a Codex Lead, Pi, Claude Code or OpenCode file workers, and only read-only Codex workers",
     );
   const workflows = team.workflowTemplateIds.map((id) => {
     const row = store.db

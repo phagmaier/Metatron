@@ -359,14 +359,21 @@ async function finish(current: OpenCodeActive, text: string) {
         state: exit.expected ? "exited" : "crashed",
         exitCode: exit.code,
       });
-    current.events.push({
-      type: "turn_completed",
-      nativeStatus: current.cancelled
-        ? "interrupted"
-        : success && !current.fault
-          ? "completed"
-          : "failed",
-    });
+    const status = current.cancelled
+      ? "interrupted"
+      : success && !current.fault
+        ? "completed"
+        : "failed";
+    // Every step model was checked against the assignment; any one stands for all.
+    const model = current.mapper.modelEvidence.at(-1);
+    if (status === "completed" && model)
+      current.events.push({
+        type: "settings_verified",
+        model: `${model.providerID}/${model.id}`,
+        thinking: model.variant ?? null,
+        source: "OpenCode native step model/variant",
+      });
+    current.events.push({ type: "turn_completed", nativeStatus: status });
     current.events.close();
   }
 }

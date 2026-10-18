@@ -198,7 +198,7 @@ test("owner profile HTTP CRUD uses native protocol discovery, protects mutation 
     const codex = profileCapabilitiesSchema.parse(
       await read("agent-profiles/discover?harness=codex"),
     );
-    assert.deepEqual(codex.permissions, ["coordinator"]);
+    assert.deepEqual(codex.permissions, ["coordinator", "read_only"]);
     assert.equal(
       codex.models[0]?.thinking.some((level) => level.id === "ultra"),
       false,

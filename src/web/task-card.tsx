@@ -401,7 +401,7 @@ export function TaskCard({
           onError={onError}
         />
       )}
-      {attempt && ["pi", "claude-code"].includes(attempt.adapter) && (
+      {attempt?.worktreePath && attempt.adapter !== "fake" && (
         <details>
           <summary>Worktree and Git evidence</summary>
           <p className="path">{attempt.worktreePath}</p>

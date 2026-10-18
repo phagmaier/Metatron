@@ -1,6 +1,10 @@
 import { runSchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
-import { nativeRunSchema, nativeTeam } from "../../shared/native.ts";
+import {
+  harnessLabel,
+  nativeRunSchema,
+  nativeTeam,
+} from "../../shared/native.ts";
 import { inspectRepository, requireClean } from "../git/inspect.ts";
 import { mutate } from "../storage/mutations.ts";
 import type { Engine } from "./engine.ts";
@@ -20,19 +24,13 @@ export async function createNativeRun(
     project.repository.commonDirectory !== repository.commonDirectory
   )
     throw new DomainError("CONFLICT", "Project identity changed; reopen it");
-  const adapter =
-    data.harness === "claude-code"
-      ? engine.claude
-      : data.harness === "opencode"
-        ? engine.opencode
-        : engine.pi;
-  const label =
-    data.harness === "claude-code"
-      ? "Claude Code"
-      : data.harness === "opencode"
-        ? "OpenCode"
-        : "Pi";
-  const capabilities = await adapter.discover();
+  const label = harnessLabel[data.harness];
+  if (data.harness === "codex" && data.permission !== "read_only")
+    throw new DomainError(
+      "UNSUPPORTED",
+      "Codex workers are read-only in this build; choose Reader",
+    );
+  const capabilities = await engine.adapters[data.harness].discover();
   const model = capabilities.models.find((m) => m.id === data.model);
   if (
     !capabilities.installed ||

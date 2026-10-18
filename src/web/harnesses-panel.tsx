@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { z } from "zod";
-import { harnessSchema } from "../shared/domain/entities.ts";
+import { type Harness, harnessSchema } from "../shared/domain/entities.ts";
+import { harnessLabel } from "../shared/native.ts";
 import {
   type HarnessState,
   type ProfileCapabilities,
@@ -8,14 +8,6 @@ import {
 } from "../shared/profiles.ts";
 import { readApi } from "./api.ts";
 
-type Harness = z.infer<typeof harnessSchema>;
-
-const harnessLabel: Record<Harness, string> = {
-  codex: "Codex",
-  "claude-code": "Claude Code",
-  opencode: "OpenCode",
-  pi: "Pi",
-};
 export const stateLabel: Record<HarnessState, string> = {
   missing: "Missing",
   installed: "Installed · not ready",

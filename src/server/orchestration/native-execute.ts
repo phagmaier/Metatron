@@ -4,12 +4,14 @@ import {
   type RecoveryCheck,
   reviewResultSchema,
 } from "../../shared/domain/entities.ts";
+import { harnessLabel } from "../../shared/native.ts";
 import {
   type Dispatch,
   handoffReportSchema,
 } from "../../shared/orchestration.ts";
 import type { Candidate } from "../../shared/worktrees.ts";
 import { ClaudeAdapter } from "../adapters/claude.ts";
+import { CodexAdapter } from "../adapters/codex.ts";
 import type { ManagedSession } from "../adapters/contract.ts";
 import { OpenCodeAdapter } from "../adapters/opencode.ts";
 import { PiAdapter } from "../adapters/pi.ts";
@@ -41,18 +43,9 @@ export async function executeNativeTurn(
   const task = store.getTask(dispatch.taskId);
   const run = store.getRun(task.runId);
   const profile = engine.scheduling.profile(run.id, dispatch.profileId);
-  const adapter =
-    profile.harness === "claude-code"
-      ? engine.claude
-      : profile.harness === "opencode"
-        ? engine.opencode
-        : engine.pi;
-  const label =
-    profile.harness === "claude-code"
-      ? "Claude Code"
-      : profile.harness === "opencode"
-        ? "OpenCode"
-        : "Pi";
+  const adapter = engine.adapters[profile.harness];
+  const label = harnessLabel[profile.harness];
+  const codex = profile.harness === "codex";
   const role = run.teamSnapshot?.roles.find((r) => r.id === profile.roleId);
   const planned = await prepareContext(engine, dispatch, attemptId);
   if ("refused" in planned) {
@@ -132,19 +125,27 @@ export async function executeNativeTurn(
         "Run paused, stopping or Chat/Plan selected before native process launch",
       );
     }
-    if (!role || !["pi", "claude-code", "opencode"].includes(profile.harness))
+    if (
+      !role ||
+      profile.permission === "coordinator" ||
+      (codex && profile.permission !== "read_only")
+    )
       throw new Error("Native worker configuration is unsupported");
     const resultInstructions = task.reviewCandidateId
       ? "Submit your structured review using the contract in the prompt and read_assignment. A recommendation grants no integration authority."
       : "Submit your structured report; report tests as not_run. List every file you created, changed or deleted in changedFiles, relative to the worktree root; undeclared new files block the candidate.";
+    // Codex Lead prompts already name gateway tools bare.
     const gatewayPrefix =
-      profile.harness === "opencode" ? "lao_" : "mcp__lao__";
+      profile.harness === "opencode" ? "lao_" : codex ? "" : "mcp__lao__";
+    const sandbox = codex
+      ? "Shell commands run in Codex's read-only sandbox without network; delegation is disabled"
+      : "Shell and delegation are disabled";
     managed = await adapter.startSession({
       runId: run.id,
       taskId: task.id,
       attemptId,
       cwd: dispatch.cwd,
-      roleInstructions: `${role.instructions}\n\nExpected output:\n${role.expectedOutput}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. Shell and delegation are disabled; report tests as not run.${token ? `\nCall ${gatewayPrefix}read_assignment first. Finish by calling ${gatewayPrefix}submit_result once. ${resultInstructions}` : ""}`,
+      roleInstructions: `${role.instructions}\n\nExpected output:\n${role.expectedOutput}\n${profile.instructionOverride ?? ""}\nUse only this worktree. Do not access .git, credentials or other checkouts. ${sandbox}; report tests as not run.${token ? `\nCall ${gatewayPrefix}read_assignment first. Finish by calling ${gatewayPrefix}submit_result once. ${resultInstructions}` : ""}`,
       model: profile.model,
       thinking: profile.thinking,
       permission: profile.permission,
@@ -180,7 +181,8 @@ export async function executeNativeTurn(
         reason === "emergency" &&
         (adapter instanceof PiAdapter ||
           adapter instanceof ClaudeAdapter ||
-          adapter instanceof OpenCodeAdapter)
+          adapter instanceof OpenCodeAdapter ||
+          adapter instanceof CodexAdapter)
       ) {
         await adapter.exit(active);
         return;
@@ -193,7 +195,8 @@ export async function executeNativeTurn(
           reason === "human_request" &&
           (adapter instanceof PiAdapter ||
             adapter instanceof ClaudeAdapter ||
-            adapter instanceof OpenCodeAdapter)
+            adapter instanceof OpenCodeAdapter ||
+            adapter instanceof CodexAdapter)
         )
           await adapter.exit(active);
       }
@@ -276,7 +279,8 @@ export async function executeNativeTurn(
         const exit =
           adapter instanceof PiAdapter ||
           adapter instanceof ClaudeAdapter ||
-          adapter instanceof OpenCodeAdapter
+          adapter instanceof OpenCodeAdapter ||
+          adapter instanceof CodexAdapter
             ? await adapter.exit(managed)
             : null;
         const cleanExit =

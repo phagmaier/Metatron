@@ -3,7 +3,10 @@ import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
 import { DomainError } from "../../shared/domain/states.ts";
-import { steeringUnsupported } from "../../shared/native-controls.ts";
+import {
+  resumeUnsupported,
+  steeringUnsupported,
+} from "../../shared/native-controls.ts";
 import { findExecutable, notInstalled, unreadyStep } from "./availability.ts";
 import { CodexEvents } from "./codex-events.ts";
 import { denyCodexPermission } from "./codex-permissions.ts";
@@ -19,8 +22,8 @@ import {
   startSessionSchema,
 } from "./contract.ts";
 
-// Native delegation and side channels the Lead must not use. Startup verifies
-// the effective state and fails closed if any remains enabled.
+// Native delegation and side channels no Codex session may use. Startup
+// verifies the effective state and fails closed if any remains enabled.
 const disabledFeatures = [
   "multi_agent",
   "multi_agent_v2",
@@ -62,6 +65,7 @@ const threadSchema = z.object({
   model: z.string(),
   approvalPolicy: z.unknown(),
   sandbox: z.object({ type: z.string(), networkAccess: z.unknown() }).loose(),
+  reasoningEffort: z.string().nullable(),
 });
 const statusSchema = z.object({
   data: z.array(
@@ -75,7 +79,7 @@ const statusSchema = z.object({
   ),
 });
 // Codex labels efforts that hand work to native sub-agents; those bypass the
-// engine's launch budget, so they are not offered for a Lead.
+// engine's launch budget, so they are not offered.
 const delegates = (description: string) => /delegat/i.test(description);
 type Active = {
   rpc: CodexRpc;
@@ -83,6 +87,8 @@ type Active = {
   busy: boolean;
   turnId: string | null;
   cancelRequested: boolean;
+  // As the thread response reported them, not as requested.
+  settings: { model: string; thinking: string | null };
 };
 export type CodexSpawn = (
   args: string[],
@@ -218,10 +224,10 @@ export class CodexAdapter implements HarnessAdapter {
       version: null,
       nextStep: null,
       diagnostics: [
-        "Codex app-server Lead: app-owned CODEX_HOME, read-only sandbox without network, approvals never granted, session-scoped MCP tools. Not an OS isolation boundary for reads.",
-        "Native permission requests are denied by policy and surfaced in Needs You; interactive permission grants are unsupported for the Lead.",
-        "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled; startup refuses unless every one is reported disabled.",
-        `Unsupported: Codex worker sessions; live steering (${steeringUnsupported.codex}). Supported: stopping a Lead turn and resuming the run's own Lead thread.`,
+        "Codex app-server Lead or reader: app-owned CODEX_HOME, read-only sandbox without network, approvals never granted, session-scoped MCP tools. Reads are not confined to the worktree.",
+        "Native permission requests are denied by policy and surfaced in Needs You; interactive permission grants are unsupported.",
+        "Native sub-agents, apps, plugins, hooks, web search and delegating reasoning efforts are disabled; startup refuses unless every one is reported disabled. A native model reroute interrupts the turn.",
+        `Unsupported: Codex writers; worker resume (${resumeUnsupported.codex}); live steering (${steeringUnsupported.codex}). Supported: stopping a turn and resuming the run's own Lead thread.`,
       ],
     };
     let rpc: CodexRpc | undefined;
@@ -253,15 +259,18 @@ export class CodexAdapter implements HarnessAdapter {
   private async open(input: StartSessionInput, threadId: string | null) {
     const data = startSessionSchema.parse(input);
     const token = data.environment.LAO_GATEWAY_TOKEN;
+    const lead = data.permission === "coordinator";
+    // Readers rely on Codex's own read-only sandbox; nothing here grants a
+    // Codex session write access, and only the Lead reopens a thread.
     if (
-      data.permission !== "coordinator" ||
+      (!lead && (data.permission !== "read_only" || threadId !== null)) ||
       !data.toolEndpoint?.startsWith("http://127.0.0.1:") ||
       !token ||
       Object.keys(data.environment).length !== 1
     )
       throw new DomainError(
         "UNSUPPORTED",
-        "Codex runs only as a gateway-connected coordinator Lead",
+        "Codex runs only as a gateway-connected coordinator Lead or a fresh read-only worker",
       );
     const { rpc } = await this.launch(data.cwd, token);
     try {
@@ -276,7 +285,7 @@ export class CodexAdapter implements HarnessAdapter {
       )
         throw new DomainError(
           "UNSUPPORTED",
-          "Requested Codex model/effort is unavailable for a Lead",
+          "Requested Codex model/effort is unavailable",
         );
       const params = {
         cwd: data.cwd,
@@ -286,6 +295,7 @@ export class CodexAdapter implements HarnessAdapter {
         developerInstructions: data.roleInstructions,
         config: {
           web_search: "disabled",
+          ...(data.thinking ? { model_reasoning_effort: data.thinking } : {}),
           mcp_servers: {
             lao: {
               url: data.toolEndpoint,
@@ -310,12 +320,14 @@ export class CodexAdapter implements HarnessAdapter {
         thread.sandbox.type !== "readOnly" ||
         thread.sandbox.networkAccess !== false ||
         thread.approvalPolicy !== "never" ||
-        thread.model !== data.model
+        thread.model !== data.model ||
+        (data.thinking !== null && thread.reasoningEffort !== data.thinking)
       )
         throw new DomainError(
           "POLICY_DENIED",
-          "Codex did not apply the read-only Lead configuration; refusing prompts",
+          "Codex did not apply the read-only model/effort configuration; refusing prompts",
         );
+      const probe = lead ? "get_run_status" : "read_assignment";
       let connected = false;
       for (let i = 0; i < 40 && !connected; i++) {
         const status = statusSchema.parse(
@@ -326,13 +338,13 @@ export class CodexAdapter implements HarnessAdapter {
         const lao = status.data.find((s) => s.name === "lao");
         connected =
           lao?.runtimeStatus === "connected" &&
-          Object.hasOwn(lao.tools ?? {}, "get_run_status");
+          Object.hasOwn(lao.tools ?? {}, probe);
         if (!connected) await delay(250);
       }
       if (!connected)
         throw new DomainError(
           "POLICY_DENIED",
-          "Lead tool gateway did not connect; refusing prompts",
+          "Codex tool gateway did not connect; refusing prompts",
         );
       const managed: ManagedSession = {
         nativeSessionId: thread.thread.id,
@@ -346,6 +358,7 @@ export class CodexAdapter implements HarnessAdapter {
         busy: false,
         turnId: null,
         cancelRequested: false,
+        settings: { model: thread.model, thinking: thread.reasoningEffort },
       });
       return managed;
     } catch (error) {
@@ -376,12 +389,12 @@ export class CodexAdapter implements HarnessAdapter {
     if (current.busy)
       throw new DomainError(
         "CONFLICT",
-        "Codex Lead already has an active turn",
+        "Codex session already has an active turn",
       );
     if (current.cancelRequested)
       throw new DomainError(
         "CONFLICT",
-        "Lead turn was stopped before it began",
+        "Codex turn was stopped before it began",
       );
     current.busy = true;
     const queue: CodexNotification[] = [];
@@ -401,7 +414,7 @@ export class CodexAdapter implements HarnessAdapter {
       push({ method: "policy/declined", params: denial.event });
       return denial.response;
     });
-    const mapper = new CodexEvents(session.nativeSessionId);
+    const mapper = new CodexEvents(session.nativeSessionId, current.settings);
     const deadline = setTimeout(() => {
       push({ method: "transport/error", params: { reason: "deadline" } });
       void this.cancel(session).catch(() => current.rpc.child.kill("SIGTERM"));
@@ -436,7 +449,7 @@ export class CodexAdapter implements HarnessAdapter {
           yield event;
           if (
             event.type === "session_error" &&
-            event.code === "delegation_blocked" &&
+            ["delegation_blocked", "model_rerouted"].includes(event.code) &&
             !interrupting
           ) {
             interrupting = true;
@@ -472,7 +485,7 @@ export class CodexAdapter implements HarnessAdapter {
   async respondToApproval(): Promise<void> {
     throw new DomainError(
       "UNSUPPORTED",
-      "Lead approvals are never granted; the read-only policy declines them",
+      "Codex approvals are never granted; the read-only policy declines them",
     );
   }
   async exit(session: ManagedSession) {

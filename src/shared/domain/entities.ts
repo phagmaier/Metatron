@@ -19,6 +19,7 @@ export const absolutePathSchema = z
 export const timestampSchema = z.iso.datetime();
 export const shaSchema = z.string().regex(/^[0-9a-f]{40,64}$/);
 export const harnessSchema = z.enum(["codex", "claude-code", "opencode", "pi"]);
+export type Harness = z.infer<typeof harnessSchema>;
 export const adapterKindSchema = z.enum([
   "codex",
   "claude-code",

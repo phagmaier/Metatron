@@ -121,13 +121,13 @@ export class Profiles {
       models: usable ? capability.models : [],
       permissions: usable
         ? harness === "codex"
-          ? ["coordinator"]
+          ? ["coordinator", "read_only"]
           : ["read_only", "workspace_write"]
         : [],
       diagnostics: [
         ...capability.diagnostics,
         harness === "codex"
-          ? "Profiles support the read-only Codex coordinator only; Codex worker execution is not implemented yet."
+          ? "Codex profiles support the coordinator Lead and read-only workers, both in Codex's read-only sandbox without network; Codex writers are not implemented. Catalog discovery does not prove provider entitlement."
           : `${harness} profiles support file-tool readers and writers, not coordinator control. Catalog discovery does not prove provider entitlement.`,
       ],
     });

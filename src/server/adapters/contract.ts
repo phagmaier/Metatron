@@ -73,6 +73,14 @@ export const sessionEventSchema = z.discriminatedUnion("type", [
     recoverable: z.boolean(),
     message: textSchema,
   }),
+  // Emitted only before a completed turn: the model and thinking level the
+  // harness itself confirmed for it, and which native signal confirmed them.
+  z.strictObject({
+    type: z.literal("settings_verified"),
+    model: textSchema,
+    thinking: textSchema.nullable(),
+    source: textSchema,
+  }),
   z.strictObject({
     type: z.literal("usage"),
     inputTokens: z.int().min(0).optional(),

@@ -136,6 +136,14 @@ test("native text-only completion persists worktree, report and exit code, and b
     );
     const events = f.store.events({ runId: run.id, limit: 500 });
     assert.ok(events.some((e) => e.type === "worktree.captured"));
+    assert.deepEqual(
+      events.flatMap((e) =>
+        e.type === "pi.settings_verified"
+          ? [[e.payload.model, e.payload.thinking]]
+          : [],
+      ),
+      [["fixture/model", "off"]],
+    );
     const candidate = events.find((e) => e.type === "candidate.captured");
     assert.equal(candidate?.payload.status, "blocked");
     assert.match(

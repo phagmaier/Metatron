@@ -101,6 +101,7 @@ async function fixture() {
   const reader = await profile("Ada", "pi", "read_only");
   const writer = await profile("Bea", "pi", "workspace_write");
   const lead = await profile("Lead", "codex", "coordinator");
+  const codexReader = await profile("Cy", "codex", "read_only");
   return {
     ...f,
     git,
@@ -111,6 +112,7 @@ async function fixture() {
     reader,
     writer,
     lead,
+    codexReader,
     content: {
       name: "Native team",
       leadProfileId: lead.id,
@@ -255,6 +257,17 @@ test("team writes enforce roster policy atomically, are version checked, replay 
       { code: "CONFLICT" },
     );
     assert.deepEqual(getTeam(f.store, { id: first.id }), second);
+    // Codex reads in its own sandbox, so it may join a roster as a reader.
+    const codexTeam = createTeam(
+      f.store,
+      {
+        ...f.content,
+        name: "Codex readers",
+        workerProfileIds: [f.codexReader.id],
+      },
+      "codex-readers",
+    );
+    deleteTeam(f.store, { id: codexTeam.id, version: 1 }, "codex-delete");
     // Members keep their Lead/worker class; worker-to-worker changes are allowed.
     const profile = (base: AgentProfile, change: object, key: string) => {
       const { createdAt: _created, updatedAt: _updated, ...content } = base;

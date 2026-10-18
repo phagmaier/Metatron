@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   defaultLimits,
+  type Harness,
   idSchema,
   limitsSchema,
   modeSchema,
@@ -9,9 +10,15 @@ import {
 } from "./domain/entities.ts";
 import { fakeTeamSnapshot } from "./presets.ts";
 
+export const harnessLabel: Record<Harness, string> = {
+  codex: "Codex",
+  "claude-code": "Claude Code",
+  opencode: "OpenCode",
+  pi: "Pi",
+};
 export const nativeRunSchema = z.strictObject({
   projectId: idSchema,
-  harness: z.enum(["pi", "claude-code", "opencode"]).default("pi"),
+  harness: z.enum(["pi", "claude-code", "opencode", "codex"]).default("pi"),
   title: textSchema,
   initialPrompt: textSchema,
   model: textSchema,
@@ -22,14 +29,9 @@ export const nativeRunSchema = z.strictObject({
 export function nativeTeam(
   model: string,
   thinking: string | null,
-  harness: "pi" | "claude-code" | "opencode" = "pi",
+  harness: Harness = "pi",
 ) {
-  const label =
-    harness === "pi"
-      ? "Pi"
-      : harness === "claude-code"
-        ? "Claude Code"
-        : "OpenCode";
+  const label = harnessLabel[harness];
   return {
     ...fakeTeamSnapshot,
     preset: {

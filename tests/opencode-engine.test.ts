@@ -29,6 +29,16 @@ test("OpenCode owner consent is durable and isolated; unrelated work continues a
       await delay(10);
     }
     assert.equal(f.store.listTasks(reader.id)[0]?.status, "AWAITING_REVIEW");
+    assert.deepEqual(
+      f.store
+        .events({ runId: reader.id, limit: 500 })
+        .flatMap((e) =>
+          e.type === "opencode.settings_verified"
+            ? [[e.payload.model, e.payload.thinking]]
+            : [],
+        ),
+      [["fixture/model", "low"]],
+    );
     assert.equal(f.store.getTask(attempt.taskId).status, "WAITING_HUMAN");
     assert.equal(
       (

@@ -149,15 +149,15 @@ async function finishClaudeTurn(
         state: exit.code === 0 && !exit.signal ? "exited" : "crashed",
         exitCode: exit.code,
       });
-    current.events.push({
-      type: "turn_completed",
-      nativeStatus:
-        current.cancelled || current.abort.signal.aborted
-          ? "interrupted"
-          : success && !current.fault
-            ? "completed"
-            : "failed",
-    });
+    const status =
+      current.cancelled || current.abort.signal.aborted
+        ? "interrupted"
+        : success && !current.fault
+          ? "completed"
+          : "failed";
+    const settings = current.mapper.settings();
+    if (status === "completed" && settings) current.events.push(settings);
+    current.events.push({ type: "turn_completed", nativeStatus: status });
     current.events.close();
   }
 }

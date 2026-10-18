@@ -72,11 +72,19 @@ function describe(item: z.infer<typeof itemSchema>) {
 
 export class CodexEvents {
   private readonly threadId: string;
+  private readonly settings: { model: string; thinking: string | null };
   private turnId: string | null = null;
   private messages = 0;
   private usage: SessionEvent | null = null;
-  constructor(threadId: string) {
+  // Set by delegation or a reroute; the turn can still complete before the
+  // interrupt lands, and must not then count as success.
+  private blocked = false;
+  constructor(
+    threadId: string,
+    settings: { model: string; thinking: string | null },
+  ) {
     this.threadId = threadId;
+    this.settings = settings;
   }
   start(turnId: string) {
     this.turnId = turnId;
@@ -122,7 +130,8 @@ export class CodexEvents {
           return this.messages++ > 0
             ? [{ type: "text_delta", text: "\n\n" }]
             : [];
-        if (delegation.has(item.type))
+        if (delegation.has(item.type)) {
+          this.blocked = true;
           return [
             {
               type: "session_error",
@@ -132,6 +141,7 @@ export class CodexEvents {
                 "Codex attempted native sub-agent delegation; the app interrupts this turn",
             },
           ];
+        }
         if (!tools.has(item.type)) return [];
         return [
           event.method === "item/started"
@@ -143,6 +153,19 @@ export class CodexEvents {
               },
         ];
       }
+      // The owner chose this model; a native reroute means the turn would
+      // continue on one nobody selected.
+      case "model/rerouted":
+        this.blocked = true;
+        return [
+          {
+            type: "session_error",
+            code: "model_rerouted",
+            recoverable: false,
+            message:
+              "Codex rerouted this turn to a model other than the one selected; the app interrupts it",
+          },
+        ];
       case "thread/tokenUsage/updated": {
         const usage = usageSchema.safeParse(event.params);
         if (usage.success)
@@ -176,7 +199,10 @@ export class CodexEvents {
       case "turn/completed": {
         const parsed = turnSchema.safeParse(event.params);
         if (!parsed.success || parsed.data.turn.id !== this.turnId) return [];
-        const status = parsed.data.turn.status;
+        const status =
+          this.blocked && parsed.data.turn.status === "completed"
+            ? "failed"
+            : parsed.data.turn.status;
         const out: SessionEvent[] = this.usage ? [this.usage] : [];
         if (status === "failed" && parsed.data.turn.error) {
           const code = classify(parsed.data.turn.error.codexErrorInfo);
@@ -188,6 +214,13 @@ export class CodexEvents {
             message: "Codex turn failed; no automatic retry",
           });
         }
+        // Blocked turns map to failed above, so a completed one kept the thread's model.
+        if (status === "completed")
+          out.push({
+            type: "settings_verified",
+            ...this.settings,
+            source: "Codex thread start/resume response; no model reroute",
+          });
         out.push({
           type: "turn_completed",
           nativeStatus:

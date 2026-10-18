@@ -86,10 +86,15 @@ test("Claude discovers and initializes without a model prompt, streams whitespac
         .join(""),
       " \nHello ",
     );
-    assert.deepEqual(events.at(-1), {
-      type: "turn_completed",
-      nativeStatus: "completed",
-    });
+    assert.deepEqual(events.slice(-2), [
+      {
+        type: "settings_verified",
+        model: "fixture-sonnet",
+        thinking: "high",
+        source: "Claude init model; effort from native init report",
+      },
+      { type: "turn_completed", nativeStatus: "completed" },
+    ]);
     assert.deepEqual(await f.adapter.exit(session), { code: 0, signal: null });
     await assert.rejects(collect(f.adapter.prompt(session, "Do not replay")), {
       code: "CONFLICT",
@@ -413,6 +418,14 @@ for (const mode of [
             ? "completed"
             : "failed",
       });
+      assert.deepEqual(
+        events.flatMap((event) =>
+          event.type === "settings_verified" ? [event.source] : [],
+        ),
+        mode === "valid-read" || mode === "verified-stop"
+          ? ["Claude init model; effort from native hook report"]
+          : [],
+      );
       assert.equal(
         events.some((event) => event.type === "approval_requested"),
         false,

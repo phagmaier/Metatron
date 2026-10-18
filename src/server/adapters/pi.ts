@@ -72,6 +72,7 @@ type Active = {
   busy: boolean;
   accepting: boolean;
   messages: Map<string, string>;
+  settings: Extract<SessionEvent, { type: "settings_verified" }>;
 };
 export class PiAdapter implements HarnessAdapter {
   private readonly directory: string;
@@ -319,6 +320,12 @@ export class PiAdapter implements HarnessAdapter {
         busy: false,
         accepting: false,
         messages: new Map(),
+        settings: {
+          type: "settings_verified",
+          model: data.model,
+          thinking: state.thinkingLevel ?? null,
+          source: "Pi get_state after set_model/set_thinking_level",
+        },
       });
       return managed;
     } catch (error) {
@@ -415,7 +422,14 @@ export class PiAdapter implements HarnessAdapter {
             }
           }
         }
-        for (const event of mapper.consume(record)) yield event;
+        for (const event of mapper.consume(record)) {
+          if (
+            event.type === "turn_completed" &&
+            event.nativeStatus === "completed"
+          )
+            yield current.settings;
+          yield event;
+        }
         if (
           ["agent_settled", "transport_exit", "transport_error"].includes(
             record.type,

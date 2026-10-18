@@ -8,7 +8,7 @@ export const steeringUnsupported: Record<Attempt["adapter"], string | null> = {
   fake: null,
   pi: null,
   codex:
-    "Codex runs only as the Lead; this app does not use its native turn/steer, so owner messages wait for the next Lead turn",
+    "This app does not use Codex's native turn/steer; stop or reassign a Codex worker's task to change its instructions, and owner messages to a Codex Lead wait for its next turn",
   "claude-code":
     "This app sends no live input to Claude workers; stop or reassign the task to change its instructions",
   opencode:
@@ -20,7 +20,8 @@ export const steeringUnsupported: Record<Attempt["adapter"], string | null> = {
 export const resumeUnsupported: Record<Attempt["adapter"], string | null> = {
   fake: null,
   pi: "This Pi adapter does not reopen native sessions",
-  codex: "Codex is not a worker harness in this build",
+  codex:
+    "This app starts every Codex worker assignment as a fresh read-only thread",
   "claude-code":
     "Claude SDK resume requires the original checkout; assignments create a fresh isolated worktree",
   opencode:

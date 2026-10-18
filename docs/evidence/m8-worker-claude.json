@@ -1,0 +1,100 @@
+{
+  "harness": "claude-code",
+  "liveAuthorized": true,
+  "selected": {
+    "model": "haiku",
+    "thinking": "low"
+  },
+  "discovery": {
+    "state": "available",
+    "version": "2.1.302",
+    "authenticated": "unknown",
+    "nextStep": null,
+    "selectionAvailable": true,
+    "thinkingChoices": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ]
+  },
+  "submittedPrompts": 1,
+  "run": {
+    "taskStatus": "AWAITING_REVIEW",
+    "attemptStatus": "completed",
+    "adapter": "claude-code",
+    "nativeSessionId": "d9632e15-3001-459c-9225-6dad6395df65",
+    "sessionState": "exited",
+    "exitCode": 0,
+    "processExit": [
+      {
+        "exitCode": 0,
+        "signal": null,
+        "interrupted": false
+      }
+    ]
+  },
+  "settingsVerified": [
+    {
+      "type": "settings_verified",
+      "model": "claude-haiku-5-5",
+      "thinking": "low",
+      "source": "Claude init model; effort from native hook report"
+    }
+  ],
+  "nonceReported": true,
+  "report": {
+    "outcome": "completed",
+    "summary": "native-proof.txt contains the nonce: 810daf22-f719-4619-8700-bf52343ccda5. No files were created, changed, or deleted.",
+    "changedFiles": [],
+    "tests": [
+      {
+        "command": "not applicable (read-only file read)",
+        "result": "not_run"
+      }
+    ],
+    "findings": [],
+    "knownRisks": [],
+    "questions": [],
+    "artifactRefs": [],
+    "revisionOrCommit": null
+  },
+  "gatewayTools": [
+    {
+      "tool": "read_assignment",
+      "outcome": "ok"
+    },
+    {
+      "tool": "submit_result",
+      "outcome": "ok"
+    }
+  ],
+  "nativeTools": [
+    "mcp__lao__read_assignment",
+    "Read",
+    "mcp__lao__submit_result"
+  ],
+  "sessionErrors": [],
+  "usage": [
+    {
+      "type": "usage",
+      "inputTokens": 6,
+      "outputTokens": 475,
+      "source": "Claude native root-turn result"
+    }
+  ],
+  "worktree": {
+    "changedFiles": [],
+    "headUnchanged": true
+  },
+  "ownerCheckoutUnchanged": true,
+  "personalConfigMetadataUnchanged": true,
+  "passed": true,
+  "retained": null,
+  "limitations": [
+    "One owner-directed read-only worker turn through the real engine, gateway and Git worktree; not the Lead or four-harness smoke matrix",
+    "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+    "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+  ]
+}
