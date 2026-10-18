@@ -13,11 +13,20 @@ import { defaultLimits } from "../src/shared/domain/entities.ts";
 import { DomainError } from "../src/shared/domain/states.ts";
 import { createGitFixture } from "../tests/helpers/git-fixture.ts";
 
+import {
+  cancelAfterText,
+  cancellationEvidence,
+  settleSmoke,
+  smokeEvents,
+  streamEvidence,
+} from "./native-smoke-evidence.ts";
+
 // This is a support matrix, not four native Lead implementations. The current
 // worker-only adapters must refuse coordinator inputs without any model prompt.
 const { values } = parseArgs({
   options: {
     "allow-live": { type: "boolean" },
+    "verify-lifecycle": { type: "boolean" },
     model: { type: "string" },
     thinking: { type: "string" },
     output: { type: "string" },
@@ -25,7 +34,7 @@ const { values } = parseArgs({
 });
 assert.ok(
   values.model && values.output,
-  "Usage: mise x -- env XDG_DATA_HOME=/tmp/<disposable> pnpm test:live:leads --model <Codex model> [--thinking <level>] --output <new evidence.json> [--allow-live]. Opt-in sends one native Codex Lead turn; no workers.",
+  "Usage: mise x -- env XDG_DATA_HOME=/tmp/<disposable> pnpm test:live:leads --model <Codex model> [--thinking <level>] --output <new evidence.json> [--allow-live] [--verify-lifecycle]. Opt-in sends one paid Codex Lead turn; --verify-lifecycle adds a completed follow-up and active cancellation (at most three paid turns total). No workers.",
 );
 const model = values.model;
 const thinking = values.thinking ?? null;
@@ -97,6 +106,15 @@ let submittedPrompts = 0;
 let receipt: Record<string, unknown> = {
   liveAuthorized: !!values["allow-live"],
   selected: { harness: "codex", model, thinking },
+  requestedChecks: {
+    gatewayPolicy: true,
+    completedResumeAndCancel: !!values["verify-lifecycle"],
+  },
+  maximumRequestedTurns: values["allow-live"]
+    ? values["verify-lifecycle"]
+      ? 3
+      : 1
+    : 0,
 };
 try {
   const support: Record<string, unknown> = {};
@@ -220,33 +238,9 @@ try {
         randomUUID(),
       );
       submittedPrompts = 1;
-      for (let tries = 0; ; tries++) {
-        try {
-          await engine.idle();
-          break;
-        } catch (error) {
-          if (
-            !(
-              error instanceof Error &&
-              /deadline/.test(error.message) &&
-              tries < 5
-            )
-          )
-            throw error;
-        }
-      }
-      let page = store.events({ runId: run.id, limit: 500 });
-      const events = page;
-      while (page.length === 500) {
-        const last = page.at(-1);
-        assert.ok(last);
-        page = store.events({
-          runId: run.id,
-          after: last.sequence,
-          limit: 500,
-        });
-        events.push(...page);
-      }
+      await settleSmoke(engine);
+      const events = smokeEvents(engine, run.id);
+      const stream = streamEvidence(events, "codex");
       const payloads = (type: string) =>
         events.filter((e) => e.type === type).map((e) => e.payload);
       const tasks = store.listTasks(run.id);
@@ -263,6 +257,9 @@ try {
           sessions[0]?.adapter === "codex" &&
           sessions[0]?.state === "exited" &&
           sessions[0]?.exitCode === 0,
+        streamedCompletion:
+          stream.streamedBeforeTerminal &&
+          stream.terminals[0]?.nativeStatus === "completed",
         settingsMatch:
           settings.length === 1 &&
           settings[0]?.model === model &&
@@ -290,6 +287,7 @@ try {
         nativeSessionId: sessions[0]?.nativeSessionId ?? null,
         checks,
         settingsVerified: settings,
+        stream,
         gatewayConnected: payloads("gateway.connected"),
         tools,
         denials,
@@ -300,9 +298,101 @@ try {
         configured: payloads("lead.session_configured"),
       };
       passed = Object.values(checks).every(Boolean);
+      if (passed && values["verify-lifecycle"]) {
+        const originalSession = sessions[0];
+        assert.ok(originalSession?.nativeSessionId);
+        const resumed = engine.message(
+          {
+            runId: run.id,
+            text: "Completed-session follow-up smoke: quote the exact nonce from the previous turn, without rereading the file. Do not propose tasks, assign workers, or change any file. End this follow-up normally.",
+          },
+          randomUUID(),
+        );
+        assert.ok(resumed);
+        submittedPrompts = 2;
+        await settleSmoke(engine);
+        const resumedEvents = smokeEvents(engine, run.id, resumed.id);
+        const resumedStream = streamEvidence(resumedEvents, "codex");
+        const resumedAttempt = store
+          .listAttempts()
+          .find((a) => a.taskId === resumed.id);
+        const resumedSession = store
+          .listSessions()
+          .find((s) => s.attemptId === resumedAttempt?.id);
+        const resumedSettings = resumedEvents
+          .filter((e) => e.type === "codex.settings_verified")
+          .map((e) => e.payload);
+        const resumeChecks = {
+          sameNativeThread:
+            resumedSession?.nativeSessionId ===
+              originalSession.nativeSessionId &&
+            resumedSession.contextPolicy === "resume" &&
+            resumedSession.context?.predecessorSessionId === originalSession.id,
+          completedFollowUp:
+            store.getTask(resumed.id).status === "AWAITING_REVIEW" &&
+            resumedSession?.state === "exited" &&
+            resumedSession.exitCode === 0 &&
+            resumedStream.streamedBeforeTerminal &&
+            resumedStream.terminals[0]?.nativeStatus === "completed",
+          settingsMatch:
+            resumedSettings.length === 1 &&
+            resumedSettings[0]?.model === model &&
+            (thinking === null || resumedSettings[0]?.thinking === thinking),
+          nonceRemembered: resumedEvents.some(
+            (e) =>
+              e.type === "lead.message" &&
+              String(e.payload.text).includes(nonce),
+          ),
+          noWorkerLaunched:
+            engine.scheduling.committedLaunches(run.id) === 0 &&
+            store.listAttempts().length === 2,
+        };
+        receipt.completedResume = {
+          checks: resumeChecks,
+          nativeSessionId: resumedSession?.nativeSessionId ?? null,
+          stream: resumedStream,
+          settingsVerified: resumedSettings,
+          processExit: resumedEvents
+            .filter((e) => e.type === "codex.process_exit")
+            .map((e) => e.payload),
+        };
+        passed = Object.values(resumeChecks).every(Boolean);
+        if (passed) {
+          const cancelTask = engine.message(
+            {
+              runId: run.id,
+              text: "Active cancellation smoke: do not propose tasks, assign workers, or change files. Start emitting a long numbered explanation of read-only repository inspection (at least 500 numbered sentences). Keep generating until the owner interrupts.",
+            },
+            randomUUID(),
+          );
+          assert.ok(cancelTask);
+          submittedPrompts = 3;
+          const request = await cancelAfterText(
+            engine,
+            run.id,
+            cancelTask.id,
+            "codex",
+          );
+          await settleSmoke(engine);
+          const cancellation = cancellationEvidence(
+            engine,
+            run.id,
+            cancelTask.id,
+            "codex",
+            request,
+          );
+          receipt.activeCancellation = cancellation;
+          passed =
+            Object.values(cancellation.checks).every(Boolean) &&
+            cancellation.nativeSessionId === originalSession.nativeSessionId &&
+            engine.scheduling.committedLaunches(run.id) === 0 &&
+            store.listAttempts().length === 3;
+        }
+      }
     }
   }
 } catch (error) {
+  passed = false;
   // Native exceptions can contain secrets; retain state, not their raw text.
   receipt.failure = {
     code: error instanceof DomainError ? error.code : "SMOKE_FAILED",
@@ -327,7 +417,7 @@ receipt = {
   retained: retained ? { database, fixture: fixture.directory } : null,
   limitations: [
     "Only Codex has a coordinator executor and enforced Lead tool policy in this application; other refusals do not prove a native harness cannot implement one",
-    "Native opt-in covers one Codex Lead turn and gateway policy denial, not live end-to-end delegation to the other harnesses",
+    "One Codex Lead gateway turn; optional --verify-lifecycle adds completed same-thread resume and active cancellation, at most three paid turns. No workers, native writer, review or integration.",
     "Codex-Lead fallbacks for Pi, Claude and OpenCode use real engine/gateway/Git with inert protocol fixtures in tests/lead-fallback.test.ts; separate live worker receipts are under M8 item 5",
     "Personal-config evidence checks metadata of the listed files, not a complete isolation audit (M8 item 7)",
   ],

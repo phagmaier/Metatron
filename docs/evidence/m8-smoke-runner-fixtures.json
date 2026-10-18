@@ -1,0 +1,1150 @@
+{
+  "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence",
+  "nativeModelPrompts": 0,
+  "technique": "Throwaway Node module hooks redirected only the runner startApp import to inject actual Codex/Pi adapters backed by existing inert protocol subprocesses. Fixture hooks supplied nonce reports, initial Lead coordinator assignment denial, completed follow-up and held text until abort. Claude SDK/OpenCode HTTP fixtures supplied discovery/refusals. No native provider transport was launched.",
+  "baseCommands": [
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-runner-CxBn7s node --import /tmp/metatron-m8-runner-CxBn7s/hooks.mjs scripts/live-workers.ts --harness pi --model fixture/model --thinking off --verify-cancel --allow-live --output /tmp/metatron-m8-runner-CxBn7s/pi-fixture.json",
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-runner-CxBn7s node --import /tmp/metatron-m8-runner-CxBn7s/hooks.mjs scripts/live-leads.ts --model fixture-model --thinking low --verify-lifecycle --allow-live --output /tmp/metatron-m8-runner-CxBn7s/codex-fixture-corrected.json",
+    "mise x -- env XDG_DATA_HOME=/tmp/metatron-m8-runner-CxBn7s node --import /tmp/metatron-m8-runner-CxBn7s/hooks.mjs scripts/live-workers.ts --harness codex --model fixture-model --thinking low --allow-live --output /tmp/metatron-m8-runner-CxBn7s/codex-reader.json"
+  ],
+  "negativeCases": "M8_SMOKE_FAST_CANCEL=1 made the cancellation target finish before the observer. Both CLI runs exited 1, retained their state, sent no retry and produced no cancellation PASS. Initial inert Lead selector error was fixed in the throwaway hook, not application code; the roster omits the Lead, so the corrected hook reads its explicit profile ID from the smoke objective. The first Pi early-settlement fixture omitted message_end, so Pi correctly mapped it failed, not completed; the cleanup verifier caught that inaccurate completion claim. The fixture was corrected to emit stopReason=stop before agent_settled; its newly captured expected-failure receipt replaces piAlreadyCompleted, and the earlier incomplete-settlement receipt is retained separately. No application mapper or smoke gate was weakened.",
+  "cases": {
+    "piReaderAndCancel": {
+      "harness": "pi",
+      "liveAuthorized": true,
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "requestedChecks": {
+        "streamedReader": true,
+        "activeCancellation": true
+      },
+      "maximumRequestedTurns": 2,
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "submittedPrompts": 2,
+      "run": {
+        "taskStatus": "AWAITING_REVIEW",
+        "attemptStatus": "completed",
+        "adapter": "pi",
+        "nativeSessionId": "fixture-66445",
+        "sessionState": "exited",
+        "exitCode": 0,
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ]
+      },
+      "settingsVerified": [
+        {
+          "type": "settings_verified",
+          "model": "fixture/model",
+          "thinking": "off",
+          "source": "Pi get_state after set_model/set_thinking_level"
+        }
+      ],
+      "stream": {
+        "deltaCount": 1,
+        "firstDeltaSequence": 19,
+        "lastDeltaSequence": 19,
+        "samples": [
+          {
+            "sequence": 19,
+            "text": "Protocol fixture report"
+          }
+        ],
+        "terminals": [
+          {
+            "sequence": 21,
+            "nativeStatus": "completed"
+          }
+        ],
+        "streamedBeforeTerminal": true
+      },
+      "gatewayDenials": [],
+      "nonceReported": true,
+      "report": {
+        "outcome": "completed",
+        "summary": "d8cd92da-ab6d-4a57-a8b0-dcde48e9d603",
+        "changedFiles": [],
+        "tests": [
+          {
+            "command": "not run",
+            "result": "not_run"
+          }
+        ],
+        "findings": [],
+        "knownRisks": [],
+        "questions": [],
+        "artifactRefs": [],
+        "revisionOrCommit": null
+      },
+      "gatewayTools": [
+        {
+          "tool": "read_assignment",
+          "outcome": "ok"
+        },
+        {
+          "tool": "submit_result",
+          "outcome": "ok"
+        }
+      ],
+      "nativeTools": [],
+      "sessionErrors": [],
+      "usage": [],
+      "worktree": {
+        "changedFiles": [],
+        "headUnchanged": true
+      },
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "cancellation": {
+        "checks": {
+          "textBeforeRequest": true,
+          "nativeInterruptedAfterRequest": true,
+          "taskCancelled": true,
+          "ownedShutdown": true,
+          "noSessionError": true,
+          "noSuccessReport": true
+        },
+        "request": {
+          "afterTextSequence": 42,
+          "requestSequence": 43
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 42,
+          "lastDeltaSequence": 42,
+          "samples": [
+            {
+              "sequence": 42,
+              "text": "Inert active output before cancellation"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 46,
+              "nativeStatus": "interrupted"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "nativeSessionId": "fixture-66500",
+        "taskStatus": "CANCELLED",
+        "sessionState": "exited",
+        "exitCode": 0,
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": true
+          }
+        ],
+        "sessionErrors": []
+      },
+      "cancellationWorktree": {
+        "attemptId": "5afcb372-2352-4816-a4e6-0d63da0e3ed2",
+        "path": "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/worktrees/c03b3d48-ef77-4cf2-b8be-10a917913483-456dd492-13f3-4926-9aba-ca8712724755/checkout",
+        "baseSha": "a6b7f92fd004f47c05cfee1cee818cd717e4694e",
+        "headSha": "a6b7f92fd004f47c05cfee1cee818cd717e4694e",
+        "files": [],
+        "stagedDiffStat": "",
+        "unstagedDiffStat": "",
+        "diffCheck": "passed",
+        "tests": "not_run: shell tools are disabled in M3"
+      },
+      "passed": true,
+      "retained": null,
+      "limitations": [
+        "Reader plus optional Pi active cancellation through the real engine/gateway/Git; no native writer, review, integration, Lead or gateway role-denial probe",
+        "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+        "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+      ],
+      "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+    },
+    "codexLeadLifecycle": {
+      "liveAuthorized": true,
+      "selected": {
+        "harness": "codex",
+        "model": "fixture-model",
+        "thinking": "low"
+      },
+      "requestedChecks": {
+        "gatewayPolicy": true,
+        "completedResumeAndCancel": true
+      },
+      "maximumRequestedTurns": 3,
+      "support": {
+        "pi": {
+          "version": null,
+          "state": "available",
+          "authenticated": "unknown",
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "Pi supports fresh file-tool workers with only the app's loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "claude-code": {
+          "version": "0.0.0-fixture",
+          "state": "auth_required",
+          "authenticated": false,
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "Claude supports isolated file-tool workers with only the app loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "opencode": {
+          "version": "2.0.29-fixture",
+          "state": "available",
+          "authenticated": "unknown",
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "OpenCode accepts only file-worker profiles and an app loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "codex": {
+          "version": "0.163.0-fixture",
+          "state": "available",
+          "authenticated": true,
+          "lead": "implemented; native turn requires --allow-live",
+          "coordinatorRefusal": null,
+          "fallback": null
+        }
+      },
+      "nativeCodexLead": {
+        "runId": "b25a7936-89c3-4e27-ba58-35e628d8b509",
+        "nativeSessionId": "1d09e738-9176-4836-be57-ffed2d70585e",
+        "checks": {
+          "authoritativeCompletion": true,
+          "streamedCompletion": true,
+          "settingsMatch": true,
+          "gatewayReadAndProposal": true,
+          "coordinatorAssignmentDenied": true,
+          "nonceReported": true,
+          "noWorkerLaunched": true,
+          "noSessionError": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture-model",
+            "thinking": "low",
+            "source": "Codex thread start/resume response; no model reroute"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 30,
+          "lastDeltaSequence": 30,
+          "samples": [
+            {
+              "sequence": 30,
+              "text": "Inert Lead nonce: bb7f6992-7f46-4ce2-8515-2c4a2a2e9d54"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 33,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayConnected": [
+          {
+            "role": "lead",
+            "mode": "autonomous_bounded",
+            "version": "lao-tools/5"
+          }
+        ],
+        "tools": [
+          {
+            "tool": "get_run_status",
+            "outcome": "ok"
+          },
+          {
+            "tool": "propose_task",
+            "outcome": "ok"
+          }
+        ],
+        "denials": [
+          {
+            "tool": "assign_task",
+            "code": "POLICY_DENIED",
+            "message": "Choose a worker from this run's roster"
+          }
+        ],
+        "messages": [
+          {
+            "text": "Inert Lead nonce: bb7f6992-7f46-4ce2-8515-2c4a2a2e9d54"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "sessionErrors": [],
+        "usage": [
+          {
+            "type": "usage",
+            "inputTokens": 11,
+            "outputTokens": 7,
+            "source": "codex thread token usage (last turn)"
+          }
+        ],
+        "configured": [
+          {
+            "threadId": "1d09e738-9176-4836-be57-ffed2d70585e",
+            "resumed": false,
+            "model": "fixture-model",
+            "thinking": "low",
+            "sandbox": "read-only (no network)",
+            "approvals": "never"
+          }
+        ]
+      },
+      "completedResume": {
+        "checks": {
+          "sameNativeThread": true,
+          "completedFollowUp": true,
+          "settingsMatch": true,
+          "nonceRemembered": true,
+          "noWorkerLaunched": true
+        },
+        "nativeSessionId": "1d09e738-9176-4836-be57-ffed2d70585e",
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 53,
+          "lastDeltaSequence": 53,
+          "samples": [
+            {
+              "sequence": 53,
+              "text": "Inert Lead nonce: bb7f6992-7f46-4ce2-8515-2c4a2a2e9d54"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 56,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture-model",
+            "thinking": "low",
+            "source": "Codex thread start/resume response; no model reroute"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ]
+      },
+      "activeCancellation": {
+        "checks": {
+          "textBeforeRequest": true,
+          "nativeInterruptedAfterRequest": true,
+          "taskCancelled": true,
+          "ownedShutdown": true,
+          "noSessionError": true,
+          "noSuccessReport": true
+        },
+        "request": {
+          "afterTextSequence": 76,
+          "requestSequence": 77
+        },
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 76,
+          "lastDeltaSequence": 76,
+          "samples": [
+            {
+              "sequence": 76,
+              "text": "Inert active output before cancellation"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 81,
+              "nativeStatus": "interrupted"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "nativeSessionId": "1d09e738-9176-4836-be57-ffed2d70585e",
+        "taskStatus": "CANCELLED",
+        "sessionState": "exited",
+        "exitCode": 0,
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": true
+          }
+        ],
+        "sessionErrors": []
+      },
+      "submittedPrompts": 3,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "passed": true,
+      "retained": null,
+      "limitations": [
+        "Only Codex has a coordinator executor and enforced Lead tool policy in this application; other refusals do not prove a native harness cannot implement one",
+        "One Codex Lead gateway turn; optional --verify-lifecycle adds completed same-thread resume and active cancellation, at most three paid turns. No workers, native writer, review or integration.",
+        "Codex-Lead fallbacks for Pi, Claude and OpenCode use real engine/gateway/Git with inert protocol fixtures in tests/lead-fallback.test.ts; separate live worker receipts are under M8 item 5",
+        "Personal-config evidence checks metadata of the listed files, not a complete isolation audit (M8 item 7)"
+      ],
+      "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+    },
+    "codexReader": {
+      "harness": "codex",
+      "liveAuthorized": true,
+      "selected": {
+        "model": "fixture-model",
+        "thinking": "low"
+      },
+      "requestedChecks": {
+        "streamedReader": true,
+        "activeCancellation": false
+      },
+      "maximumRequestedTurns": 1,
+      "discovery": {
+        "state": "available",
+        "version": "0.163.0-fixture",
+        "authenticated": true,
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "low"
+        ]
+      },
+      "submittedPrompts": 1,
+      "run": {
+        "taskStatus": "AWAITING_REVIEW",
+        "attemptStatus": "completed",
+        "adapter": "codex",
+        "nativeSessionId": "341ea7d5-ddd1-4d48-b37b-8604a7c18fb7",
+        "sessionState": "exited",
+        "exitCode": 0,
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ]
+      },
+      "settingsVerified": [
+        {
+          "type": "settings_verified",
+          "model": "fixture-model",
+          "thinking": "low",
+          "source": "Codex thread start/resume response; no model reroute"
+        }
+      ],
+      "stream": {
+        "deltaCount": 1,
+        "firstDeltaSequence": 20,
+        "lastDeltaSequence": 20,
+        "samples": [
+          {
+            "sequence": 20,
+            "text": "Inert streamed reader: e6008d7e-c9d6-475a-990c-05909e9231fe"
+          }
+        ],
+        "terminals": [
+          {
+            "sequence": 27,
+            "nativeStatus": "completed"
+          }
+        ],
+        "streamedBeforeTerminal": true
+      },
+      "gatewayDenials": [],
+      "nonceReported": true,
+      "report": {
+        "outcome": "completed",
+        "summary": "e6008d7e-c9d6-475a-990c-05909e9231fe",
+        "changedFiles": [],
+        "tests": [
+          {
+            "command": "not run",
+            "result": "not_run"
+          }
+        ],
+        "findings": [],
+        "knownRisks": [],
+        "questions": [],
+        "artifactRefs": [],
+        "revisionOrCommit": null
+      },
+      "gatewayTools": [
+        {
+          "tool": "read_assignment",
+          "outcome": "ok"
+        },
+        {
+          "tool": "submit_result",
+          "outcome": "ok"
+        }
+      ],
+      "nativeTools": [
+        "mcp lao.read_assignment",
+        "mcp lao.submit_result"
+      ],
+      "sessionErrors": [],
+      "usage": [
+        {
+          "type": "usage",
+          "inputTokens": 11,
+          "outputTokens": 7,
+          "source": "codex thread token usage (last turn)"
+        }
+      ],
+      "worktree": {
+        "changedFiles": [],
+        "headUnchanged": true
+      },
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "passed": true,
+      "retained": null,
+      "limitations": [
+        "Reader plus optional Pi active cancellation through the real engine/gateway/Git; no native writer, review, integration, Lead or gateway role-denial probe",
+        "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+        "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+      ],
+      "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+    },
+    "piAlreadyCompleted": {
+      "harness": "pi",
+      "liveAuthorized": true,
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "requestedChecks": {
+        "streamedReader": true,
+        "activeCancellation": true
+      },
+      "maximumRequestedTurns": 2,
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "submittedPrompts": 2,
+      "run": {
+        "taskStatus": "AWAITING_REVIEW",
+        "attemptStatus": "completed",
+        "adapter": "pi",
+        "nativeSessionId": "fixture-94088",
+        "sessionState": "exited",
+        "exitCode": 0,
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ]
+      },
+      "settingsVerified": [
+        {
+          "type": "settings_verified",
+          "model": "fixture/model",
+          "thinking": "off",
+          "source": "Pi get_state after set_model/set_thinking_level"
+        }
+      ],
+      "stream": {
+        "deltaCount": 1,
+        "firstDeltaSequence": 19,
+        "lastDeltaSequence": 19,
+        "samples": [
+          {
+            "sequence": 19,
+            "text": "Protocol fixture report"
+          }
+        ],
+        "terminals": [
+          {
+            "sequence": 21,
+            "nativeStatus": "completed"
+          }
+        ],
+        "streamedBeforeTerminal": true
+      },
+      "gatewayDenials": [],
+      "nonceReported": true,
+      "report": {
+        "outcome": "completed",
+        "summary": "3d0a7ace-2024-483e-b72b-06fb5e9d228f",
+        "changedFiles": [],
+        "tests": [
+          {
+            "command": "not run",
+            "result": "not_run"
+          }
+        ],
+        "findings": [],
+        "knownRisks": [],
+        "questions": [],
+        "artifactRefs": [],
+        "revisionOrCommit": null
+      },
+      "gatewayTools": [
+        {
+          "tool": "read_assignment",
+          "outcome": "ok"
+        },
+        {
+          "tool": "submit_result",
+          "outcome": "ok"
+        }
+      ],
+      "nativeTools": [],
+      "sessionErrors": [],
+      "usage": [],
+      "worktree": {
+        "changedFiles": [],
+        "headUnchanged": true
+      },
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "failure": {
+        "code": "SMOKE_FAILED",
+        "message": "Worker probe failed; inspect retained app-owned state, never replay automatically"
+      },
+      "passed": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/live-workers-635eabd8-7e76-4011-9f20-d5ec381cdd50.sqlite",
+        "fixture": "/tmp/lao-git-fixture-TMHhKM/repo with spaces",
+        "worktrees": [
+          "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/worktrees/167c59b2-b8a7-4718-a4bc-49376fbb2145-3f4bc25f-8222-47df-b6b4-a5ca54c32a1d",
+          "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/worktrees/bcc84baa-16c7-473b-9abc-653dc665fd42-5babb19f-6715-438b-8a42-d16bacb58d65"
+        ]
+      },
+      "limitations": [
+        "Reader plus optional Pi active cancellation through the real engine/gateway/Git; no native writer, review, integration, Lead or gateway role-denial probe",
+        "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+        "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+      ],
+      "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+    },
+    "codexAlreadyCompleted": {
+      "liveAuthorized": true,
+      "selected": {
+        "harness": "codex",
+        "model": "fixture-model",
+        "thinking": "low"
+      },
+      "requestedChecks": {
+        "gatewayPolicy": true,
+        "completedResumeAndCancel": true
+      },
+      "maximumRequestedTurns": 3,
+      "support": {
+        "pi": {
+          "version": null,
+          "state": "available",
+          "authenticated": "unknown",
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "Pi supports fresh file-tool workers with only the app's loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "claude-code": {
+          "version": "0.0.0-fixture",
+          "state": "auth_required",
+          "authenticated": false,
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "Claude supports isolated file-tool workers with only the app loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "opencode": {
+          "version": "2.0.29-fixture",
+          "state": "available",
+          "authenticated": "unknown",
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "OpenCode accepts only file-worker profiles and an app loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "codex": {
+          "version": "0.163.0-fixture",
+          "state": "available",
+          "authenticated": true,
+          "lead": "implemented; native turn requires --allow-live",
+          "coordinatorRefusal": null,
+          "fallback": null
+        }
+      },
+      "nativeCodexLead": {
+        "runId": "7bfce3dd-b357-455e-8c01-c4a3aab02cd9",
+        "nativeSessionId": "9e88e96f-470d-49cf-8619-2308b6a1fca0",
+        "checks": {
+          "authoritativeCompletion": true,
+          "streamedCompletion": true,
+          "settingsMatch": true,
+          "gatewayReadAndProposal": true,
+          "coordinatorAssignmentDenied": true,
+          "nonceReported": true,
+          "noWorkerLaunched": true,
+          "noSessionError": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture-model",
+            "thinking": "low",
+            "source": "Codex thread start/resume response; no model reroute"
+          }
+        ],
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 30,
+          "lastDeltaSequence": 30,
+          "samples": [
+            {
+              "sequence": 30,
+              "text": "Inert Lead nonce: 814bc3dc-50b2-471c-ad78-b8f96b549b16"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 33,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "gatewayConnected": [
+          {
+            "role": "lead",
+            "mode": "autonomous_bounded",
+            "version": "lao-tools/5"
+          }
+        ],
+        "tools": [
+          {
+            "tool": "get_run_status",
+            "outcome": "ok"
+          },
+          {
+            "tool": "propose_task",
+            "outcome": "ok"
+          }
+        ],
+        "denials": [
+          {
+            "tool": "assign_task",
+            "code": "POLICY_DENIED",
+            "message": "Choose a worker from this run's roster"
+          }
+        ],
+        "messages": [
+          {
+            "text": "Inert Lead nonce: 814bc3dc-50b2-471c-ad78-b8f96b549b16"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "sessionErrors": [],
+        "usage": [
+          {
+            "type": "usage",
+            "inputTokens": 11,
+            "outputTokens": 7,
+            "source": "codex thread token usage (last turn)"
+          }
+        ],
+        "configured": [
+          {
+            "threadId": "9e88e96f-470d-49cf-8619-2308b6a1fca0",
+            "resumed": false,
+            "model": "fixture-model",
+            "thinking": "low",
+            "sandbox": "read-only (no network)",
+            "approvals": "never"
+          }
+        ]
+      },
+      "completedResume": {
+        "checks": {
+          "sameNativeThread": true,
+          "completedFollowUp": true,
+          "settingsMatch": true,
+          "nonceRemembered": true,
+          "noWorkerLaunched": true
+        },
+        "nativeSessionId": "9e88e96f-470d-49cf-8619-2308b6a1fca0",
+        "stream": {
+          "deltaCount": 1,
+          "firstDeltaSequence": 53,
+          "lastDeltaSequence": 53,
+          "samples": [
+            {
+              "sequence": 53,
+              "text": "Inert Lead nonce: 814bc3dc-50b2-471c-ad78-b8f96b549b16"
+            }
+          ],
+          "terminals": [
+            {
+              "sequence": 56,
+              "nativeStatus": "completed"
+            }
+          ],
+          "streamedBeforeTerminal": true
+        },
+        "settingsVerified": [
+          {
+            "type": "settings_verified",
+            "model": "fixture-model",
+            "thinking": "low",
+            "source": "Codex thread start/resume response; no model reroute"
+          }
+        ],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ]
+      },
+      "failure": {
+        "code": "SMOKE_FAILED",
+        "message": "Lead probe failed; inspect retained app-owned state"
+      },
+      "submittedPrompts": 3,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "passed": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/live-leads-e4d6473f-9aa8-403e-afdb-2cdf12214b16.sqlite",
+        "fixture": "/tmp/lao-git-fixture-7XjH5t/repo with spaces"
+      },
+      "limitations": [
+        "Only Codex has a coordinator executor and enforced Lead tool policy in this application; other refusals do not prove a native harness cannot implement one",
+        "One Codex Lead gateway turn; optional --verify-lifecycle adds completed same-thread resume and active cancellation, at most three paid turns. No workers, native writer, review or integration.",
+        "Codex-Lead fallbacks for Pi, Claude and OpenCode use real engine/gateway/Git with inert protocol fixtures in tests/lead-fallback.test.ts; separate live worker receipts are under M8 item 5",
+        "Personal-config evidence checks metadata of the listed files, not a complete isolation audit (M8 item 7)"
+      ],
+      "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+    },
+    "initialFixtureSelectorError": {
+      "liveAuthorized": true,
+      "selected": {
+        "harness": "codex",
+        "model": "fixture-model",
+        "thinking": "low"
+      },
+      "requestedChecks": {
+        "gatewayPolicy": true,
+        "completedResumeAndCancel": true
+      },
+      "maximumRequestedTurns": 3,
+      "support": {
+        "pi": {
+          "version": null,
+          "state": "available",
+          "authenticated": "unknown",
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "Pi supports fresh file-tool workers with only the app's loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "claude-code": {
+          "version": "0.0.0-fixture",
+          "state": "auth_required",
+          "authenticated": false,
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "Claude supports isolated file-tool workers with only the app loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "opencode": {
+          "version": "2.0.29-fixture",
+          "state": "available",
+          "authenticated": "unknown",
+          "lead": "unsupported by this application adapter",
+          "coordinatorRefusal": {
+            "code": "UNSUPPORTED",
+            "message": "OpenCode accepts only file-worker profiles and an app loopback gateway overlay"
+          },
+          "fallback": "Codex Lead + this harness as a roster worker, or owner-directed workers without a live Lead"
+        },
+        "codex": {
+          "version": "0.163.0-fixture",
+          "state": "available",
+          "authenticated": true,
+          "lead": "implemented; native turn requires --allow-live",
+          "coordinatorRefusal": null,
+          "fallback": null
+        }
+      },
+      "nativeCodexLead": {
+        "runId": "4877f1f0-6c70-442f-acdc-c871ae149d80",
+        "nativeSessionId": "0b85b346-e68b-4b9a-b5d5-d722726e2f08",
+        "checks": {
+          "authoritativeCompletion": false,
+          "streamedCompletion": false,
+          "settingsMatch": false,
+          "gatewayReadAndProposal": true,
+          "coordinatorAssignmentDenied": false,
+          "nonceReported": false,
+          "noWorkerLaunched": true,
+          "noSessionError": true
+        },
+        "settingsVerified": [],
+        "stream": {
+          "deltaCount": 0,
+          "firstDeltaSequence": null,
+          "lastDeltaSequence": null,
+          "samples": [],
+          "terminals": [
+            {
+              "sequence": 28,
+              "nativeStatus": "failed"
+            }
+          ],
+          "streamedBeforeTerminal": false
+        },
+        "gatewayConnected": [
+          {
+            "role": "lead",
+            "mode": "autonomous_bounded",
+            "version": "lao-tools/5"
+          }
+        ],
+        "tools": [
+          {
+            "tool": "get_run_status",
+            "outcome": "ok"
+          },
+          {
+            "tool": "propose_task",
+            "outcome": "ok"
+          }
+        ],
+        "denials": [],
+        "messages": [],
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ],
+        "sessionErrors": [],
+        "usage": [
+          {
+            "type": "usage",
+            "inputTokens": 11,
+            "outputTokens": 7,
+            "source": "codex thread token usage (last turn)"
+          }
+        ],
+        "configured": [
+          {
+            "threadId": "0b85b346-e68b-4b9a-b5d5-d722726e2f08",
+            "resumed": false,
+            "model": "fixture-model",
+            "thinking": "low",
+            "sandbox": "read-only (no network)",
+            "approvals": "never"
+          }
+        ]
+      },
+      "submittedPrompts": 1,
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "passed": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/live-leads-a22f56b9-c4d2-4e0d-b527-cd490e75fb54.sqlite",
+        "fixture": "/tmp/lao-git-fixture-gNGYLV/repo with spaces"
+      },
+      "limitations": [
+        "Only Codex has a coordinator executor and enforced Lead tool policy in this application; other refusals do not prove a native harness cannot implement one",
+        "One Codex Lead gateway turn; optional --verify-lifecycle adds completed same-thread resume and active cancellation, at most three paid turns. No workers, native writer, review or integration.",
+        "Codex-Lead fallbacks for Pi, Claude and OpenCode use real engine/gateway/Git with inert protocol fixtures in tests/lead-fallback.test.ts; separate live worker receipts are under M8 item 5",
+        "Personal-config evidence checks metadata of the listed files, not a complete isolation audit (M8 item 7)"
+      ],
+      "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+    },
+    "piIncompleteSettlementFixture": {
+      "harness": "pi",
+      "liveAuthorized": true,
+      "selected": {
+        "model": "fixture/model",
+        "thinking": "off"
+      },
+      "requestedChecks": {
+        "streamedReader": true,
+        "activeCancellation": true
+      },
+      "maximumRequestedTurns": 2,
+      "discovery": {
+        "state": "available",
+        "version": null,
+        "authenticated": "unknown",
+        "nextStep": null,
+        "selectionAvailable": true,
+        "thinkingChoices": [
+          "off",
+          "low"
+        ]
+      },
+      "submittedPrompts": 2,
+      "run": {
+        "taskStatus": "AWAITING_REVIEW",
+        "attemptStatus": "completed",
+        "adapter": "pi",
+        "nativeSessionId": "fixture-90125",
+        "sessionState": "exited",
+        "exitCode": 0,
+        "processExit": [
+          {
+            "exitCode": 0,
+            "signal": null,
+            "interrupted": false
+          }
+        ]
+      },
+      "settingsVerified": [
+        {
+          "type": "settings_verified",
+          "model": "fixture/model",
+          "thinking": "off",
+          "source": "Pi get_state after set_model/set_thinking_level"
+        }
+      ],
+      "stream": {
+        "deltaCount": 1,
+        "firstDeltaSequence": 19,
+        "lastDeltaSequence": 19,
+        "samples": [
+          {
+            "sequence": 19,
+            "text": "Protocol fixture report"
+          }
+        ],
+        "terminals": [
+          {
+            "sequence": 21,
+            "nativeStatus": "completed"
+          }
+        ],
+        "streamedBeforeTerminal": true
+      },
+      "gatewayDenials": [],
+      "nonceReported": true,
+      "report": {
+        "outcome": "completed",
+        "summary": "d7b6aaef-123f-446a-a9cf-d23ed3a4d354",
+        "changedFiles": [],
+        "tests": [
+          {
+            "command": "not run",
+            "result": "not_run"
+          }
+        ],
+        "findings": [],
+        "knownRisks": [],
+        "questions": [],
+        "artifactRefs": [],
+        "revisionOrCommit": null
+      },
+      "gatewayTools": [
+        {
+          "tool": "read_assignment",
+          "outcome": "ok"
+        },
+        {
+          "tool": "submit_result",
+          "outcome": "ok"
+        }
+      ],
+      "nativeTools": [],
+      "sessionErrors": [],
+      "usage": [],
+      "worktree": {
+        "changedFiles": [],
+        "headUnchanged": true
+      },
+      "ownerCheckoutUnchanged": true,
+      "personalConfigMetadataUnchanged": true,
+      "failure": {
+        "code": "SMOKE_FAILED",
+        "message": "Worker probe failed; inspect retained app-owned state, never replay automatically"
+      },
+      "passed": false,
+      "retained": {
+        "database": "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/live-workers-04d35909-bc1c-4354-9d90-2ddbb6146539.sqlite",
+        "fixture": "/tmp/lao-git-fixture-oe3QtP/repo with spaces",
+        "worktrees": [
+          "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/worktrees/7cf6d4ef-be9f-4728-984d-8feb029de838-d92a7634-b141-444a-80e6-90ea59c6aeeb",
+          "/tmp/metatron-m8-runner-CxBn7s/local-agent-orchestrator/worktrees/edc447e8-a769-4351-80d1-ef0db58a11ad-c5d9e3f6-6d7e-4a06-81b7-ce1ad0ab2f2b"
+        ]
+      },
+      "limitations": [
+        "Reader plus optional Pi active cancellation through the real engine/gateway/Git; no native writer, review, integration, Lead or gateway role-denial probe",
+        "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
+        "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads"
+      ],
+      "evidenceKind": "INERT native-protocol fixtures, NOT native model evidence"
+    }
+  }
+}

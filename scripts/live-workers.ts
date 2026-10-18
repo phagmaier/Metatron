@@ -5,17 +5,25 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { startApp } from "../src/server/app.ts";
-import type { Engine } from "../src/server/orchestration/engine.ts";
 import { appLocations } from "../src/server/storage/database.ts";
 import { harnessSchema } from "../src/shared/domain/entities.ts";
+import { DomainError } from "../src/shared/domain/states.ts";
 import { harnessLabel } from "../src/shared/native.ts";
 import { createGitFixture } from "../tests/helpers/git-fixture.ts";
+import {
+  cancelAfterText,
+  cancellationEvidence,
+  settleSmoke,
+  smokeEvents,
+  streamEvidence,
+} from "./native-smoke-evidence.ts";
 
-// One owner-directed read-only worker per invocation, through the real engine,
-// gateway and Git worktree. Without --allow-live it only discovers (no prompt).
+// One owner-directed reader, optionally followed by one Pi cancellation turn.
+// Without --allow-live, even lifecycle flags only discover (no prompt).
 const { values } = parseArgs({
   options: {
     "allow-live": { type: "boolean" },
+    "verify-cancel": { type: "boolean" },
     harness: { type: "string" },
     model: { type: "string" },
     thinking: { type: "string" },
@@ -23,9 +31,13 @@ const { values } = parseArgs({
   },
 });
 const usage =
-  "Usage: XDG_DATA_HOME=/tmp/<disposable> pnpm test:live:workers --harness codex|claude-code|opencode|pi --model <discovered model> [--thinking <level>] --output <new evidence.json> [--allow-live]. --allow-live submits one paid native read-only turn.";
+  "Usage: mise x -- env XDG_DATA_HOME=/tmp/<disposable> pnpm test:live:workers --harness codex|claude-code|opencode|pi --model <discovered model> [--thinking <level>] --output <new evidence.json> [--allow-live] [--verify-cancel]. Opt-in sends one paid reader turn; --verify-cancel is Pi-only and adds at most one paid turn.";
 assert.ok(values.harness && values.model && values.output, usage);
 const harness = harnessSchema.parse(values.harness);
+assert.ok(
+  !values["verify-cancel"] || harness === "pi",
+  "--verify-cancel is Pi-only; use test:live:leads --verify-lifecycle for Codex",
+);
 const label = harnessLabel[harness];
 const model = values.model;
 const thinking = values.thinking ?? null;
@@ -70,18 +82,6 @@ const metadata = () =>
       }
     }),
   );
-async function settle(engine: Engine) {
-  for (let i = 0; i < 6; i++) {
-    try {
-      await engine.idle();
-      return;
-    } catch (error) {
-      if (!(error instanceof Error && /deadline/.test(error.message)))
-        throw error;
-    }
-  }
-  throw new Error("Native worker did not settle; retained for inspection");
-}
 
 const fixture = await createGitFixture();
 const nonce = randomUUID();
@@ -107,7 +107,7 @@ const app = await startApp({
 const { engine } = app;
 let receipt: Record<string, unknown> = {};
 let passed = false;
-let worktreeRoot: string | null = null;
+const worktreeRoots = new Set<string>();
 try {
   const project = await engine.openProject(
     { name: `M8 live ${label} reader`, repositoryPath: fixture.directory },
@@ -124,6 +124,15 @@ try {
     harness,
     liveAuthorized: !!values["allow-live"],
     selected: { model, thinking },
+    requestedChecks: {
+      streamedReader: true,
+      activeCancellation: !!values["verify-cancel"],
+    },
+    maximumRequestedTurns: values["allow-live"]
+      ? values["verify-cancel"]
+        ? 2
+        : 1
+      : 0,
     discovery: {
       state: discovery.state,
       version: discovery.version,
@@ -154,7 +163,7 @@ try {
       randomUUID(),
     );
     receipt.submittedPrompts = 1;
-    await settle(engine);
+    await settleSmoke(engine);
     const { store } = engine;
     const [task] = store.listTasks(run.id);
     assert.ok(task);
@@ -162,17 +171,8 @@ try {
     const session = store
       .listSessions()
       .find((s) => s.attemptId === attempt?.id);
-    if (attempt?.worktreePath?.startsWith(join(locations.data, "worktrees")))
-      worktreeRoot = dirname(attempt.worktreePath);
-    // The journal pages at 500; streamed text alone can exceed one page.
-    const events: ReturnType<typeof store.events> = [];
-    for (let after = 0; ; ) {
-      const page = store.events({ runId: run.id, after, limit: 500 });
-      events.push(...page);
-      const last = page.at(-1);
-      if (page.length < 500 || !last) break;
-      after = last.sequence;
-    }
+    const events = smokeEvents(engine, run.id);
+    const stream = streamEvidence(events, harness);
     const payloads = (type: string) =>
       events.filter((e) => e.type === type).map((e) => e.payload);
     const settings = payloads(`${harness}.settings_verified`);
@@ -202,6 +202,8 @@ try {
         processExit: payloads(`${harness}.process_exit`),
       },
       settingsVerified: settings,
+      stream,
+      gatewayDenials: payloads("gateway.denied"),
       nonceReported: JSON.stringify(report).includes(nonce),
       report,
       gatewayTools: payloads("gateway.tool_call"),
@@ -222,24 +224,90 @@ try {
       // The private OpenCode foreground server's verified normal shutdown is 130.
       exitCode === (harness === "opencode" ? 130 : 0) &&
       settingsMatch &&
+      stream.streamedBeforeTerminal &&
+      stream.terminals[0]?.nativeStatus === "completed" &&
       JSON.stringify(report).includes(nonce) &&
       Array.isArray(captured?.files) &&
       captured.files.length === 0 &&
       captured.headSha === baseline &&
       ownerClean &&
       personalUnchanged;
+    if (passed && values["verify-cancel"]) {
+      const cancelRun = await engine.startNativeRun(
+        {
+          projectId: project.id,
+          harness,
+          title: "M8 Pi active cancellation",
+          initialPrompt:
+            "Active cancellation smoke: do not call submit_result or change any file. Start emitting a long numbered explanation of read-only repository inspection (at least 500 numbered sentences). Keep generating until the owner interrupts this turn.",
+          model,
+          thinking,
+          permission: "read_only",
+        },
+        randomUUID(),
+      );
+      receipt.submittedPrompts = 2;
+      const [cancelTask] = store.listTasks(cancelRun.id);
+      assert.ok(cancelTask);
+      const request = await cancelAfterText(
+        engine,
+        cancelRun.id,
+        cancelTask.id,
+        harness,
+      );
+      await settleSmoke(engine);
+      const cancellation = cancellationEvidence(
+        engine,
+        cancelRun.id,
+        cancelTask.id,
+        harness,
+        request,
+      );
+      receipt.cancellation = cancellation;
+      const captured = smokeEvents(engine, cancelRun.id).findLast(
+        (e) => e.type === "worktree.captured",
+      )?.payload;
+      receipt.cancellationWorktree = captured ?? null;
+      passed =
+        Object.values(cancellation.checks).every(Boolean) &&
+        Array.isArray(captured?.files) &&
+        captured.files.length === 0 &&
+        captured.headSha === baseline;
+    }
   }
+} catch (error) {
+  passed = false;
+  // Provider errors may contain secrets. Preserve owned state, not raw errors.
+  receipt.failure = {
+    code: error instanceof DomainError ? error.code : "SMOKE_FAILED",
+    message:
+      "Worker probe failed; inspect retained app-owned state, never replay automatically",
+  };
 } finally {
+  for (const attempt of engine.store.listAttempts()) {
+    if (
+      attempt.worktreePath?.startsWith(`${join(locations.data, "worktrees")}/`)
+    )
+      worktreeRoots.add(dirname(attempt.worktreePath));
+  }
   await app.close();
 }
+const ownerUnchanged =
+  (await fixture.git("status", "--porcelain")) === "" &&
+  (await fixture.git("rev-parse", "HEAD")) === baseline;
+const personalUnchanged =
+  JSON.stringify(await metadata()) === JSON.stringify(personalBefore);
+receipt.ownerCheckoutUnchanged = ownerUnchanged;
+receipt.personalConfigMetadataUnchanged = personalUnchanged;
+passed = passed && ownerUnchanged && personalUnchanged;
 // A failed native turn is retained for inspection; nothing else needs keeping.
-const retain = !passed && !!receipt.submittedPrompts;
+const retain = !passed;
 receipt.passed = passed;
 receipt.retained = retain
-  ? { database, fixture: fixture.directory, worktree: worktreeRoot }
+  ? { database, fixture: fixture.directory, worktrees: [...worktreeRoots] }
   : null;
 receipt.limitations = [
-  "One owner-directed read-only worker turn through the real engine, gateway and Git worktree; not the Lead or four-harness smoke matrix",
+  "Reader plus optional Pi active cancellation through the real engine/gateway/Git; no native writer, review, integration, Lead or gateway role-denial probe",
   "settingsVerified is the adapter's native confirmation of a completed turn; catalog presence is not entitlement",
   "Application file policy and, for Codex, its read-only sandbox are not an OS isolation boundary for reads",
 ];
@@ -251,7 +319,7 @@ for (const [key, value] of Object.entries(process.env))
 await writeFile(output, text, { mode: 0o600, flag: "wx" });
 if (!retain) {
   await fixture.verify(async () => {});
-  if (worktreeRoot) await rm(worktreeRoot, { recursive: true });
+  for (const root of worktreeRoots) await rm(root, { recursive: true });
   for (const suffix of ["", "-wal", "-shm"])
     await rm(`${database}${suffix}`, { force: true });
 }

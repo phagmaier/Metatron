@@ -126,6 +126,8 @@ mise x -- env XDG_DATA_HOME=/tmp/lao-m8-workers pnpm test:live:workers --allow-l
 
 The script commits a random nonce to a disposable repository and passes only if the worker reports it through `submit_result`, the harness confirms the selected settings, the worktree and owner checkout are unchanged, and checked personal-config metadata is unchanged. Codex needs `CODEX_HOME='/tmp/lao-m8-workers/local-agent-orchestrator/codex' codex login` once; Claude needs `CLAUDE_CODE_OAUTH_TOKEN` (or another admitted route) in the environment. Native **PASS** at the cheapest selections: [Pi](docs/evidence/m8-worker-pi.json) `deepseek-flash`/off, [OpenCode](docs/evidence/m8-worker-opencode.json) free `deepseek-v4.1-flash-free`/low, [Codex](docs/evidence/m8-worker-codex.json) `gpt-6-luna`/low, [Claude](docs/evidence/m8-worker-claude.json) `haiku` (`claude-haiku-5-5`)/low. [Recon and limitations](docs/adapter-recon.md#m8-item-5--four-harness-read-only-workers-2026-10-17).
 
+The current runner also requires ordered streamed text and an authoritative completed terminal event. Pi-only `--verify-cancel` adds a second paid turn when combined with `--allow-live`; it stops after observed live text and requires a subsequent native interruption/owned exit. Without `--allow-live` it remains discovery-only. [Cost-free runner validation and remaining native gaps](docs/adapter-smoke-matrix.md#cost-free-runner-preparation--current-desktop-continuation).
+
 ## Lead support and worker fallback — M8 item 6
 
 Only **Codex** has a coordinator executor in this application. Pi, Claude Code and OpenCode refuse `coordinator` before launching a session; profile discovery does not offer that permission. This is an **application integration limitation**, not evidence that their native MCP/SDK interfaces cannot implement a Lead.
@@ -148,6 +150,8 @@ mise x -- env XDG_DATA_HOME=/tmp/lao-m8-workers pnpm test:live:leads --allow-liv
 ```
 
 The opt-in checks a committed random nonce, `get_run_status`, `propose_task`, a deliberately denied assignment to the coordinator itself, native model/effort confirmation and clean completion/exit. It refuses existing evidence outputs, uses a new database and disposable repo, retains failures without replay, and checks owner-checkout/personal-config metadata before cleanup. The default mode proves only discovery/refusals, not model access. Item 7's bounded isolation evidence is below; item 8's full smoke matrix remains incomplete.
+
+`--verify-lifecycle` adds a completed same-thread follow-up and active cancellation: at most **three paid turns total** with `--allow-live`, still zero prompts without it. Current lifecycle evidence is **inert transport validation only**, not newly authorized native model evidence.
 
 Native **PASS** on Codex **0.163.0**, `gpt-6-luna`/low: [one-turn gateway/denial receipt](docs/evidence/m8-lead-codex-native.json). The Lead reported the nonce, used both gateway tools, received `POLICY_DENIED`, launched no worker and exited 0 with unchanged checked metadata. [Four-harness no-model support/refusal receipt](docs/evidence/m8-lead-support-probe.json); [precise support matrix and limitations](docs/adapter-recon.md#m8-item-6--lead-gateway-support-and-tested-fallbacks-2026-10-17). Claude has no supplied authentication in this process; no new Claude/Pi/OpenCode model prompts were sent.
 
@@ -175,9 +179,9 @@ Nine new failing-before/passing-after regressions cover inheritance/preload, clo
 
 ## Per-adapter smoke matrix — M8 item 8
 
-**Incomplete; new model turns are explicitly on hold.** [Seven-check support/evidence matrix and exact blockers](docs/adapter-smoke-matrix.md) separates fresh discovery, prior native receipts, unsupported controls and unverified scenarios. [Fresh four-harness zero-prompt receipt](docs/evidence/m8-smoke-matrix-discovery.json): installed versions/catalogs, six unsupported-operation refusals, no attempts/sessions/prompts, unchanged fixture and checked personal metadata, no matching owned process after close.
+**Incomplete; new model turns remain explicitly on hold.** [Seven-check support/evidence matrix and exact blockers](docs/adapter-smoke-matrix.md) separates recorded native observations, unsupported controls and missing checks. [Current four-harness zero-prompt runner preflight](docs/evidence/m8-smoke-runner-preflight.json) records Codex 0.163.0 / Claude 2.1.302 / Pi 1.3.0 / OpenCode 2.0.32; fresh Codex/Claude/Pi homes require credentials, OpenCode auth is unknown. [Earlier full-catalog/refusal receipt](docs/evidence/m8-smoke-matrix-discovery.json) remains historical; its OpenCode native version was 2.0.29, not current paid compatibility proof.
 
-Outstanding: retained Codex/Pi streaming observations, current Codex Lead resume/cancel, Pi active cancellation, Pi/Claude/OpenCode native gateway-denial evidence, and one real writer → candidate review → separately owner-approved integration. Claude needs private approved authentication; a fresh Codex home is deliberately logged out. Earlier model-spend or native Write approvals authorize neither new turns nor integration. M8 item 8 stays unchecked; M9/beta are not complete.
+Outstanding: **native** Codex/Pi streaming, current Codex Lead resume/cancel, Pi active cancellation, Pi/Claude/OpenCode gateway-denial evidence, and one real writer → candidate review → separately owner-approved integration. Stream/lifecycle runners now have [cost-free positive and expected-negative validation](docs/evidence/m8-smoke-runner-fixtures.json); those fixtures close no native gate. Fresh owner-approved auth/spend is required before native turns; earlier model-spend or native Write approvals authorize neither new turns nor integration. M8 item 8 stays unchecked; M9 remains untouched.
 
 ## Team presets
 
