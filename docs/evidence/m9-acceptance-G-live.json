@@ -1,0 +1,63 @@
+{
+  "scenario": "G",
+  "title": "Planning-only",
+  "mode": "live native harnesses",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:37:05.208Z",
+  "finishedAt": "2026-10-18T11:37:22.346Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "turns": {
+    "cap": 1,
+    "total": 1,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "owner received a plan",
+      "pass": true,
+      "detail": "I’ll inspect the run status first, then read the pricing implementation and nearby tests so the plan can name the right files and edge cases.\n\nThe run is in `chat_plan` mode with no assigned tasks. I’ll now inspect the source and existing test layout; I won’t dispatch work or modify files.\n\n## Plan\n"
+    },
+    {
+      "name": "no worker was spawned",
+      "pass": true,
+      "detail": "0 proposed tasks, 0 attempts"
+    },
+    {
+      "name": "project not mutated",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "1/1 (1 Lead, 0 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-lCtQMN/repo with spaces",
+    "baseSha": "957ff177500f2097e6697b89e3d549a4fc562f44",
+    "finalSha": "957ff177500f2097e6697b89e3d549a4fc562f44"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-G-80553a18-7e81-441e-a254-5deffedb6829.sqlite"
+}

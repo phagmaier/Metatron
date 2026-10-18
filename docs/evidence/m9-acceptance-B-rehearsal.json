@@ -1,0 +1,69 @@
+{
+  "scenario": "B",
+  "title": "Human blocker",
+  "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:34:27.110Z",
+  "finishedAt": "2026-10-18T11:34:45.622Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": null,
+  "turns": {
+    "cap": 7,
+    "total": 5,
+    "lead": 0
+  },
+  "checks": [
+    {
+      "name": "worker requested the missing dependency through Needs You",
+      "pass": true,
+      "detail": "environment: Fixture dependency needs owner setup"
+    },
+    {
+      "name": "independent worker finished while the blocked worker waited",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "downstream task waits without launching",
+      "pass": true,
+      "detail": "WAITING_DEPENDENCY"
+    },
+    {
+      "name": "blocked worker resumed after the owner's answer",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "resumed work verified by independent review",
+      "pass": true,
+      "detail": "Fixture review: candidate and surrounding code inspected"
+    },
+    {
+      "name": "prerequisite integrated after owner approval",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "downstream task launched only after its prerequisite was DONE",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "5/7 (0 Lead, 5 worker)"
+    }
+  ],
+  "notes": [
+    "Review of \"Pi writer\": pass — Fixture review: candidate and surrounding code inspected"
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-wflku5/repo with spaces",
+    "baseSha": "6b82dcd004781a40c67e0646627564ff3a1fff82",
+    "finalSha": "ac42701e8fdc5204857729dfcf6b4b6531e5c742"
+  },
+  "database": null
+}

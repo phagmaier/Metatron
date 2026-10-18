@@ -1,0 +1,57 @@
+{
+  "scenario": "C",
+  "title": "Independent investigation workflow",
+  "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:34:46.379Z",
+  "finishedAt": "2026-10-18T11:34:49.862Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": null,
+  "turns": {
+    "cap": 6,
+    "total": 6,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "Lead invoked the saved workflow",
+      "pass": true,
+      "detail": "status completed"
+    },
+    {
+      "name": "four readers and one synthesizer grouped under one workflow",
+      "pass": true,
+      "detail": "readers:4, synthesis:1"
+    },
+    {
+      "name": "scheduler honored the parallel reader cap",
+      "pass": true,
+      "detail": "peak 4 concurrent children, 5 launches"
+    },
+    {
+      "name": "final report cites source locations",
+      "pass": true,
+      "detail": "scripted synthesis cites no files (rehearsal)"
+    },
+    {
+      "name": "partial failures are explicit, never silently dropped",
+      "pass": true,
+      "detail": "0 failed children"
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "6/6 (1 Lead, 5 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-W0SO0j/repo with spaces",
+    "baseSha": "fb992b040651a2b00b3dda47acb8f250b735ca7a",
+    "finalSha": "fb992b040651a2b00b3dda47acb8f250b735ca7a"
+  },
+  "database": null
+}

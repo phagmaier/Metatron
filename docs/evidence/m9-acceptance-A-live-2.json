@@ -1,0 +1,81 @@
+{
+  "scenario": "A",
+  "title": "Initial autonomous run",
+  "mode": "live native harnesses",
+  "result": "PASS",
+  "startedAt": "2026-10-18T12:46:25.946Z",
+  "finishedAt": "2026-10-18T12:47:29.515Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "integrationApproval": "script-issued under the owner's --approve-disposable authorization (disposable fixture only)",
+  "turns": {
+    "cap": 5,
+    "total": 3,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "Lead assigned a coding task to the writer",
+      "pass": true,
+      "detail": "Add totalInStock"
+    },
+    {
+      "name": "worker edited an isolated branch and submitted a report",
+      "pass": true,
+      "detail": "candidate e9d88dd12b6a changed src/inventory.js, tests/inventory.test.js"
+    },
+    {
+      "name": "owner checkout untouched while work ran",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "independent reviewer found or cleared issues",
+      "pass": true,
+      "detail": "passed first review"
+    },
+    {
+      "name": "owner inspected the diff and approved integration",
+      "pass": true,
+      "detail": "tests passed"
+    },
+    {
+      "name": "root checkout fast-forwarded cleanly to the approved result",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "3/5 (1 Lead, 2 worker)"
+    }
+  ],
+  "notes": [
+    "Review of \"Add totalInStock\": pass — The implementation exports totalInStock and correctly sums only strictly positive quantities; tests cover mixed positive, zero, negative, and no-positive cases. No actionable issues found. Tests were not run as instructed."
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-jzEird/repo with spaces",
+    "baseSha": "ac96c24904d87b48ac6ad5f6adb6fc665eaf1571",
+    "finalSha": "e9d88dd12b6a9dc4f0cf65852ac2c9d9d54681c7"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-A-52215c25-47fc-4294-a051-62a1515c041f.sqlite"
+}

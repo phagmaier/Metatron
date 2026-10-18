@@ -1,0 +1,74 @@
+{
+  "scenario": "C",
+  "title": "Independent investigation workflow",
+  "mode": "live native harnesses",
+  "result": "FAIL",
+  "startedAt": "2026-10-18T12:44:53.157Z",
+  "finishedAt": "2026-10-18T12:45:12.099Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "integrationApproval": "script-issued under the owner's --approve-disposable authorization (disposable fixture only)",
+  "turns": {
+    "cap": 6,
+    "total": 5,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "Lead invoked the saved workflow",
+      "pass": true,
+      "detail": "status blocked"
+    },
+    {
+      "name": "four readers and one synthesizer grouped under one workflow",
+      "pass": true,
+      "detail": "readers:4, synthesis:1"
+    },
+    {
+      "name": "scheduler honored the parallel reader cap",
+      "pass": true,
+      "detail": "peak 3 concurrent children, 4 launches"
+    },
+    {
+      "name": "final report cites source locations",
+      "pass": false,
+      "detail": "0 citations, e.g. "
+    },
+    {
+      "name": "partial failures are explicit, never silently dropped",
+      "pass": true,
+      "detail": "3 failed children"
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "5/6 (1 Lead, 4 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-yViQNO/repo with spaces",
+    "baseSha": "f0bab215b91bd405895dc532c074a4a482b916a8",
+    "finalSha": "f0bab215b91bd405895dc532c074a4a482b916a8"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-C-7ef25c9e-3b22-488f-b810-b78810628ed6.sqlite"
+}

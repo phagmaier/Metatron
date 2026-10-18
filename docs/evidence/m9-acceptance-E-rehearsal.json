@@ -1,0 +1,57 @@
+{
+  "scenario": "E",
+  "title": "Failure/restart",
+  "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:35:00.902Z",
+  "finishedAt": "2026-10-18T11:35:15.891Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": null,
+  "turns": {
+    "cap": 2,
+    "total": 2,
+    "lead": 0
+  },
+  "checks": [
+    {
+      "name": "crash and app restart recorded explicit recovery causes",
+      "pass": true,
+      "detail": "crashed, recovery_required"
+    },
+    {
+      "name": "no ambiguous mutating work was rerun",
+      "pass": true,
+      "detail": "2 attempts"
+    },
+    {
+      "name": "pending task survived the restart without launching",
+      "pass": true,
+      "detail": "QUEUED"
+    },
+    {
+      "name": "unresolved worktrees were not deleted",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "owner checkout unchanged",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "2/2 (0 Lead, 2 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-tvM8Cg/repo with spaces",
+    "baseSha": "e7e907bf9f7517349efc2b0625d6df309336891a",
+    "finalSha": "e7e907bf9f7517349efc2b0625d6df309336891a"
+  },
+  "database": null
+}

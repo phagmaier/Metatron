@@ -1,0 +1,76 @@
+{
+  "scenario": "F",
+  "title": "Conflicting implementations",
+  "mode": "live native harnesses",
+  "result": "PASS",
+  "startedAt": "2026-10-18T12:10:45.841Z",
+  "finishedAt": "2026-10-18T12:15:01.386Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "turns": {
+    "cap": 4,
+    "total": 4,
+    "lead": 0
+  },
+  "checks": [
+    {
+      "name": "two workers changed the same area in separate worktrees",
+      "pass": true,
+      "detail": "src/inventory.js, tests/inventory.test.js"
+    },
+    {
+      "name": "first implementation integrated after owner approval",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "integration detected the real conflict instead of overwriting",
+      "pass": true,
+      "detail": "conflict: src/inventory.js, tests/inventory.test.js"
+    },
+    {
+      "name": "owner asked to resolve the conflict",
+      "pass": true,
+      "detail": "AWAITING_REVIEW, Needs You request open"
+    },
+    {
+      "name": "nothing from the conflicting candidate was applied",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "4/4 (0 Lead, 4 worker)"
+    }
+  ],
+  "notes": [
+    "Review of \"Pi writer\": pass — Pass. inStock continues filtering to positive-quantity items, maps them to names, and alphabetically sorts the resulting names. The updated test exercises unsorted in-stock input and excludes a zero-quantity item. No actionable defects found. Tests were not run as instructed.",
+    "Review of \"Return stock records\": pass — The implementation filters positive-quantity items and returns fresh objects containing exactly name and quantity, as requested. The updated test reflects that return shape. No substantive issues found; tests were not run per instruction."
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-bLcM5q/repo with spaces",
+    "baseSha": "1c6b8186e491ed206f4792b722f2ef73aa0c187f",
+    "finalSha": "9aae601e05184671ecf5d0cb5993b5c82da4a217"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-F-1f7673bc-a594-47b9-b234-49f4acb20ed1.sqlite"
+}

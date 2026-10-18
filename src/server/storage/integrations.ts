@@ -291,6 +291,14 @@ export function finishIntegrationApplication(
             ),
             candidate.id,
           );
+        if (outcome.observedSha)
+          store.advanceRunBase(
+            saved.runId,
+            saved.destinationBranch,
+            finished.expectedSha,
+            outcome.observedSha,
+            saved.id,
+          );
       }
       moveLineage(
         store,

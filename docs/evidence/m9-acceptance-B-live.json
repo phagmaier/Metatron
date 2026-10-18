@@ -1,0 +1,75 @@
+{
+  "scenario": "B",
+  "title": "Human blocker",
+  "mode": "live native harnesses",
+  "result": "FAIL",
+  "startedAt": "2026-10-18T12:15:15.977Z",
+  "finishedAt": "2026-10-18T12:21:30.101Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "turns": {
+    "cap": 7,
+    "total": 5,
+    "lead": 0
+  },
+  "checks": [
+    {
+      "name": "worker requested the missing dependency through Needs You",
+      "pass": true,
+      "detail": "environment: Please provide the owner's approved SHIPPING_SURCHARGE_CENTS value. The assignment does not specify the amount, and it must not be guessed."
+    },
+    {
+      "name": "independent worker finished while the blocked worker waited",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "downstream task waits without launching",
+      "pass": true,
+      "detail": "WAITING_DEPENDENCY"
+    },
+    {
+      "name": "blocked worker resumed after the owner's answer",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "scenario ran to completion",
+      "pass": false,
+      "detail": "Timed out waiting for AWAITING_REVIEW for ba056874-a734-4027-a01f-6287dd928da3"
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "5/7 (0 Lead, 5 worker)"
+    }
+  ],
+  "notes": [
+    "Review of \"Pi writer\": changes_requested — Changes requested. The implementation correctly adds and exports the surcharge, but the chosen amount (250 cents) is unsupported: the task explicitly says the owner's value is not in the repository and must not be guessed. No owner-provided value is present in the assignment or inspected repository context."
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-lw40Gy/repo with spaces",
+    "baseSha": "b19beaf9115ae3c716cd07aed69a1f9a18a6c9c9",
+    "finalSha": "b19beaf9115ae3c716cd07aed69a1f9a18a6c9c9"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-B-64192eb0-674a-46a5-9bb3-49c5d75e8d52.sqlite"
+}

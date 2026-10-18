@@ -232,10 +232,12 @@ process.stdin.on("data", (chunk) => {
       continue;
     }
     // "tracked" edits an existing file instead of creating a new one, and its
-    // read-only sessions report the README they see. In "tamper" a read-only
-    // session also writes, as a policy bypass would.
+    // read-only sessions report the README they see. "conflict" writes
+    // writer-specific text, so two such candidates genuinely conflict. In
+    // "tamper" a read-only session also writes, as a policy bypass would.
     const tracked =
       scenario === "tracked" ||
+      scenario === "conflict" ||
       scenario === "tamper" ||
       scenario?.startsWith("review-");
     const written = tracked ? "README.md" : "fixture-result.txt";
@@ -313,7 +315,9 @@ process.stdin.on("data", (chunk) => {
           writer
             ? revising
               ? `# Revised heading\n\n${await readFile(join(process.cwd(), written), "utf8")}`
-              : "Protocol fixture result\n"
+              : scenario === "conflict"
+                ? `Protocol fixture result from writer ${process.pid}\n`
+                : "Protocol fixture result\n"
             : "Tampered by a reader\n",
         );
       emit({

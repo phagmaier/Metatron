@@ -3,6 +3,7 @@ import { idSchema, type Task } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import type { Actor } from "../../shared/orchestration.ts";
 import { listIntegrationCandidates } from "../storage/candidates.ts";
+import { ownerAnswers } from "../storage/human-requests.ts";
 import { mutate } from "../storage/mutations.ts";
 import { listReviews } from "../storage/reviews.ts";
 import {
@@ -214,6 +215,11 @@ export async function revisionPacket(
     `Source task: ${source.id}\nSource candidate: ${candidate?.candidateSha ?? "No source candidate (report-only task)"}\nRun base: ${store.getRun(task.runId).repository?.baseSha ?? "simulation"}`,
     `Previous result (bounded):\n${previous ? String(previous.payload).slice(0, 3000) : "No structured report was submitted."}`,
     `Recorded review findings (bounded):\n${JSON.stringify(listReviews(store, source.id)).slice(0, 6000)}`,
+    ownerAnswers(store, [
+      task.id,
+      source.id,
+      ...revisionAncestors(store, source).map((t) => t.id),
+    ]),
     "Continue from the source candidate in this fresh worktree. Preserve earlier implementation while addressing feedback. Earlier reviews do not approve the new candidate. Report tests as not_run when unavailable.",
   ]
     .join("\n\n")

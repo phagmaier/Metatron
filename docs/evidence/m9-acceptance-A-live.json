@@ -1,0 +1,80 @@
+{
+  "scenario": "A",
+  "title": "Initial autonomous run",
+  "mode": "live native harnesses",
+  "result": "FAIL",
+  "startedAt": "2026-10-18T12:06:19.218Z",
+  "finishedAt": "2026-10-18T12:10:02.629Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "turns": {
+    "cap": 5,
+    "total": 3,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "Lead assigned a coding task to the writer",
+      "pass": true,
+      "detail": "Add totalInStock"
+    },
+    {
+      "name": "worker edited an isolated branch and submitted a report",
+      "pass": false,
+      "detail": "candidate e880647d3f1e changed src/inventory.js, tests/inventory.test.js"
+    },
+    {
+      "name": "owner checkout untouched while work ran",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "independent reviewer found or cleared issues",
+      "pass": true,
+      "detail": "passed first review"
+    },
+    {
+      "name": "owner inspected the diff and approved integration",
+      "pass": true,
+      "detail": "tests passed"
+    },
+    {
+      "name": "root checkout fast-forwarded cleanly to the approved result",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "3/5 (1 Lead, 2 worker)"
+    }
+  ],
+  "notes": [
+    "Review of \"Add totalInStock\": pass — Pass. The exported function correctly sums only positive quantities, and tests cover mixed positive/zero/negative values and the all-nonpositive case. Tests were not run because shell execution is disabled."
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-A36yO8/repo with spaces",
+    "baseSha": "e8a67653d0fc88a0c8451a69b5124f2964074e57",
+    "finalSha": "e880647d3f1ed1128e44df2a54b451e43e18c92e"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-A-32cc0e43-8069-4371-b45d-8b15cea7883f.sqlite"
+}

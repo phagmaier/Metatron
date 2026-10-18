@@ -196,6 +196,35 @@ export class Store {
       return run;
     });
   }
+  // Runs inside the integration's transaction. Only this app's own approved
+  // application from the run's recorded base may move it, so later worktrees
+  // start from the integrated result; any other branch movement (an owner
+  // commit, another run's integration) still fails the dispatch identity check.
+  advanceRunBase(
+    runId: string,
+    branch: string,
+    from: string,
+    to: string,
+    integrationId: string,
+  ) {
+    const run = this.getRun(runId);
+    if (run.repository?.branch !== branch || run.repository.baseSha !== from)
+      return;
+    this.save(
+      "runs",
+      runSchema.parse({
+        ...run,
+        repository: { ...run.repository, baseSha: to },
+        updatedAt: new Date().toISOString(),
+      }),
+    );
+    appendEvent(this.db, {
+      type: "run.base_advanced",
+      runId,
+      correlationId: integrationId,
+      payload: { branch, from, to, integrationId },
+    });
+  }
   createTask(input: unknown, key: string) {
     const data = createTaskSchema.parse(input);
     return mutate(this.db, key, "createTask", data, taskSchema, () => {

@@ -1,0 +1,47 @@
+{
+  "scenario": "G",
+  "title": "Planning-only",
+  "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:35:35.934Z",
+  "finishedAt": "2026-10-18T11:35:39.437Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": null,
+  "turns": {
+    "cap": 1,
+    "total": 1,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "owner received a plan",
+      "pass": true,
+      "detail": "Lead turn: assign POLICY_DENIED"
+    },
+    {
+      "name": "no worker was spawned",
+      "pass": true,
+      "detail": "1 proposed tasks, 0 attempts"
+    },
+    {
+      "name": "project not mutated",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "1/1 (1 Lead, 0 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-sQjIXR/repo with spaces",
+    "baseSha": "36ed3135f8b477afadb2f547c96b095abdd4500b",
+    "finalSha": "36ed3135f8b477afadb2f547c96b095abdd4500b"
+  },
+  "database": null
+}

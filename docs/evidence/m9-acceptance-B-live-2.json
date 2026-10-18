@@ -1,0 +1,86 @@
+{
+  "scenario": "B",
+  "title": "Human blocker",
+  "mode": "live native harnesses",
+  "result": "PASS",
+  "startedAt": "2026-10-18T12:24:09.793Z",
+  "finishedAt": "2026-10-18T12:25:49.680Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "integrationApproval": "script-issued under the owner's --approve-disposable authorization (disposable fixture only)",
+  "turns": {
+    "cap": 7,
+    "total": 5,
+    "lead": 0
+  },
+  "checks": [
+    {
+      "name": "worker requested the missing dependency through Needs You",
+      "pass": true,
+      "detail": "environment: Please provide the owner's value for SHIPPING_SURCHARGE_CENTS. It is not present in the assignment, and the amount must not be guessed."
+    },
+    {
+      "name": "independent worker finished while the blocked worker waited",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "downstream task waits without launching",
+      "pass": true,
+      "detail": "WAITING_DEPENDENCY"
+    },
+    {
+      "name": "blocked worker resumed after the owner's answer",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "resumed work verified by independent review",
+      "pass": true,
+      "detail": "Pass. The implementation matches the owner-provided 250-cent surcharge, exports the requested constant and additive helper, and adds a node:test case covering both value and calculation. No material i"
+    },
+    {
+      "name": "prerequisite integrated after owner approval",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "downstream task launched only after its prerequisite was DONE",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "5/7 (0 Lead, 5 worker)"
+    }
+  ],
+  "notes": [
+    "Review of \"Pi writer\": pass — Pass. The implementation matches the owner-provided 250-cent surcharge, exports the requested constant and additive helper, and adds a node:test case covering both value and calculation. No material issues identified. Tests were not run as instructed."
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-0BYHgS/repo with spaces",
+    "baseSha": "8ed9e7c1b9030139044d183454f08a861f3e5f66",
+    "finalSha": "dc8ae7a5b0817212783f0f69590ea6af3798b757"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-B-66447a28-89e2-482f-a63c-f8faf81a98f9.sqlite"
+}

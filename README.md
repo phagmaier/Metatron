@@ -45,6 +45,18 @@ All default checks use temporary databases and no model tokens. Tests cover task
 
 Git fixture tests retain their M0 safety checks: each fixture is created under the OS temporary directory with a local commit and isolated Git configuration; cleanup happens only after verification and ownership checks succeed. Failed fixtures are retained. No important repository is used as a fixture. `pnpm test` points every test file at one private `lao-test-run-*` temporary root: a passing run removes it, a failing run keeps it and prints its path.
 
+Acceptance scenarios A–G (spec §13.4) run against the app in its own process on a fresh disposable repository, through the same HTTP API the GUI uses:
+
+```sh
+mise x -- pnpm build
+mise x -- pnpm acceptance --scenario A --fixtures --output /tmp/a.json
+mise x -- env XDG_DATA_HOME=<app-owned home> pnpm acceptance --scenario A --allow-live \
+  --lead codex:gpt-6-luna:low --writer pi:openai/gpt-6-luna:low \
+  --reader opencode:opencode/deepseek-v4.1-flash-free:low --output /tmp/a-live.json
+```
+
+`--fixtures` uses scripted protocol subprocesses (no model, labelled as rehearsal). `--allow-live` spends real turns within each scenario's cap and stops for the owner to approve integrations at http://127.0.0.1:4318; `--approve-disposable` lets the driver approve its own disposable fixture instead. Evidence: [`docs/evidence/m9-acceptance-*`](docs/evidence/).
+
 ## Role templates
 
 Expand **Role templates** to create, edit or delete reusable instructions and an expected output shape. Harness, model, reasoning and permission settings belong to AgentProfiles. Choose custom roles in **Agent profiles** after reloading profiles and roles. Editing a built-in role affects future fake, Pi, Claude Code, OpenCode and Codex Lead runs; saved runs keep their original snapshots.

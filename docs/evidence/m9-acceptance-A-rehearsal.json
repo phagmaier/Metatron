@@ -1,0 +1,65 @@
+{
+  "scenario": "A",
+  "title": "Initial autonomous run",
+  "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:34:10.731Z",
+  "finishedAt": "2026-10-18T11:34:26.345Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": null,
+  "turns": {
+    "cap": 5,
+    "total": 5,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "Lead assigned a coding task to the writer",
+      "pass": true,
+      "detail": "Read README 0"
+    },
+    {
+      "name": "worker edited an isolated branch and submitted a report",
+      "pass": true,
+      "detail": "candidate 14e637bb8b46 changed README.md"
+    },
+    {
+      "name": "owner checkout untouched while work ran",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "independent reviewer found or cleared issues",
+      "pass": true,
+      "detail": "findings fixed by one revision"
+    },
+    {
+      "name": "owner inspected the diff and approved integration",
+      "pass": true,
+      "detail": "tests passed"
+    },
+    {
+      "name": "root checkout fast-forwarded cleanly to the approved result",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "5/5 (1 Lead, 4 worker)"
+    }
+  ],
+  "notes": [
+    "Review of \"Read README 0\": changes_requested — Fixture review: README loses the project heading",
+    "Re-review: pass — Fixture review: candidate and surrounding code inspected"
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-fRwEY5/repo with spaces",
+    "baseSha": "a2c0067b1e5e7efca4328acc6dab1ce1db259f4b",
+    "finalSha": "2755fc935ef27f6d0edd247d03788b3bd98f01ef"
+  },
+  "database": null
+}

@@ -14,6 +14,7 @@ import {
   getIntegrationCandidate,
   listIntegrationCandidates,
 } from "../storage/candidates.ts";
+import { ownerAnswers } from "../storage/human-requests.ts";
 import { mutate } from "../storage/mutations.ts";
 import { implementationTask, revisionAncestors } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
@@ -207,6 +208,10 @@ export async function reviewPacket(
     task.objective,
     `Original task: ${original.title}\n${original.objective}`,
     `Acceptance criteria:\n${original.acceptanceCriteria.map((c) => `- ${c}`).join("\n") || "- none recorded"}`,
+    ownerAnswers(store, [
+      implementation.id,
+      ...revisionAncestors(store, implementation).map((t) => t.id),
+    ]),
     ...(feedback ? [`Requested revision:\n${feedback}`] : []),
     reviewInstructions,
     `Changed files (base ${candidate.baseSha} -> candidate ${candidate.candidateSha}):\n${files}`,

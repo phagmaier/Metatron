@@ -271,3 +271,21 @@ export function updateHumanRequest(store: Store, input: unknown, key: string) {
     },
   );
 }
+
+// Owner-provided facts for an implementation lineage. Reviews and revisions
+// see them, unlike the implementer's report, so an answer the owner gave is
+// never mistaken for a guess.
+export function ownerAnswers(store: Store, taskIds: string[]) {
+  const answers = store
+    .listHumanRequests()
+    .filter(
+      (r) =>
+        r.ownerResponse && r.affectedTaskIds.some((id) => taskIds.includes(id)),
+    )
+    .slice(-5)
+    .map(
+      (r) =>
+        `- ${r.type} request "${r.reason.slice(0, 300)}": owner answered "${r.ownerResponse?.slice(0, 1000)}"`,
+    );
+  return `Owner answers to this task's requests (owner-provided facts, bounded):\n${answers.join("\n") || "- none"}`;
+}

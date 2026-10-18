@@ -1,0 +1,74 @@
+{
+  "scenario": "C",
+  "title": "Independent investigation workflow",
+  "mode": "live native harnesses",
+  "result": "PASS",
+  "startedAt": "2026-10-18T12:47:41.950Z",
+  "finishedAt": "2026-10-18T12:49:12.474Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    }
+  },
+  "integrationApproval": "script-issued under the owner's --approve-disposable authorization (disposable fixture only)",
+  "turns": {
+    "cap": 6,
+    "total": 6,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "Lead invoked the saved workflow",
+      "pass": true,
+      "detail": "status completed"
+    },
+    {
+      "name": "four readers and one synthesizer grouped under one workflow",
+      "pass": true,
+      "detail": "readers:4, synthesis:1"
+    },
+    {
+      "name": "scheduler honored the parallel reader cap",
+      "pass": true,
+      "detail": "peak 4 concurrent children, 5 launches"
+    },
+    {
+      "name": "final report cites source locations",
+      "pass": true,
+      "detail": "21 citations, e.g. src/inventory.js:1, src/pricing.js:1, tests/inventory.test.js:3"
+    },
+    {
+      "name": "partial failures are explicit, never silently dropped",
+      "pass": true,
+      "detail": "0 failed children"
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "6/6 (1 Lead, 5 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-FkjE3R/repo with spaces",
+    "baseSha": "de7fdbbcb5f866b75684df90e9f0779b791ad7fc",
+    "finalSha": "de7fdbbcb5f866b75684df90e9f0779b791ad7fc"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-C-8c19ef1d-03e7-4760-97c6-c3bdad711b8a.sqlite"
+}

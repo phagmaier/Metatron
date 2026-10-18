@@ -306,6 +306,17 @@ export function TaskCard({
             Request review
           </button>
         )}
+        {task.kind === "work" && task.status === "RUNNING" && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() =>
+              void act(() => writeApi("tasks/pause", { taskId: task.id }))
+            }
+          >
+            Pause worker
+          </button>
+        )}
         <button
           type="button"
           disabled={

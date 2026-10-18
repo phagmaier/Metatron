@@ -1,0 +1,60 @@
+{
+  "scenario": "F",
+  "title": "Conflicting implementations",
+  "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:35:16.658Z",
+  "finishedAt": "2026-10-18T11:35:35.172Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": null,
+  "turns": {
+    "cap": 4,
+    "total": 4,
+    "lead": 0
+  },
+  "checks": [
+    {
+      "name": "two workers changed the same area in separate worktrees",
+      "pass": true,
+      "detail": "README.md"
+    },
+    {
+      "name": "first implementation integrated after owner approval",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "integration detected the real conflict instead of overwriting",
+      "pass": true,
+      "detail": "conflict: README.md"
+    },
+    {
+      "name": "owner asked to resolve the conflict",
+      "pass": true,
+      "detail": "AWAITING_REVIEW, Needs You request open"
+    },
+    {
+      "name": "nothing from the conflicting candidate was applied",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "4/4 (0 Lead, 4 worker)"
+    }
+  ],
+  "notes": [
+    "Review of \"Pi writer\": pass — Fixture review: candidate and surrounding code inspected",
+    "Review of \"Return stock records\": pass — Fixture review: candidate and surrounding code inspected"
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-kA5jC1/repo with spaces",
+    "baseSha": "7a71c9646619e8fa2db86928fe9b214d067ad7b9",
+    "finalSha": "90d7665293325315257ea6cad4ce17be4e6bf1e9"
+  },
+  "database": null
+}

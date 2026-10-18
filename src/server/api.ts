@@ -38,7 +38,7 @@ import {
 } from "./orchestration/recovery-decisions.ts";
 import { candidateDiff, requestReview } from "./orchestration/review.ts";
 import { requestRevision } from "./orchestration/revision.ts";
-import { emergencyStop, stopRun } from "./orchestration/stops.ts";
+import { emergencyStop, pauseTask, stopRun } from "./orchestration/stops.ts";
 import { createTeamRun } from "./orchestration/team-run.ts";
 import { reviewHistory } from "./storage/reviews.ts";
 import {
@@ -59,7 +59,11 @@ import {
   updateTeam,
 } from "./storage/teams.ts";
 import { workflowEvidence } from "./storage/workflow-evidence.ts";
-import { listWorkflowRuns } from "./storage/workflows.ts";
+import {
+  createExploreSubsystemTemplate,
+  createReviewImplementationTemplate,
+  listWorkflowRuns,
+} from "./storage/workflows.ts";
 
 const maxArtifactText = 512 * 1024;
 // Only paths the engine recorded are read; a missing file is reported, not hidden.
@@ -426,8 +430,14 @@ export function createApi(store: Store, engine: Engine) {
               recheckRecovery(engine, input, key),
             "POST /api/recovery/decision": (input, key) =>
               decideRecovery(engine, input, key),
+            "POST /api/workflow-templates/explore": (input, key) =>
+              createExploreSubsystemTemplate(store, input, key),
+            "POST /api/workflow-templates/review": (input, key) =>
+              createReviewImplementationTemplate(store, input, key),
             "POST /api/workflows": (input, key) =>
               engine.workflows.start(input, key),
+            "POST /api/tasks/pause": (input, key) =>
+              pauseTask(engine, input, key),
             "POST /api/tasks/cancel": (input, key) =>
               engine.cancel(
                 z.strictObject({ taskId: idSchema }).parse(input).taskId,

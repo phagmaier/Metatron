@@ -137,8 +137,8 @@ export async function executeFakeTurn(
         await adapter.cancel(managed);
         break;
       }
-      // Task and run stops cancel the task; an emergency stop leaves it for an
-      // explicit retry decision instead of a simulated failure.
+      // Task and run stops cancel the task; a pause or emergency stop leaves it
+      // for an explicit retry decision instead of a simulated failure.
       const cancelled = store.getTask(task.id).status === "CANCELLED";
       if (cancelled || stopPending(store, attemptId)) {
         await adapter.cancel(managed);
@@ -147,7 +147,7 @@ export async function executeFakeTurn(
           attemptId,
           cancelled
             ? "Owner cancelled"
-            : "Emergency stop interrupted this FAKE session; explicit retry decision required",
+            : "A stop interrupted this FAKE session; explicit retry decision required",
           "interrupted",
         );
         store.updateSession(

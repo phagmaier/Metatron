@@ -1,0 +1,62 @@
+{
+  "scenario": "D",
+  "title": "Owner takes over",
+  "mode": "rehearsal: deterministic protocol subprocesses, not a live harness",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:34:50.646Z",
+  "finishedAt": "2026-10-18T11:35:00.139Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": null,
+  "turns": {
+    "cap": 3,
+    "total": 3,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "owner paused the running worker",
+      "pass": true,
+      "detail": "Owner paused this worker: Pi interrupted; explicit retry decision required"
+    },
+    {
+      "name": "owner changed task priority",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "task reassigned to a new profile in a new worktree",
+      "pass": true,
+      "detail": "D Writer B"
+    },
+    {
+      "name": "old worktree retained",
+      "pass": true,
+      "detail": "/tmp/lao-acceptance-XJFd3I/worktrees/442f90f4-9408-44ca-8fed-84ea561d39b7-cd67521c-ce90-4e00-afc6-daaeb90d112d/checkout"
+    },
+    {
+      "name": "Lead notified of the owner's takeover",
+      "pass": true,
+      "detail": "paused, completed"
+    },
+    {
+      "name": "old worker stopped writing",
+      "pass": true,
+      "detail": "session exited"
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "3/3 (1 Lead, 2 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-MR7wi4/repo with spaces",
+    "baseSha": "7c6d7e86f93b772efa35e5bc3a26ab52726c2044",
+    "finalSha": "7c6d7e86f93b772efa35e5bc3a26ab52726c2044"
+  },
+  "database": null
+}

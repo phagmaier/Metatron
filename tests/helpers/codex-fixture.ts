@@ -272,7 +272,9 @@ async function lead(prompt: string) {
   if (scenario === "workflow") return workflowLead(prompt);
   if (scenario === "slow") await delay(300);
   const status = rosterSchema.parse((await tool("get_run_status")).value);
-  const reader = status.roster.find((r) => r.role === "Reader");
+  // Acceptance rehearsals choose the delegated role; tests default to Reader.
+  const role = process.env.LAO_CODEX_FIXTURE_ROLE ?? "Reader";
+  const reader = status.roster.find((r) => r.role === role);
   if (!prompt.includes("Run objective")) {
     const tasks = z
       .array(z.object({ taskId: z.string(), status: z.string() }))

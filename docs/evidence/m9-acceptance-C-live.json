@@ -1,0 +1,72 @@
+{
+  "scenario": "C",
+  "title": "Independent investigation workflow",
+  "mode": "live native harnesses",
+  "result": "FAIL",
+  "startedAt": "2026-10-18T11:39:02.336Z",
+  "finishedAt": "2026-10-18T11:39:45.663Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "turns": {
+    "cap": 6,
+    "total": 6,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "Lead invoked the saved workflow",
+      "pass": true,
+      "detail": "status blocked"
+    },
+    {
+      "name": "four readers and one synthesizer grouped under one workflow",
+      "pass": true,
+      "detail": "readers:4, synthesis:1"
+    },
+    {
+      "name": "scheduler honored the parallel reader cap",
+      "pass": true,
+      "detail": "peak 4 concurrent children, 5 launches"
+    },
+    {
+      "name": "final report cites source locations",
+      "pass": false,
+      "detail": "no synthesis report: OpenCode synthesizer disconnected — OpenCode native file operation failed worktree/path policy"
+    },
+    {
+      "name": "partial failures are explicit, never silently dropped",
+      "pass": true,
+      "detail": "synthesis RETRY_DECISION; workflow blocked"
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "6/6 (1 Lead, 5 worker)"
+    }
+  ],
+  "notes": [
+    "All native work ran 11:39:02–11:39:45 UTC; the driver then waited on the unrecognized workflow status 'blocked' until the owner asked to stop (~20 min). The run was stopped through the owner API with no live session; the driver was ended before writing evidence.",
+    "This evidence is reconstructed from the retained database after the run, not written by the driver. The driver now settles on any non-running workflow status.",
+    "OpenCode synthesizer: after read_assignment it issued native read/glob calls; the app's worktree/path policy refused one and the adapter ended the session as a protocol error (exit 130) instead of refusing only that call. No automatic retry; the task waits in RETRY_DECISION."
+  ],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-3HamoF/repo with spaces",
+    "baseSha": "47be39da8fbc589e446f80aa18092d2f5c89c9ea",
+    "finalSha": "47be39da8fbc589e446f80aa18092d2f5c89c9ea"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-C-43b26328-ef4a-4e03-be56-1d4a8eb6ec4c.sqlite"
+}

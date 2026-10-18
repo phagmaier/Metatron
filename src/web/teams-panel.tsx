@@ -10,6 +10,7 @@ import {
 import { profilesResponseSchema } from "../shared/profiles.ts";
 import { type TeamContent, teamsResponseSchema } from "../shared/teams.ts";
 import { readApi, writeApi } from "./api.ts";
+import { WorkflowTemplateForm } from "./workflow-template-form.tsx";
 
 const limitFields = [
   ["maxConcurrentWriters", "Active writers", 1, 64],
@@ -352,6 +353,20 @@ export function TeamsPanel() {
             The FAKE demo team is fixed playback configuration. Choose New team
             to save your own roster.
           </p>
+        )}
+        {loaded && (
+          <WorkflowTemplateForm
+            profiles={profiles}
+            demoProfileIds={demoProfileIds}
+            busy={busy}
+            act={(action) => void act(action)}
+            saved={async (name) => {
+              await reload();
+              setNotice(
+                `${name} saved. Select it under Available workflows to offer it to a team.`,
+              );
+            }}
+          />
         )}
         {loaded && (
           <TeamEditor

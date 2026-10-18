@@ -60,6 +60,14 @@ export function stopPending(store: Store, attemptId: string) {
   );
 }
 
+export function pauseRequested(store: Store, attemptId: string) {
+  return (
+    sessionFor(store, attemptId)?.stops.some(
+      (s) => s.scope === "pause" && s.status === "pending",
+    ) ?? false
+  );
+}
+
 // Must run inside the caller's command transaction: intent is durable before
 // any native signal. Only sessions holding a live reservation are targeted.
 export function recordStops(
@@ -247,6 +255,43 @@ export function recoverStops(store: Store) {
       )
     )
       settleStops(store, session.attemptId, true);
+}
+
+// Pausing stops one running worker without cancelling its task. Its executor
+// ends the attempt in RETRY_DECISION, where the owner may reprioritize and
+// reassign it; the next attempt gets a new worktree and this one is retained.
+export function pauseTask(engine: Engine, input: unknown, key: string) {
+  const { taskId } = z.strictObject({ taskId: idSchema }).parse(input);
+  const { store } = engine;
+  const result = mutate(
+    store.db,
+    key,
+    "pauseTask",
+    { taskId },
+    stopResultSchema,
+    () => {
+      const task = store.getTask(taskId);
+      if (task.kind !== "work")
+        throw new DomainError(
+          "POLICY_DENIED",
+          "Only a worker can be paused; stop the run to halt a Lead turn",
+        );
+      if (task.status !== "RUNNING")
+        throw new DomainError(
+          "CONFLICT",
+          "Only a running worker can be paused",
+        );
+      const stopped = recordStops(engine, "pause", (_, id) => id === task.id);
+      if (!stopped.sessionIds.length)
+        throw new DomainError(
+          "CONFLICT",
+          "The worker has no live session to pause",
+        );
+      return stopped;
+    },
+  );
+  signalStops(engine, result.stopId);
+  return result;
 }
 
 export function stopRun(engine: Engine, input: unknown, key: string) {

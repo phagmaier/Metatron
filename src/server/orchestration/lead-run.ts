@@ -217,6 +217,7 @@ export function notifyLead(
     | "completed"
     | "failed"
     | "cancelled"
+    | "paused"
     | "urgent_issue"
     | "issue"
     | "human_request",

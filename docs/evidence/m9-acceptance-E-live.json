@@ -1,0 +1,73 @@
+{
+  "scenario": "E",
+  "title": "Failure/restart",
+  "mode": "live native harnesses",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:37:31.729Z",
+  "finishedAt": "2026-10-18T11:37:49.404Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "turns": {
+    "cap": 2,
+    "total": 2,
+    "lead": 0
+  },
+  "checks": [
+    {
+      "name": "crash and app restart recorded explicit recovery causes",
+      "pass": true,
+      "detail": "crashed, recovery_required"
+    },
+    {
+      "name": "no ambiguous mutating work was rerun",
+      "pass": true,
+      "detail": "2 attempts"
+    },
+    {
+      "name": "pending task survived the restart without launching",
+      "pass": true,
+      "detail": "QUEUED"
+    },
+    {
+      "name": "unresolved worktrees were not deleted",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "owner checkout unchanged",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "2/2 (0 Lead, 2 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-nt7Gx1/repo with spaces",
+    "baseSha": "d70f709cb3f924752f86462e5f84b519db6d8274",
+    "finalSha": "d70f709cb3f924752f86462e5f84b519db6d8274"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-E-e49e0dc8-7530-43cc-9e73-caa0bc09125e.sqlite"
+}

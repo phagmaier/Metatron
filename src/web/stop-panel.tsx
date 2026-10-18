@@ -10,6 +10,7 @@ import { writeApi } from "./api.ts";
 
 const scopeLabel: Record<StopRecord["scope"], string> = {
   task: "Task cancel",
+  pause: "Pause worker",
   run: "Stop run",
   emergency: "Emergency stop",
 };

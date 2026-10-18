@@ -56,6 +56,7 @@ import { executeNativeTurn } from "./native-execute.ts";
 import { createNativeRun } from "./native-run.ts";
 import { recoverProviderFailures } from "./provider-failures.ts";
 import {
+  pauseRequested,
   recordStops,
   recoverStops,
   settleStops,
@@ -504,13 +505,18 @@ export class Engine {
   fail(
     taskId: string,
     attemptId: string,
-    diagnostic: string,
+    observed: string,
     cause: RecoveryCause = "failed",
     check: RecoveryCheck | null = null,
   ) {
     const task = this.store.getTask(taskId);
     const key = `finish:${attemptId}`;
     const interrupted = cause !== "failed";
+    const paused =
+      task.status !== "CANCELLED" && pauseRequested(this.store, attemptId);
+    const diagnostic = paused
+      ? `Owner paused this worker: ${observed}`
+      : observed;
     mutate(
       this.store.db,
       key,
@@ -575,7 +581,9 @@ export class Engine {
           taskId,
           this.store.getTask(taskId).status === "CANCELLED"
             ? "cancelled"
-            : "failed",
+            : paused
+              ? "paused"
+              : "failed",
           diagnostic,
           `${key}:notify`,
         );

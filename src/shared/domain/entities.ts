@@ -331,7 +331,7 @@ export type WorkerMessage = z.infer<typeof workerMessageSchema>;
 // a closed view, a missing folder or silence never does.
 export const stopRecordSchema = z.strictObject({
   id: idSchema,
-  scope: z.enum(["task", "run", "emergency"]),
+  scope: z.enum(["task", "pause", "run", "emergency"]),
   requestedAt: timestampSchema,
   processId: z.int().positive().nullable(),
   status: z.enum(["pending", "confirmed", "failed", "uncertain"]),

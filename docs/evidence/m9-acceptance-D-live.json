@@ -1,0 +1,78 @@
+{
+  "scenario": "D",
+  "title": "Owner takes over",
+  "mode": "live native harnesses",
+  "result": "PASS",
+  "startedAt": "2026-10-18T11:38:05.783Z",
+  "finishedAt": "2026-10-18T11:38:49.285Z",
+  "versions": {
+    "node": "v26.7.0",
+    "git": "git version 2.56.0"
+  },
+  "selections": {
+    "lead": {
+      "harness": "codex",
+      "model": "gpt-6-luna",
+      "thinking": "low"
+    },
+    "writer": {
+      "harness": "pi",
+      "model": "openai/gpt-6-luna",
+      "thinking": "low"
+    },
+    "reader": {
+      "harness": "opencode",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "thinking": "low"
+    }
+  },
+  "turns": {
+    "cap": 3,
+    "total": 3,
+    "lead": 1
+  },
+  "checks": [
+    {
+      "name": "owner paused the running worker",
+      "pass": true,
+      "detail": "Owner paused this worker: Pi interrupted; explicit retry decision required"
+    },
+    {
+      "name": "owner changed task priority",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "task reassigned to a new profile in a new worktree",
+      "pass": true,
+      "detail": "D Writer B"
+    },
+    {
+      "name": "old worktree retained",
+      "pass": true,
+      "detail": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/worktrees/bb4c859a-a03d-4314-a385-a34810d4bb83-e1d124f2-92ed-46f7-ad68-3e4b124f2893/checkout"
+    },
+    {
+      "name": "Lead notified of the owner's takeover",
+      "pass": true,
+      "detail": "paused, completed"
+    },
+    {
+      "name": "old worker stopped writing",
+      "pass": true,
+      "detail": "session exited"
+    },
+    {
+      "name": "native turns within the scenario cap",
+      "pass": true,
+      "detail": "3/3 (1 Lead, 2 worker)"
+    }
+  ],
+  "notes": [],
+  "repository": {
+    "path": "/tmp/lao-git-fixture-KzbUAk/repo with spaces",
+    "baseSha": "78ce1f69839527df7ca45d53102bf74ef0d70318",
+    "finalSha": "78ce1f69839527df7ca45d53102bf74ef0d70318"
+  },
+  "database": "/tmp/metatron-m8-auth-sjdG2wvR/local-agent-orchestrator/acceptance-D-69c08612-da46-4422-b5ff-c3795d0c2fd0.sqlite"
+}
