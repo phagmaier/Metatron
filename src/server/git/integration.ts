@@ -7,7 +7,7 @@ import {
   integrationDriftSchema,
 } from "../../shared/integration.ts";
 import { diffCheckPasses, GitError, git } from "./command.ts";
-import { inspectRepository } from "./inspect.ts";
+import { inspectRepository, requireVisibleIndex } from "./inspect.ts";
 import { inside, sensitivePath } from "./paths.ts";
 
 type Repository = ReturnType<typeof repositorySchema.parse>;
@@ -306,6 +306,7 @@ export function diffPatch(path: string, from: string, to: string) {
 }
 
 export async function worktreeState(path: string) {
+  await requireVisibleIndex(path);
   return {
     head: (
       await git(path, ["rev-parse", "--verify", "--end-of-options", "HEAD"])

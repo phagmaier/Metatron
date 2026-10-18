@@ -13,19 +13,6 @@ const gatewayTools = [
   "request_human_action",
 ].map((name) => `mcp__lao__${name}`);
 
-function sensitive(path: string) {
-  return (
-    sensitivePath(path) ||
-    path
-      .split(/[\\/]/)
-      .some((part) =>
-        [".claude", ".opencode", "opencode.json", "opencode.jsonc"].includes(
-          part.toLowerCase(),
-        ),
-      )
-  );
-}
-
 // Search tools must not discover unsafe descendants from an otherwise safe root.
 // Git metadata is skipped, matching the existing Pi guard's search convention.
 async function inspect(directory: string): Promise<boolean> {
@@ -40,7 +27,7 @@ async function inspect(directory: string): Promise<boolean> {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     if (entry.name === ".git") continue;
     if (
-      sensitive(entry.name) ||
+      sensitivePath(entry.name) ||
       entry.isSymbolicLink() ||
       !(await inspect(resolve(directory, entry.name)))
     )
@@ -94,7 +81,7 @@ export async function checkFileTool(
       isAbsolute(selector) ||
       /[{}()[\]\\]/.test(selector) ||
       selector.split(/[\\/]/).includes("..") ||
-      sensitive(selector))
+      sensitivePath(selector))
   )
     return deny("Invalid or sensitive search scope");
 
@@ -113,7 +100,7 @@ export async function checkFileTool(
     const target = resolve(canonicalRoot, path);
     if (
       !inside(canonicalRoot, target) ||
-      sensitive(relative(canonicalRoot, target))
+      sensitivePath(relative(canonicalRoot, target))
     )
       return deny("Path is outside the assigned worktree or is sensitive");
 
@@ -150,7 +137,7 @@ export async function checkFileTool(
     const physical = await physicalPath(target);
     if (
       !inside(canonicalRoot, physical) ||
-      sensitive(relative(canonicalRoot, physical))
+      sensitivePath(relative(canonicalRoot, physical))
     )
       return deny("Path is outside the assigned worktree or is sensitive");
     if (search) {

@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-18",
+  "milestone": "M9 item 3 only",
+  "baselineCommit": "948291a",
+  "baselineCheckoutClean": true,
+  "changesCommitted": false,
+  "toolchain": {
+    "node": "26.7.0",
+    "pnpm": "11.22.0",
+    "git": "2.56.0"
+  },
+  "method": "Source review, graph traces with coverage checks and direct-source verification, disposable Git fixtures, HTTP boundary probes, native extension-loader check without a model request.",
+  "findingsFixed": [
+    "Pi dangling file/parent symlinks could authorize writes outside the checkout.",
+    "Sensitive-path filtering missed common credential/config/key stores.",
+    "Codex tool lifecycle summaries copied raw shell commands into the journal.",
+    "Hidden Git index flags could make owner edits appear clean.",
+    "Repository clean/smudge/process filters and executable merge drivers were not refused before app Git operations.",
+    "An implicit union merge driver could silently settle conflicting implementations."
+  ],
+  "beforeFixEvidence": [
+    {
+      "command": "mise x -- node --test --test-global-setup=tests/helpers/temp-root.ts tests/security-audit.test.ts",
+      "passed": 0,
+      "failed": 5,
+      "retainedRoot": "/tmp/lao-test-run-aZdLWp"
+    },
+    {
+      "probe": "clean-filter refusal",
+      "passed": 0,
+      "failed": 1,
+      "retainedRoot": "/tmp/lao-test-run-VbN8dM",
+      "inertFilterMarkerObserved": true
+    },
+    {
+      "probe": "custom-merge-driver refusal",
+      "passed": 0,
+      "failed": 1,
+      "retainedRoot": "/tmp/lao-test-run-2JwnmY"
+    }
+  ],
+  "testProbeCorrection": "Initial added HTTP tests used Node Fetch, which discarded a forged Host. Replaced with node:http HEAD requests; no server change was required.",
+  "validation": [
+    {
+      "command": "mise x -- pnpm typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm lint",
+      "result": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm test",
+      "result": "PASS",
+      "passed": 475,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "mise x -- pnpm test:fixtures",
+      "result": "PASS",
+      "passed": 3
+    },
+    {
+      "command": "mise x -- pnpm build",
+      "result": "PASS"
+    },
+    {
+      "command": "mise x -- pnpm smoke",
+      "result": "PASS",
+      "modes": [
+        "development",
+        "production"
+      ]
+    },
+    {
+      "command": "mise x -- node --test --test-global-setup=tests/helpers/temp-root.ts tests/security-audit.test.ts tests/server.test.ts",
+      "result": "PASS",
+      "passed": 21
+    },
+    {
+      "probe": "Pi native extension loader",
+      "result": "PASS",
+      "modelPrompts": 0,
+      "evidence": "m9-security-pi-startup.json"
+    },
+    {
+      "probe": "changed-file exact environment credential-value exclusion and evidence JSON syntax",
+      "result": "PASS",
+      "changedFiles": 17,
+      "limitation": "Not a general secret detector; Biome excludes docs/evidence."
+    }
+  ],
+  "compatibilityLimits": [
+    "Configured executable Git filters, including Git LFS, and custom executable merge drivers are refused without changing configuration.",
+    "Assume-unchanged, skip-worktree and sparse index state require an owner-prepared compatible checkout. Flags/files are preserved."
+  ],
+  "remainingLimits": [
+    "Codex read-only sessions can read outside their worktree; no OS isolation or race-proof containment is claimed.",
+    "Model reports and owner-declared test output are retained without automatic secret scrubbing; filename filtering cannot detect arbitrary embedded secrets.",
+    "OpenCode refused-tool turn loss remains open and was not changed.",
+    "Optional Pi model-configured startup was BLOCKED by an empty fresh-home catalog; loader-only verification passed without credentials."
+  ],
+  "liveModelTests": "INTENTIONALLY OMITTED (cost); no new model prompts or live approval actions",
+  "next": "M9 item 4: visible GUI status checks for stop, restart, approvals, conflicts, credits and context refresh."
+}

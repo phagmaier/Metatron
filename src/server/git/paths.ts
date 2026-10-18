@@ -12,7 +12,7 @@ export function sensitivePath(path: string) {
   return path
     .split(/[\\/]/)
     .some((part) =>
-      /^(?:\.git|\.pi|\.env(?:\..*)?|\.aws|\.ssh|\.npmrc|\.netrc|\.pypirc|\.pgpass|id_(?:rsa|ed25519)(?:\..*)?|secrets?(?:\..*)?|credentials(?:\..*)?|auth\.json|.*\.(?:pem|key|p12|pfx))$/i.test(
+      /^(?:\.git|\.git-credentials|\.gitconfig|\.pi|\.codex|\.claude|\.opencode|opencode\.jsonc?|\.env(?:\..*)?|\.aws|\.ssh|\.azure|\.kube|\.docker|\.npmrc|\.netrc|\.pypirc|\.pgpass|id_(?:rsa|dsa|ecdsa|ed25519)(?:_sk)?(?:\..*)?|secrets?(?:\..*)?|\.?credentials(?:\..*)?|application_default_credentials\.json|auth\.json|.*\.(?:pem|key|p12|pfx|jks|keystore))$/i.test(
         part,
       ),
     );

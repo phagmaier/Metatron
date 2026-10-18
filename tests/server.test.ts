@@ -55,6 +55,41 @@ test("cross-site browser requests are refused even without an Origin", async () 
   assert.equal(response.status, 403);
 });
 
+for (const path of ["/api/local-session", "/api/events/stream", "/mcp"]) {
+  test(`foreign browser requests cannot access ${path}`, async () => {
+    for (const headers of [
+      { Origin: "https://example.invalid" },
+      { Origin: "null" },
+      { "Sec-Fetch-Site": "cross-site" },
+      { Host: "rebound.invalid" },
+    ]) {
+      // Fetch discards a forged Host on this Node version; use actual wire headers.
+      const response = await new Promise<{
+        status: number | undefined;
+        cors: string | string[] | undefined;
+      }>((resolve, reject) => {
+        const req = request(
+          `${app.origin}${path}`,
+          { method: "HEAD", headers },
+          (res) => {
+            res.resume();
+            res.on("end", () =>
+              resolve({
+                status: res.statusCode,
+                cors: res.headers["access-control-allow-origin"],
+              }),
+            );
+          },
+        );
+        req.on("error", reject);
+        req.end();
+      });
+      assert.equal(response.status, 403);
+      assert.equal(response.cors, undefined);
+    }
+  });
+}
+
 test("foreign Host is refused to guard against DNS rebinding", async () => {
   const status = await new Promise<number | undefined>((resolve, reject) => {
     const req = request(

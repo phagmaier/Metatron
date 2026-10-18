@@ -1,0 +1,24 @@
+{
+  "kind": "native-extension-loader-only",
+  "timestamp": "2026-10-18T13:12:26.043Z",
+  "harness": "Pi",
+  "version": "1.3.0",
+  "modelPrompts": 0,
+  "providerCredentialsForwarded": false,
+  "checks": {
+    "guardRegisteredByNativeLoader": true,
+    "sharedPolicyImportLoaded": true,
+    "ownedExitCode": 0,
+    "ownerCheckoutClean": true
+  },
+  "earlierAttempt": {
+    "result": "BLOCKED",
+    "reason": "PiAdapter worker startup could not select a model from an empty catalog in a fresh app-owned config; no credentials copied or model calls made.",
+    "retainedState": "/tmp/lao-m9-security-pi-vCn9mL",
+    "ownerCommandIfModelStartupIsDesired": "PI_CODING_AGENT_DIR=/tmp/lao-m9-security-pi-vCn9mL/pi mise x -- pi (use the native /login flow)"
+  },
+  "limits": [
+    "No model generation, file-tool execution or provider entitlement verified.",
+    "Only a fresh app-owned config/session and disposable Git fixture were used."
+  ]
+}

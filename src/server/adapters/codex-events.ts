@@ -9,7 +9,6 @@ const itemSchema = z
     server: z.string().optional(),
     tool: z.string().optional(),
     status: z.string().optional(),
-    command: z.string().optional(),
   })
   .loose();
 const turnSchema = z.object({
@@ -63,8 +62,8 @@ function classify(info: unknown) {
 }
 function describe(item: z.infer<typeof itemSchema>) {
   if (item.type === "mcpToolCall") return `mcp ${item.server}.${item.tool}`;
-  if (item.type === "commandExecution")
-    return `read-only shell: ${(item.command ?? "").slice(0, 200)}`;
+  // Commands may embed credentials; keep only lifecycle metadata in app logs.
+  if (item.type === "commandExecution") return "read-only shell";
   if (item.type === "fileChange")
     return "file change requested (read-only sandbox)";
   return item.type;

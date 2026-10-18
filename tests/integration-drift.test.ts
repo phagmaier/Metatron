@@ -197,6 +197,34 @@ test("overlapping edits conflict: nothing is applied, the conflict stays for ins
   }
 });
 
+test("a repository's default union driver cannot silently settle conflicting implementations", async () => {
+  const f = await reviewed();
+  try {
+    const moved = await ownerCommit(f.repo, "main", {
+      "README.md": "# Owner heading\n",
+    });
+    await f.repo.git("config", "merge.default", "union");
+    const { id } = f.engine.integrations.request(
+      owner,
+      { taskId: f.original.id },
+      "default-driver",
+    );
+    await f.engine.integrations.idle();
+    const preview = getIntegration(f.store, id);
+    assert.equal(preview.status, "conflict");
+    assert.deepEqual(preview.conflicts, ["README.md"]);
+    assert.equal(preview.resultSha, null);
+    assert.equal(await f.repo.git("rev-parse", "main"), moved);
+    assert.equal(await f.repo.git("config", "merge.default"), "union");
+    assert.equal(
+      await readFile(join(f.repo.directory, "README.md"), "utf8"),
+      "# Owner heading\n",
+    );
+  } finally {
+    await f.app.close();
+  }
+});
+
 test("merges Git could settle silently, or cannot relate to the candidate base, fail for owner review", async () => {
   const f = await reviewed();
   try {

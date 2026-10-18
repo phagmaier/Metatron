@@ -45,6 +45,8 @@ All default checks use temporary databases and no model tokens. Tests cover task
 
 Git fixture tests retain their M0 safety checks: each fixture is created under the OS temporary directory with a local commit and isolated Git configuration; cleanup happens only after verification and ownership checks succeed. Failed fixtures are retained. No important repository is used as a fixture. `pnpm test` points every test file at one private `lao-test-run-*` temporary root: a passing run removes it, a failing run keeps it and prints its path.
 
+The app refuses checkouts with hidden index entries (`assume-unchanged`, `skip-worktree` or sparse checkout), executable Git filters (including Git LFS), or custom executable merge drivers. It leaves configuration, flags and files for the owner to inspect. See the [M9 safety audit](docs/security-audit.md) for tested boundaries and remaining limitations. Model reports and test output remain local sensitive data; credential-path filtering does not detect every secret in ordinary source, and Codex reads are not confined to the worktree.
+
 Acceptance scenarios A–G (spec §13.4) run against the app in its own process on a fresh disposable repository, through the same HTTP API the GUI uses:
 
 ```sh
