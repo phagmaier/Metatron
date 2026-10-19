@@ -35,6 +35,7 @@ async function gateway(name: string, args: object) {
 let buffer = "";
 let model = "fixture/model";
 let thinking = "off";
+let pendingMessage: string | null = null;
 const emit = (value: unknown) =>
   process.stdout.write(`${JSON.stringify(value)}\n`);
 process.stdin.on("data", (chunk) => {
@@ -123,6 +124,19 @@ process.stdin.on("data", (chunk) => {
           );
         data = { disposition: "started" };
         break;
+      case "fixture_deliver":
+        if (!pendingMessage)
+          throw new Error("No fixture message is queued for delivery");
+        emit({
+          type: "message_start",
+          message: {
+            role: "user",
+            content: [{ type: "text", text: pendingMessage }],
+          },
+        });
+        pendingMessage = null;
+        data = {};
+        break;
       case "steer":
       case "follow_up":
         if (process.env.LAO_FIXTURE_MESSAGE_LOG)
@@ -172,17 +186,9 @@ process.stdin.on("data", (chunk) => {
           type: "message_start",
           message: { role: "assistant", content: command.message },
         });
-        setTimeout(
-          () =>
-            emit({
-              type: "message_start",
-              message: {
-                role: "user",
-                content: [{ type: "text", text: command.message }],
-              },
-            }),
-          Number(process.env.LAO_FIXTURE_MESSAGE_DELAY ?? 100),
-        );
+        // Delivery is explicitly released by the test, not a wall-clock race
+        // against its HTTP assertions on slower CI filesystems.
+        pendingMessage = z.string().parse(command.message);
       }
       continue;
     }

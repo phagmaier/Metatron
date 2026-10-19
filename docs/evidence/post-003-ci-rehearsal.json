@@ -1,0 +1,123 @@
+{
+  "scope": "POST-003 / no-cost CI",
+  "command": "mise x -- node /tmp/post-003-ci-ASoZhw5q/rehearse.mjs",
+  "execution": "Disposable committed source snapshot and clean local Git clone; fresh HOME/XDG/mise/dependency directories; explicit allowlisted child environment with no inherited credentials",
+  "limitations": [
+    "No GitHub-hosted run triggered: no workspace commit or push authorized",
+    "Docker daemon access denied; rehearsal uses the installed Linux host rather than Ubuntu 24.04"
+  ],
+  "actions": {
+    "checkout": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 (v7.0.1)",
+    "mise": "jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 (v5.2.0)",
+    "miseVersion": "2026.10.13"
+  },
+  "steps": [
+    {
+      "command": "mise install",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "mise current",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "mise x -- pnpm install --frozen-lockfile",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "mise x -- pnpm typecheck",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "mise x -- pnpm lint",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "mise x -- pnpm test",
+      "exitCode": 1,
+      "signal": null,
+      "tests": "501",
+      "passed": "500",
+      "failed": "1"
+    }
+  ],
+  "sourceFiles": 572,
+  "initialCheckoutClean": true,
+  "workflowSha256": "09ac731918266b7ba6b7d595132322e4d7572bf22f102663780080c4a99cdf62",
+  "harnessExecutablesAbsent": true,
+  "afterFixCommand": "mise x -- node /tmp/post-003-ci-ASoZhw5q/resume.mjs",
+  "observedFailure": {
+    "file": "tests/worker-messages.test.ts:165",
+    "expected": "queued",
+    "actual": "delivered",
+    "cause": "100ms protocol timer raced a persisted-state assertion after HTTP response on disk-backed checkout",
+    "fix": "Explicit fixture_deliver RPC releases matching native user-message evidence after queued assertions; no product change, retry, exclusion or weakened assertion"
+  },
+  "afterFix": [
+    {
+      "command": "mise x -- node --test --test-global-setup=tests/helpers/temp-root.ts tests/worker-messages.test.ts",
+      "exitCode": 0,
+      "signal": null,
+      "tests": "9",
+      "passed": "9",
+      "failed": "0"
+    },
+    {
+      "command": "mise x -- pnpm typecheck",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "mise x -- pnpm lint",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "mise x -- pnpm test",
+      "exitCode": 0,
+      "signal": null,
+      "tests": "501",
+      "passed": "501",
+      "failed": "0"
+    },
+    {
+      "command": "mise x -- pnpm test:fixtures",
+      "exitCode": 0,
+      "signal": null,
+      "tests": "3",
+      "passed": "3",
+      "failed": "0"
+    },
+    {
+      "command": "mise x -- pnpm build",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "command": "mise x -- pnpm smoke",
+      "exitCode": 0,
+      "signal": null,
+      "developmentPassed": true,
+      "productionPassed": true
+    }
+  ],
+  "finalCheckoutClean": true,
+  "result": "PASS",
+  "validation": {
+    "actionlint": "1.7.12 PASS; official Linux amd64 archive SHA-256 verified",
+    "actionlintArchiveSha256": "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8",
+    "workflowContract": "Exact frozen install and six documented commands; full action SHA pins; contents:read; no persisted checkout credentials, secrets, native, artifact publication or tag commands",
+    "sources": [
+      "https://github.com/actions/checkout/tree/3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "https://github.com/jdx/mise-action/tree/9b200bcecbfd6303e69a4a261b2e09e3757440a7"
+    ]
+  },
+  "initialBootstrapFailure": "Private /tmp mise Node extraction failed with Disk quota exceeded; fresh disk-backed /var/tmp tool/dependency installation then passed without inherited caches or credentials",
+  "hostedAcceptance": "PENDING: an owner-authorized workspace commit/push is required before this new workflow can execute on GitHub-hosted Ubuntu 24.04; no push or dispatch performed",
+  "cleanup": "Owned /tmp and /var/tmp rehearsal drivers, validator, private tool/dependency installations, databases and fixture repositories/worktrees removed after evidence retention"
+}

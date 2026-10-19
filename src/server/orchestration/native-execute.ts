@@ -201,13 +201,19 @@ export async function executeNativeTurn(
           await adapter.exit(active);
       }
     });
+    // Initialization can outlive owner policy. A scheduling pause only blocks
+    // queued dispatch, not this active attempt; Chat/Plan forbids its prompt.
     if (
+      interrupted ||
       engine.isStopping() ||
       stopPending(store, attemptId) ||
-      store.getTask(task.id).status === "CANCELLED"
+      store.getTask(task.id).status === "CANCELLED" ||
+      store.getRun(run.id).mode === "chat_plan"
     ) {
       interrupted = true;
-      throw new Error("Owner cancelled/stopped during native startup");
+      throw new Error(
+        "Owner cancelled/stopped or selected Chat/Plan during native startup",
+      );
     }
     for await (const event of adapter.prompt(active, prompt)) {
       if (event.type === "owner_message_delivered")

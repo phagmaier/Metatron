@@ -7,6 +7,7 @@ import {
   reviewSchema,
 } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
+import type { IntegrationPreview } from "../../shared/integration.ts";
 import { worktreeEvidenceSchema } from "../../shared/worktrees.ts";
 import {
   getIntegrationCandidate,
@@ -15,6 +16,7 @@ import {
 import { appendEvent } from "./journal.ts";
 import { mutate } from "./mutations.ts";
 import {
+  implementationLineage,
   implementationTask,
   revisionAncestors,
   revisionTaskIds,
@@ -127,6 +129,32 @@ export function createReview(store: Store, input: unknown, key: string) {
         findingCount: review.findings.length,
       },
     });
+    const lineage = implementationLineage(
+      store,
+      store.getTask(candidate.taskId),
+    );
+    if (
+      lineage[0]?.id === candidate.taskId &&
+      listIntegrationCandidates(store, candidate.taskId).at(-1)?.id ===
+        candidate.id &&
+      lineage.every((implementation) =>
+        ["READY_TO_INTEGRATE", "BLOCKED_CONFLICT"].includes(
+          implementation.status,
+        ),
+      )
+    )
+      // New evidence reopens review, not the historical owner decision. This
+      // also restores the normal revision/re-review path before a fresh preview.
+      for (const implementation of lineage)
+        store.transitionTask(
+          {
+            id: implementation.id,
+            expectedStatus: implementation.status,
+            status: "AWAITING_REVIEW",
+            reason: `New independent review ${review.id}; a fresh preview and owner approval are required`,
+          },
+          `${key}:reopen:${implementation.id}`,
+        );
     return review;
   });
 }
@@ -139,6 +167,41 @@ export function listReviews(store: Store, taskId: string) {
     )
     .all(taskId, taskId)
     .map((row) => reviewSchema.parse(JSON.parse(String(row.data))));
+}
+
+// Failed/deferred reviews have no durable verdict and never run automatically.
+// An explicit retry becomes READY/QUEUED and must block approval/application.
+export function integrationReviewBlocker(
+  store: Store,
+  preview: Pick<
+    IntegrationPreview,
+    "runId" | "implementationTaskId" | "candidateId" | "reviewId"
+  >,
+) {
+  const latest = listReviews(store, preview.implementationTaskId)
+    .filter((review) => review.candidateId === preview.candidateId)
+    .at(-1);
+  if (latest?.recommendation !== "pass")
+    return "The current candidate needs a passing independent review, then a fresh preview and owner approval";
+  if (latest.id !== preview.reviewId)
+    return "A newer review of this candidate exists; prepare and approve a new preview";
+  if (
+    store
+      .listTasks(preview.runId)
+      .some(
+        (task) =>
+          task.reviewCandidateId === preview.candidateId &&
+          [
+            "READY",
+            "QUEUED",
+            "RUNNING",
+            "WAITING_HUMAN",
+            "WAITING_DEPENDENCY",
+          ].includes(task.status),
+      )
+  )
+    return "A review of this candidate is still in progress";
+  return null;
 }
 
 // Read-only owner view: everything reviewed across the revision lineage, with

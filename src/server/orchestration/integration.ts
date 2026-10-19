@@ -19,7 +19,7 @@ import {
   saveIntegrationDecision,
 } from "../storage/integrations.ts";
 import { mutate } from "../storage/mutations.ts";
-import { listReviews } from "../storage/reviews.ts";
+import { integrationReviewBlocker, listReviews } from "../storage/reviews.ts";
 import {
   implementationLineage,
   revisionAncestors,
@@ -28,8 +28,8 @@ import type { Engine } from "./engine.ts";
 import { applyIntegration, planApplication } from "./integration-apply.ts";
 import { prepareIntegration } from "./integration-prepare.ts";
 
-// "review" awaits the owner's first verdict. "approved" is approved but not yet
-// applied, e.g. after the destination moved: a new preview may be approved.
+// New evidence reopens "review" without erasing historical decisions.
+// "approved" is unapplied work that can be previewed again after target drift.
 function integrationStage(lineage: Task[]) {
   if (lineage.every((task) => task.status === "AWAITING_REVIEW"))
     return "review";
@@ -173,14 +173,6 @@ export function requestIntegration(
   );
 }
 
-const reviewInFlight = [
-  "READY",
-  "QUEUED",
-  "RUNNING",
-  "WAITING_HUMAN",
-  "WAITING_DEPENDENCY",
-];
-
 // Owner-only verdict on one finished preview. Approval moves the whole
 // revision lineage to READY_TO_INTEGRATE and applies nothing to any branch;
 // decline rejects the candidate but keeps the task open for a revision.
@@ -233,6 +225,12 @@ export async function decideIntegration(
     data,
     integrationPreviewSchema,
     () => {
+      // Git checks await outside this transaction; current owner policy wins.
+      if (approve && store.getRun(preview.runId).mode === "chat_plan")
+        throw new DomainError(
+          "POLICY_DENIED",
+          "Chat/Plan cannot approve integration",
+        );
       const current = getIntegration(store, preview.id);
       const lineage = implementationLineage(
         store,
@@ -258,15 +256,14 @@ export async function decideIntegration(
           "This preview is for an earlier candidate; prepare a new preview",
         );
       if (
-        stage === "review"
-          ? candidate.humanDecision !== null
-          : candidate.humanDecision !== "approved"
+        candidate.humanDecision !== null &&
+        candidate.humanDecision !== "approved"
       )
         throw new DomainError(
           "CONFLICT",
           "This candidate already has an owner decision",
         );
-      if (stage === "approved" && !approve)
+      if (candidate.humanDecision === "approved" && !approve)
         throw new DomainError(
           "CONFLICT",
           "An approved candidate cannot be declined; cancel the task to abandon it",
@@ -282,27 +279,8 @@ export async function decideIntegration(
             "CONFLICT",
             "Only a passed integration preview can be approved",
           );
-        const latest = listReviews(store, implementation.id)
-          .filter((review) => review.candidateId === candidate.id)
-          .at(-1);
-        if (latest?.id !== current.reviewId || latest.recommendation !== "pass")
-          throw new DomainError(
-            "CONFLICT",
-            "A newer review of this candidate exists; prepare a new preview",
-          );
-        if (
-          store
-            .listTasks(run.id)
-            .some(
-              (task) =>
-                task.reviewCandidateId === candidate.id &&
-                reviewInFlight.includes(task.status),
-            )
-        )
-          throw new DomainError(
-            "CONFLICT",
-            "A review of this candidate is still in progress",
-          );
+        const reviewBlocker = integrationReviewBlocker(store, current);
+        if (reviewBlocker) throw new DomainError("CONFLICT", reviewBlocker);
         if (observed !== current.destinationSha)
           throw new DomainError(
             "CONFLICT",

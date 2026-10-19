@@ -128,7 +128,7 @@ export function IntegrationPanel({
     latest.status !== "preparing" &&
     !latest.decision &&
     candidate?.id === latest.candidateId &&
-    ((reviewStage && !candidate.humanDecision) || approvedStage);
+    (reviewStage || approvedStage);
   return (
     <details>
       <summary>
@@ -171,6 +171,13 @@ export function IntegrationPanel({
         <p className="warning">
           You declined this candidate. Request a revision to integrate new work;
           its history, diff, logs and worktrees are kept.
+        </p>
+      )}
+      {reviewStage && candidate.humanDecision === "approved" && (
+        <p className="warning">
+          A newer independent review reopened this work. Earlier approvals
+          remain history: resolve findings through revision or re-review, then
+          prepare a fresh passing preview and explicitly approve it.
         </p>
       )}
       {(reviewStage || approvedStage) && (
@@ -323,6 +330,7 @@ export function IntegrationPanel({
             Approving records your decision for this exact preview; applying it
             to {latest.destinationBranch} is a separate, confirmed step.
             {reviewStage &&
+              !candidate.humanDecision &&
               " Declining rejects the candidate; the task stays open for a revision or cancellation."}
           </p>
           <div className="actions">
@@ -341,7 +349,7 @@ export function IntegrationPanel({
             >
               Approve for {latest.destinationBranch}
             </button>
-            {reviewStage && (
+            {reviewStage && !candidate.humanDecision && (
               <button
                 type="button"
                 disabled={busy}

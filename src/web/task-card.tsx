@@ -67,7 +67,9 @@ export function TaskCard({
     );
   }, [task.assignedProfileId, task.proposedProfileId, defaultProfileId]);
   const reviewable =
-    task.status === "AWAITING_REVIEW" &&
+    ["AWAITING_REVIEW", "READY_TO_INTEGRATE", "BLOCKED_CONFLICT"].includes(
+      task.status,
+    ) &&
     !task.reviewCandidateId &&
     captured?.success === true &&
     captured.data.status === "captured";

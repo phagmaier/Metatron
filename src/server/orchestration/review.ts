@@ -60,14 +60,18 @@ export function requestReview(
     () => {
       const current = implementationTask(store, store.getTask(task.id));
       const candidate = listIntegrationCandidates(store, current.id).at(-1);
+      const reviewableStatuses =
+        actor.role === "owner" && candidate?.humanDecision === "approved"
+          ? ["AWAITING_REVIEW", "READY_TO_INTEGRATE", "BLOCKED_CONFLICT"]
+          : ["AWAITING_REVIEW"];
       if (
-        store.getTask(task.id).status !== "AWAITING_REVIEW" ||
-        current.status !== "AWAITING_REVIEW" ||
+        !reviewableStatuses.includes(store.getTask(task.id).status) ||
+        !reviewableStatuses.includes(current.status) ||
         !candidate
       )
         throw new DomainError(
           "CONFLICT",
-          "Only a task awaiting review with a captured candidate can be reviewed",
+          "Only completed, unapplied work with a captured candidate can be reviewed",
         );
       const created = store.createTask(
         {

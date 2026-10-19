@@ -133,6 +133,19 @@ export class Scheduling {
             "POLICY_DENIED",
             "A review task runs only on a read-only profile",
           );
+        // A deferred reviewer cannot start after application has claimed its
+        // evidence. Recovery enqueue refusal rolls back the explicit retry.
+        if (
+          task.reviewCandidateId &&
+          task.parentTaskId &&
+          ["INTEGRATING", "DONE"].includes(
+            this.store.getTask(task.parentTaskId).status,
+          )
+        )
+          throw new DomainError(
+            "CONFLICT",
+            "This candidate is integrating or already integrated; its review cannot be restarted",
+          );
         const source = revisionSource(this.store, task);
         if (
           source?.assignedProfileId &&

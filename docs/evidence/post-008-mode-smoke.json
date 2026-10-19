@@ -1,0 +1,79 @@
+{
+  "scope": "POST-008 / POST-002 F3",
+  "execution": "Running loopback owner HTTP API, Pi protocol subprocess fixtures and disposable Git/SQLite only; zero native model calls",
+  "command": "mise x -- node /tmp/post-008-smoke-jx3XUlam/smoke.mjs",
+  "boundaryControl": "Temporary Git argv passthrough gates a real read-only rev-parse --show-toplevel subprocess during approval/application; initialized Pi protocol session return is held before first prompt",
+  "observations": [
+    {
+      "stage": "approval-during-Git-await",
+      "httpStatus": 403,
+      "error": {
+        "error": "Chat/Plan cannot approve integration",
+        "code": "POLICY_DENIED"
+      },
+      "decision": null,
+      "applicationClaims": 0,
+      "destinationUnchanged": true
+    },
+    {
+      "stage": "application-during-Git-await",
+      "httpStatus": 403,
+      "error": {
+        "error": "Chat/Plan cannot mutate the managed repository",
+        "code": "POLICY_DENIED"
+      },
+      "applicationClaims": 0,
+      "destinationUnchanged": true,
+      "approvalAndPreviewRetained": true
+    },
+    {
+      "stage": "initialized-worker-first-prompt",
+      "firstPrompts": 0,
+      "modeSequence": 80,
+      "interruptionSequence": 88,
+      "taskStatus": "RETRY_DECISION",
+      "sessionState": "exited",
+      "nativeSessionIdRetained": true,
+      "worktreeAndGitEvidenceRetained": true,
+      "destinationUnchanged": true
+    },
+    {
+      "stage": "explicit-recovery-only",
+      "promptsBeforeRecovery": 0,
+      "promptsAfterRecovery": 1,
+      "freshAttemptAndWorktree": true,
+      "oldWorktreeRetained": true,
+      "recoveryReplayPreserved": true
+    },
+    {
+      "stage": "ordinary-scheduling-pause",
+      "currentRunStatus": "paused",
+      "activeStartupReceivedPrompt": true,
+      "activeAttemptStatus": "completed"
+    },
+    {
+      "stage": "explicit-mode-restoration-and-application",
+      "httpStatus": 200,
+      "applicationClaims": 1,
+      "taskStatus": "DONE",
+      "applied": "applied",
+      "decisionReplayPreserved": true,
+      "applicationReplayPreserved": true
+    }
+  ],
+  "result": "PASS",
+  "verification": {
+    "failingBefore": "5/9 failed: approval, planning apply, final-claim mode, final-claim shutdown and startup first prompt; 4/9 pause/cancellation/stop compatibility cases passed",
+    "focusedAfter": "9/9 current-mode-boundaries regressions passed",
+    "relatedAfter": "69/69 boundary, approval/application, review freshness, repository identity, recovery, native executor, pause and stop regressions passed",
+    "gate": {
+      "typecheck": "PASS",
+      "lint": "PASS",
+      "tests": "501/501",
+      "fixtures": "3/3",
+      "build": "PASS",
+      "smoke": "development and production PASS"
+    },
+    "cleanup": "Owned smoke driver, Git gate, disposable repositories/database/worktrees and failing-before fixture root removed after app closure and evidence retention"
+  }
+}

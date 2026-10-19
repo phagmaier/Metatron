@@ -2,7 +2,7 @@
 
 Baseline: local Git tag **`beta`**, commit **`12a9cc653b563d1b801728eaa95b94321c0c283a`** (2026-10-18). This note was added after the tagged commit to describe its scope and guide subsequent development; it is not part of the tagged snapshot. Keep that tag attached to its baseline and use distinct numbered tags for later releases.
 
-**Status:** M0–M9 implementation is complete within its recorded capability limits. **Owner release sign-off remains pending.** The intended scope is personal experimentation by one Arch/Omarchy user with trusted repositories. Checklist completion and the tag do not imply full harness parity, OS containment, or general production readiness.
+**Status:** M0–M9 implementation is complete within its recorded capability limits. **Owner release sign-off accepted on 2026-10-18:** “i sign off on the beta release.” Acceptance records the personal-use beta with the known issues below; it does not authorize publication, tag pushes, native model spending, automatic integration, or moving the `beta` tag. The intended scope is personal experimentation by one Arch/Omarchy user with trusted repositories. Acceptance does not imply full harness parity, OS containment, or general production readiness.
 
 ## Delivered scope and evidence
 
@@ -32,15 +32,17 @@ Runtime workflow authoring, OS sandboxing, automatic integration and remote-repo
 
 [POST-002](../reviews/post-002-beta.md) found three reproduced P1 defects in the tagged baseline. **POST-006 fixes F1 in the current source**, binding root/common-directory filesystem identity through integration and recovery. Legacy/unverified runs require explicit project reopening and a new run; old approvals/history/worktrees are retained, never rebound. [Owner transition instructions](../usage.md#repository-identity-and-older-data), [decision](../adr/2026-10-18-repository-filesystem-identity.md), [disposable no-native-call smoke](../evidence/post-006-identity-smoke.json).
 
-**F2/POST-007 remains open:** a recovered reviewer can record new important findings without invalidating an earlier integration approval. **F3/POST-008 remains open:** a Chat/Plan switch during asynchronous planning/startup can still permit integration or the first worker prompt. Do not treat the initial passing suite or POST-006 as release acceptance; these findings need their own fixes and regressions. [Active scope](../../backlog.md).
+**POST-007 fixes F2 in the current source:** apply planning and its transactional claim require the exact current passing review with no queued/executing review. New durable evidence reopens revision/re-review; a corresponding fresh passed preview still needs explicit owner approval. Historical reviews/decisions remain retained. [Decision](../adr/2026-10-18-current-integration-review.md), [no-cost API/protocol and browser receipt](../evidence/post-007-review-smoke.json), [492/492 gate](../progress.md#2026-10-18--post-007-current-independent-review-at-application).
 
-The `beta` tag still identifies the original commit, not this hardening. No publication, native spend, integration approval or owner release sign-off is implied.
+**POST-008 fixes F3 in the current source:** approval/application transactions re-read mode after Git checks, the application claim rechecks shutdown, and initialized workers recheck mode/stop/cancellation immediately before their first prompt. Interrupted startup retains session/worktree/evidence for explicit recovery; scheduling pause still lets active startup finish. [Owner controls and limits](../usage.md#modes-and-workflows), [disposable HTTP/protocol receipt](../evidence/post-008-mode-smoke.json). These checks do not retract a submitted prompt or interrupt an already-claimed integration; the historical beta review and its coverage gaps remain unchanged.
+
+The `beta` tag still identifies the original commit, not this hardening. The recorded owner sign-off authorizes release acceptance only, not publication, tag pushes, native spend, automatic integration, or moving the tag. Per-operation integration approval remains separate.
 
 ## Owner release checklist
 
 - [x] Implementation and retained acceptance evidence are linked, with native/fixture results distinguished.
 - [x] Known issues, unsupported controls and safety/coverage limits are explicit.
-- [ ] Owner explicitly accepts the stated limits for a personal-use beta, or selects a fix/retest first. Record the decision/date here and append a progress entry; do not infer acceptance from the tag or documentation work.
+- [x] Owner explicitly accepted the personal-use beta on **2026-10-18**: “i sign off on the beta release.” Known issues and baseline revision remain documented; operational approvals remain separate.
 - [ ] If publication is requested, publish the chosen tag and create a GitHub prerelease with this scope and known issues. No tag push or release publication is performed by this closeout.
 
 Before inviting outside use/contributions, choose a license deliberately; this closeout does not select one. Review and development can proceed independently of publication. [backlog.md](../../backlog.md) is the active queue; the historical checklist does not automatically authorize deferred features or new live calls.

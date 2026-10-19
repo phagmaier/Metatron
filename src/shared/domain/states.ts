@@ -48,9 +48,14 @@ export const taskTransitions = {
   // Only an explicit recovery decision can make failed work eligible again.
   RETRY_DECISION: ["READY", "CANCELLED"],
   CANCELLED: [],
-  READY_TO_INTEGRATE: ["INTEGRATING", "BLOCKED_CONFLICT", "CANCELLED"],
+  READY_TO_INTEGRATE: [
+    "AWAITING_REVIEW",
+    "INTEGRATING",
+    "BLOCKED_CONFLICT",
+    "CANCELLED",
+  ],
   INTEGRATING: ["DONE", "BLOCKED_CONFLICT", "INTERRUPTED", "FAILED"],
-  BLOCKED_CONFLICT: ["READY_TO_INTEGRATE", "CANCELLED"],
+  BLOCKED_CONFLICT: ["AWAITING_REVIEW", "READY_TO_INTEGRATE", "CANCELLED"],
   DONE: [],
 } as const satisfies Record<TaskStatus, readonly TaskStatus[]>;
 

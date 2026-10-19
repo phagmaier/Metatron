@@ -1,0 +1,128 @@
+{
+  "scope": "POST-007 / POST-002 F2",
+  "execution": "Pi protocol subprocess fixture; simulated reviewer output; no native harness/model calls",
+  "command": "mise x -- node /tmp/post-007-smoke-ZF9O2IUT/smoke.mjs",
+  "observations": [
+    {
+      "stage": "queued-reviewer",
+      "httpStatus": 409,
+      "blockers": [
+        "A review of this candidate is still in progress"
+      ],
+      "error": {
+        "error": "A review of this candidate is still in progress",
+        "code": "CONFLICT"
+      },
+      "applicationClaims": 0,
+      "destinationUnchanged": true
+    },
+    {
+      "stage": "running-reviewer",
+      "httpStatus": 409,
+      "blockers": [
+        "A review of this candidate is still in progress"
+      ],
+      "error": {
+        "error": "A review of this candidate is still in progress",
+        "code": "CONFLICT"
+      },
+      "applicationClaims": 0,
+      "destinationUnchanged": true
+    },
+    {
+      "stage": "durable-important-findings",
+      "httpStatus": 409,
+      "blockers": [
+        "The current candidate needs a passing independent review, then a fresh preview and owner approval"
+      ],
+      "error": {
+        "error": "The current candidate needs a passing independent review, then a fresh preview and owner approval",
+        "code": "CONFLICT"
+      },
+      "applicationClaims": 0,
+      "destinationUnchanged": true
+    },
+    {
+      "stage": "newer-passing-review-old-approval",
+      "httpStatus": 409,
+      "blockers": [
+        "A newer review of this candidate exists; prepare and approve a new preview"
+      ],
+      "error": {
+        "error": "A newer review of this candidate exists; prepare and approve a new preview",
+        "code": "CONFLICT"
+      },
+      "applicationClaims": 0,
+      "destinationUnchanged": true
+    },
+    {
+      "stage": "fresh-passing-preview-not-yet-approved",
+      "httpStatus": 409,
+      "blockers": [
+        "Only approved work that is ready to integrate, or blocked from it, can be applied"
+      ],
+      "applicationClaims": 0,
+      "historicalApprovalUnchanged": true
+    },
+    {
+      "stage": "browser-explicit-fresh-approval-and-application",
+      "httpStatus": 200,
+      "taskStatus": "DONE",
+      "applicationClaims": 1,
+      "applied": "applied",
+      "currentReviewId": "0d3268df-ce7b-4f68-b9ba-ee16bea767b3",
+      "approvedReviewId": "0d3268df-ce7b-4f68-b9ba-ee16bea767b3",
+      "historicalApprovalUnchanged": true,
+      "historicalApprovalReplayPreserved": true,
+      "reviewHistory": [
+        {
+          "id": "c99f4361-1891-44fa-a513-52e48116f4b5",
+          "recommendation": "pass"
+        },
+        {
+          "id": "3a61dea0-30ac-4cfb-820f-bb33de731bd3",
+          "recommendation": "changes_requested"
+        },
+        {
+          "id": "0d3268df-ce7b-4f68-b9ba-ee16bea767b3",
+          "recommendation": "pass"
+        }
+      ],
+      "oldPreviewAndFailedReviewWorktreesRetained": true
+    }
+  ],
+  "repositoryIdentityVerified": true,
+  "result": "PASS",
+  "verification": {
+    "failingBefore": "4/4 original stale-review cases failed; findings/new pass/interleaved retry applied instead of refusing, and queued review produced no blockers",
+    "focusedAfter": "56/56 related tests, then 6/6 final focused regressions including final-claim microtask interleaving",
+    "gate": {
+      "typecheck": "PASS",
+      "lint": "PASS",
+      "tests": "492/492",
+      "fixtures": "3/3",
+      "build": "PASS",
+      "smoke": "development and production PASS"
+    }
+  },
+  "browser": {
+    "surface": "Production React GUI backed by disposable protocol fixture server",
+    "assertions": [
+      "Reopened-review warning visible",
+      "Revision feedback enables Request revision",
+      "Fresh preview approval enabled; retroactive decline absent",
+      "Explicit Approve for main, Review apply plan, Confirm apply to main",
+      "DONE card shows applied and Integrated into main; no page errors or alerts"
+    ],
+    "driverCorrections": [
+      "An inspection script initially used document outside page.evaluate; corrected page-context execution.",
+      "After confirm, waiting for applied text timed out because the DONE card moved/remounted with details closed. Reopened its applied Integration section and observed success; did not resubmit."
+    ],
+    "tabClosed": true
+  },
+  "cleanup": {
+    "smokeDriverAndState": "Removed after service exited 0 and receipt was retained",
+    "failingBeforeFixtureRoot": "Removed after retaining concise failure evidence",
+    "commandNote": "The cleanup command also named two gate-negative fixture roots that were already absent and reported ENOENT for those two paths; owned smoke/failing-before roots were removed and their absence was verified."
+  }
+}

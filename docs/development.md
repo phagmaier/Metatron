@@ -28,6 +28,13 @@ mise x -- pnpm smoke
 
 `smoke` starts and closes real development and production servers on temporary loopback ports, checking health, HTML and script assets. Build first. Automated default checks do not drive a browser; [GUI verification](gui-status-checks.md) records separate browser QA. `pnpm format` applies Biome formatting/safe fixes to project code and configuration.
 
+### Continuous integration
+
+[No-cost checks](../.github/workflows/checks.yml) runs the six commands above on GitHub-hosted Ubuntu 24.04 for pull requests, pushes to `main`, and manual dispatch. SHA-pinned checkout/mise actions install mise 2026.10.13, read the unchanged Node/pnpm versions from `.mise.toml`, and run `mise x -- pnpm install --frozen-lockfile` before checking. Tool/dependency caches are not restored, checkout credentials are not persisted, and the job token has only `contents: read`.
+
+The job needs network access for tool/dependency downloads, not harness logins, provider keys or personal configuration. It never runs `test:live*`, native probes, publication, tagging or integration. `pnpm smoke` provides the running loopback development/production demonstration; CI does not establish live harness compatibility, browser coverage or release acceptance. New pushes cancel older checks for the same ref, not application work.
+
+
 Two additional rehearsals exercise real engine paths with explicitly simulated execution. Choose new evidence paths; runners refuse overwrites:
 
 ```sh

@@ -2,7 +2,7 @@
 
 A local GUI for one Arch Linux / Omarchy user to coordinate native **Codex, Claude Code, OpenCode and Pi** coding sessions. A Codex Lead assigns bounded work; the engine persists tasks, reports, approvals and recovery decisions. Writers use separate Git worktrees, and you review and approve local integration.
 
-**Status:** the `beta` tag marks the first beta implementation baseline; M9 is 9/9, with **owner release sign-off pending**. Read the [beta scope, known issues and release checklist](docs/releases/beta.md). [Active development](backlog.md) now follows focused issues; the [original beta plan](todo.md) retains live acceptance evidence. FAKE demos are labelled scripted playback. Local state stays on your machine; native model requests use your configured providers and may cost money.
+**Status:** the `beta` tag marks the first beta implementation baseline; M9 is 9/9, with **owner release sign-off recorded on 2026-10-18**. Acceptance does not authorize publication, tag pushes/movement, native spending or automatic integration. Read the [beta scope, known issues and release checklist](docs/releases/beta.md). [Active development](backlog.md) now follows focused issues; the [original beta plan](todo.md) retains live acceptance evidence. FAKE demos are labelled scripted playback. Local state stays on your machine; native model requests use your configured providers and may cost money.
 
 ## Start locally
 

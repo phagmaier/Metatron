@@ -26,12 +26,15 @@ import {
   startIntegrationApplication,
 } from "../storage/integrations.ts";
 import { mutate } from "../storage/mutations.ts";
+import { integrationReviewBlocker } from "../storage/reviews.ts";
 import { implementationLineage } from "../storage/revisions.ts";
 import type { Engine } from "./engine.ts";
 
 // Database-side preconditions; checked for the plan and again in the claim.
 function eligibility(engine: Engine, preview: IntegrationPreview) {
   const { store } = engine;
+  const reviewBlocker = integrationReviewBlocker(store, preview);
+  if (reviewBlocker) return reviewBlocker;
   const lineage = implementationLineage(store, store.getTask(preview.taskId));
   const [implementation] = lineage;
   if (
@@ -73,8 +76,6 @@ export async function planApplication(
   if (!expectedSha || !resultSha || !run.repository)
     throw new DomainError("CONFLICT", "This preview has no result to apply");
   const blockers: string[] = [];
-  const ineligible = eligibility(engine, preview);
-  if (ineligible) blockers.push(ineligible);
   const repository = await inspectRepository(
     store.getProject(run.projectId).repositoryPath,
   );
@@ -113,6 +114,8 @@ export async function planApplication(
       : use.checkedOut
         ? "fast_forward_checkout"
         : "update_ref";
+  const ineligible = eligibility(engine, getIntegration(store, preview.id));
+  if (ineligible) blockers.push(ineligible);
   return {
     integrationId: preview.id,
     destinationBranch: branch,
@@ -249,6 +252,15 @@ export async function applyIntegration(
     data,
     integrationPreviewSchema,
     () => {
+      // Planning can outlive a mode change or shutdown. Check again at the
+      // durable claim, with no await between policy and INTEGRATING.
+      if (store.getRun(preview.runId).mode === "chat_plan")
+        throw new DomainError(
+          "POLICY_DENIED",
+          "Chat/Plan cannot mutate the managed repository",
+        );
+      if (engine.isStopping())
+        throw new DomainError("CONFLICT", "The app is shutting down");
       const current = getIntegration(store, preview.id);
       const ineligible = eligibility(engine, current);
       if (ineligible) throw new DomainError("CONFLICT", ineligible);

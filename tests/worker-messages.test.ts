@@ -32,25 +32,21 @@ async function fixture(scenario = "message-hold") {
   const data = await mkdtemp(join(tmpdir(), "lao-worker-messages-"));
   const logPath = join(data, "messages.jsonl");
   const controlLogPath = join(data, "controls.txt");
-  const pi = new PiAdapter(
-    data,
-    (_args, cwd, env) =>
-      new PiRpc(
-        process.execPath,
-        [
-          fileURLToPath(
-            new URL("./helpers/pi-rpc-fixture.ts", import.meta.url),
-          ),
-        ],
-        cwd,
-        {
-          ...env,
-          LAO_FIXTURE_SCENARIO: scenario,
-          LAO_FIXTURE_MESSAGE_LOG: logPath,
-          LAO_FIXTURE_CONTROL_LOG: controlLogPath,
-        },
-      ),
-  );
+  let rpc: PiRpc | undefined;
+  const pi = new PiAdapter(data, (_args, cwd, env) => {
+    rpc = new PiRpc(
+      process.execPath,
+      [fileURLToPath(new URL("./helpers/pi-rpc-fixture.ts", import.meta.url))],
+      cwd,
+      {
+        ...env,
+        LAO_FIXTURE_SCENARIO: scenario,
+        LAO_FIXTURE_MESSAGE_LOG: logPath,
+        LAO_FIXTURE_CONTROL_LOG: controlLogPath,
+      },
+    );
+    return rpc;
+  });
   const options = {
     development: false,
     port: 0,
@@ -134,6 +130,10 @@ async function fixture(scenario = "message-hold") {
         .filter(Boolean)
         .map((line) => JSON.parse(line));
     },
+    async deliver() {
+      assert.ok(rpc);
+      await rpc.request("fixture_deliver");
+    },
     async controls() {
       return (await readFile(controlLogPath, "utf8").catch(() => ""))
         .trim()
@@ -167,6 +167,7 @@ test("owner HTTP steering and follow-up stay queued until matching native delive
           ?.status,
         "queued",
       );
+      await f.deliver();
       await until(
         () =>
           f.engine.workerMessages
