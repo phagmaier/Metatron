@@ -229,3 +229,15 @@
 - Removed owned rehearsal/validator/private tool/dependency state and fixture repositories after evidence retention; no personal or system installs changed.
 - PASS final documentation/evidence checks: 38 local file/heading links, exact verified workflow SHA-256, receipt assertions, owned-root absence and explicit unchecked hosted acceptance.
 - Next active item remains **POST-003**, hosted validation; resume `mise current`, review `backlog.md` and the CI receipt, then authorize the intended commit/push before observing **No-cost checks / Pinned no-cost gate**. POST-004/005 and other recommendations not begun.
+
+## 2026-10-18 — POST-003: GitHub-hosted acceptance
+
+- Completed hosted acceptance for the owner's pushed `main` revision **`4ed856399ea63ac3772bd607887cd654e95b7e4a`**: [No-cost checks run 39196853435](https://github.com/phagmaier/Metatron/actions/runs/39196853435), attempt **1**, **success**.
+- PASS `gh run watch 39196853435 --repo phagmaier/Metatron --exit-status --interval 15`; inspected final run/job API metadata and `gh run view 39196853435 --repo phagmaier/Metatron --log`. All **13** steps, including cleanup, succeeded on GitHub-hosted Ubuntu **24.04.5 LTS**.
+- Hosted logs confirm mise **2026.10.13**, Node **26.7.0**, pnpm **11.22.0**, pinned actions, disabled mise cache, removed checkout credentials and read-only contents permission; frozen dependency install passed.
+- PASS exact hosted commands: `mise x -- pnpm typecheck`, `mise x -- pnpm lint`, `mise x -- pnpm test` **501/501**, `mise x -- pnpm test:fixtures` **3/3**, `mise x -- pnpm build`, `mise x -- pnpm smoke` development/production launch, health, HTML and script assets. Zero failed, skipped or cancelled tests; fixture-retention diagnostics were expected negative safety cases.
+- Checked off POST-003 in [backlog](../backlog.md); [receipt](evidence/post-003-ci-rehearsal.json) now records hosted revision/URLs, toolchain, all step conclusions and outcomes separately from local rehearsal. Earlier bootstrap/test failures and Docker limitation retained as history.
+- Documentation/evidence only; no product/workflow/test/toolchain changes, new ADR or remaining POST-003 blocker. Native cost-bearing tests intentionally omitted (not authorized); no new browser/live-harness compatibility claim.
+- PASS closeout validation: `mise x -- pnpm lint`; receipt/API/log assertions for revision, all 13 steps, seven exact commands and test/smoke outcomes; 26 local links/anchors, documented command names, unchanged workflow SHA-256 and preserved local failure history.
+- No additional commit/push, dispatch, retry, credential/global-config/personal-session change, release publication, tag movement or integration. Existing beta acceptance/baseline and safety guards unchanged.
+- Next active item: **none**; recommend owner-selecting **POST-005** actual-use friction, without starting it or POST-004. Resume `mise current`, then select a candidate from `backlog.md`; native spending remains separately authorized.

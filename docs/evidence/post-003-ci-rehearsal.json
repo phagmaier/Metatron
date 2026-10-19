@@ -3,7 +3,7 @@
   "command": "mise x -- node /tmp/post-003-ci-ASoZhw5q/rehearse.mjs",
   "execution": "Disposable committed source snapshot and clean local Git clone; fresh HOME/XDG/mise/dependency directories; explicit allowlisted child environment with no inherited credentials",
   "limitations": [
-    "No GitHub-hosted run triggered: no workspace commit or push authorized",
+    "During local rehearsal no GitHub-hosted run was triggered; hosted acceptance was verified separately after the owner's commit/push (see hostedAcceptance)",
     "Docker daemon access denied; rehearsal uses the installed Linux host rather than Ubuntu 24.04"
   ],
   "actions": {
@@ -118,6 +118,84 @@
     ]
   },
   "initialBootstrapFailure": "Private /tmp mise Node extraction failed with Disk quota exceeded; fresh disk-backed /var/tmp tool/dependency installation then passed without inherited caches or credentials",
-  "hostedAcceptance": "PENDING: an owner-authorized workspace commit/push is required before this new workflow can execute on GitHub-hosted Ubuntu 24.04; no push or dispatch performed",
+  "hostedAcceptance": {
+    "status": "PASS",
+    "runId": 39196853435,
+    "runAttempt": 1,
+    "url": "https://github.com/phagmaier/Metatron/actions/runs/39196853435",
+    "headSha": "4ed856399ea63ac3772bd607887cd654e95b7e4a",
+    "headBranch": "main",
+    "event": "push",
+    "runStatus": "completed",
+    "conclusion": "success",
+    "jobId": 117881376631,
+    "jobName": "Pinned no-cost gate",
+    "jobUrl": "https://github.com/phagmaier/Metatron/actions/runs/39196853435/job/117881376631",
+    "jobStartedAt": "2026-10-19T03:54:08Z",
+    "jobCompletedAt": "2026-10-19T03:57:57Z",
+    "runner": "GitHub-hosted ubuntu-24.04",
+    "operatingSystem": "Ubuntu 24.04.5 LTS",
+    "runnerImageVersion": "20261012.334.1",
+    "toolchain": {
+      "mise": "2026.10.13",
+      "node": "26.7.0",
+      "pnpm": "11.22.0"
+    },
+    "stepConclusions": {
+      "Set up job": "success",
+      "Check out source": "success",
+      "Install pinned toolchain": "success",
+      "Install locked dependencies": "success",
+      "Typecheck": "success",
+      "Lint": "success",
+      "Test": "success",
+      "Verify Git fixtures": "success",
+      "Build": "success",
+      "Smoke development and production": "success",
+      "Post Install pinned toolchain": "success",
+      "Post Check out source": "success",
+      "Complete job": "success"
+    },
+    "commands": [
+      "mise x -- pnpm install --frozen-lockfile",
+      "mise x -- pnpm typecheck",
+      "mise x -- pnpm lint",
+      "mise x -- pnpm test",
+      "mise x -- pnpm test:fixtures",
+      "mise x -- pnpm build",
+      "mise x -- pnpm smoke"
+    ],
+    "tests": {
+      "total": 501,
+      "passed": 501,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "fixtures": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "developmentSmokePassed": true,
+    "productionSmokePassed": true,
+    "logNotes": [
+      "Pinned actions, disabled mise cache, non-persisted checkout credentials, read-only contents token and exact commands confirmed in hosted logs",
+      "Fixture verification failed/retained diagnostics came from passing negative fixture-safety tests, not failing CI checks"
+    ],
+    "verificationCommands": [
+      "gh api repos/phagmaier/Metatron/branches/main --jq '{name,sha:.commit.sha}'",
+      "gh run watch 39196853435 --repo phagmaier/Metatron --exit-status --interval 15",
+      "gh run view 39196853435 --repo phagmaier/Metatron --json headSha,event,headBranch,status,conclusion,attempt,url",
+      "gh api repos/phagmaier/Metatron/actions/jobs/117881376631",
+      "gh run view 39196853435 --repo phagmaier/Metatron --log"
+    ],
+    "authority": "Read-only observation of the owner's main push; no additional commit/push, workflow dispatch, rerun, native model call, publication, tag movement or integration",
+    "limitations": "Hosted default checks establish no-cost CI only, not browser coverage, live harness compatibility or new release/publication authority"
+  },
   "cleanup": "Owned /tmp and /var/tmp rehearsal drivers, validator, private tool/dependency installations, databases and fixture repositories/worktrees removed after evidence retention"
 }
