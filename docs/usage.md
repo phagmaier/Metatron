@@ -75,6 +75,18 @@ Stop history distinguishes **pending**, **confirmed**, **failed** and **uncertai
 
 For context refresh use **Pause worker → Recheck → Fresh + checkpoint → Retry**; no dedicated Refresh session button exists. [Visible recovery examples and limits](gui-status-checks.md).
 
+### Repository identity and older data
+
+The current source records the filesystem identity of both the selected root and its Git common directory, not just their paths or commit IDs. Replacing either directory at the same path blocks dispatch, candidate capture, integration and recovery retry. Recheck reports a replaced repository as **changed**; an older run without recorded identity is **unavailable**, not implicitly verified. Accepting uncertain worktree/process facts cannot override that repository refusal.
+
+To use a replacement checkout or continue work from older unverified data:
+
+1. Inspect the retained tasks, reports, approvals and unfinished worktrees. Do not delete, reset or relink them to clear the refusal.
+2. In **Projects and new runs**, enter the clean repository's name/absolute root and explicitly choose **Open clean project**. **Check repository** alone observes; it does not record new authority.
+3. Start a **new run** and deliberately describe/reference the work to carry forward. Existing runs keep their original snapshots and remain available for inspection/cancellation; their approvals cannot authorize the newly opened repository. No old checkout or ambiguous process is adopted automatically.
+
+Ordinary edits, commits and app restarts do not replace directory identity. Restoring the actual original directories can satisfy an identity-bound run again; merely copying identical bytes or matching the old SHA cannot. Keep a consistent app-data backup before upgrading (close the app first); do not point an older application version at data written by this change or strip identity fields to bypass it. This is not race-proof OS containment. [Authority/legacy-data decision](adr/2026-10-18-repository-filesystem-identity.md).
+
 ## Local state and privacy
 
 The database, reports (`artifacts/`), worktrees, adapter configuration and transcripts live under `$XDG_DATA_HOME/local-agent-orchestrator/`, default `~/.local/share/local-agent-orchestrator/`. Preserve that directory and registered worktrees when inspecting unresolved work. Run one app/demo per database; close it before taking a consistent backup, including SQLite's associated WAL state if present. No automatic cleanup or credential export is provided.

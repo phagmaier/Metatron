@@ -8,7 +8,7 @@ import {
   type Session,
 } from "../../shared/domain/entities.ts";
 import { GitError } from "../git/command.ts";
-import { inspectRepository } from "../git/inspect.ts";
+import { inspectRepository, sameRepository } from "../git/inspect.ts";
 import type { Store } from "../storage/store.ts";
 import type { Engine } from "./engine.ts";
 
@@ -39,23 +39,21 @@ async function observeRepository(
 ): Promise<RecoveryCheck["repository"]> {
   const run = store.getRun(store.getTask(attempt.taskId).runId);
   const recorded = run.repository;
-  if (!recorded)
+  if (!recorded?.identity)
     return {
       state: "unavailable",
-      reason: "This run recorded no repository identity",
+      reason:
+        "This run has no verified repository identity; reopen the project and start a new run. Its history and worktrees are retained.",
     };
   try {
     const current = await inspectRepository(
       store.getProject(run.projectId).repositoryPath,
     );
-    if (
-      current.root !== recorded.root ||
-      current.commonDirectory !== recorded.commonDirectory
-    )
+    if (!sameRepository(recorded, current))
       return {
         state: "changed",
         reason:
-          "The repository root or Git directory differs from this run's recorded identity",
+          "The repository root or Git directory was replaced or redirected; reopen the project and start a new run. This run and its worktrees are retained.",
       };
     if (current.baseSha !== recorded.baseSha)
       return {

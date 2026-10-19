@@ -32,13 +32,24 @@ export const modeSchema = z.enum([
   "supervised",
   "autonomous_bounded",
 ]);
+const directoryIdentitySchema = z.string().regex(/^\d+:\d+:\d+$/);
 export const repositorySchema = z.strictObject({
   root: absolutePathSchema,
   commonDirectory: absolutePathSchema,
   baseSha: shaSchema,
   branch: textSchema,
   clean: z.boolean(),
+  // Missing legacy identities remain unverified; only an explicit project open
+  // records current directories, never a read or an existing run's recovery.
+  identity: z
+    .strictObject({
+      root: directoryIdentitySchema,
+      commonDirectory: directoryIdentitySchema,
+    })
+    .nullable()
+    .default(null),
 });
+export type Repository = z.infer<typeof repositorySchema>;
 export const permissionSchema = z.enum([
   "read_only",
   "workspace_write",

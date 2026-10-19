@@ -9,6 +9,7 @@ import {
   integrationRequestSchema,
 } from "../../shared/integration.ts";
 import type { Actor } from "../../shared/orchestration.ts";
+import { inspectRepository, sameRepository } from "../git/inspect.ts";
 import { branchSha } from "../git/integration.ts";
 import { listIntegrationCandidates } from "../storage/candidates.ts";
 import {
@@ -207,7 +208,15 @@ export async function decideIntegration(
   // Read-only, outside the transaction. The observed SHA is not part of the
   // idempotency fingerprint, so a replay returns the recorded decision.
   let observed: string | null = null;
-  if (approve && run.repository)
+  if (approve && run.repository) {
+    const repository = await inspectRepository(
+      store.getProject(run.projectId).repositoryPath,
+    );
+    if (!sameRepository(run.repository, repository))
+      throw new DomainError(
+        "CONFLICT",
+        "Repository identity changed or is unverified; reopen the project and start a new run",
+      );
     try {
       observed = await branchSha(
         run.repository.root,
@@ -216,6 +225,7 @@ export async function decideIntegration(
     } catch (error) {
       if (!(error instanceof DomainError) || error.code === "GIT") throw error;
     }
+  }
   return mutate(
     store.db,
     key,

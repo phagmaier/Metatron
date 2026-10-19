@@ -1,6 +1,6 @@
 import { mkdir, realpath, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import type { repositorySchema } from "../../shared/domain/entities.ts";
+import type { Repository } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import {
   type IntegrationDrift,
@@ -9,8 +9,6 @@ import {
 import { diffCheckPasses, GitError, git } from "./command.ts";
 import { inspectRepository, requireVisibleIndex } from "./inspect.ts";
 import { inside, sensitivePath } from "./paths.ts";
-
-type Repository = ReturnType<typeof repositorySchema.parse>;
 
 // Reads a local branch exactly (`refs/heads/<name>`); no globbing or ref
 // shorthand can select a tag, remote or app-owned branch instead.
@@ -87,6 +85,8 @@ export async function addIntegrationWorktree(
   if (
     actual.root !== manifest.path ||
     actual.commonDirectory !== repository.commonDirectory ||
+    !repository.identity ||
+    actual.identity?.commonDirectory !== repository.identity.commonDirectory ||
     actual.branch !== manifest.branch ||
     actual.baseSha !== manifest.startSha ||
     !actual.clean

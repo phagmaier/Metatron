@@ -36,7 +36,11 @@ import type { HarnessAdapter } from "../adapters/contract.ts";
 import { OpenCodeAdapter } from "../adapters/opencode.ts";
 import { PiAdapter } from "../adapters/pi.ts";
 import { Gateway } from "../gateway/mcp.ts";
-import { inspectRepository, requireClean } from "../git/inspect.ts";
+import {
+  inspectRepository,
+  requireClean,
+  sameRepository,
+} from "../git/inspect.ts";
 import { Worktrees } from "../git/worktrees.ts";
 import { admitBudgetWaits } from "../storage/budget-waits.ts";
 import { reconcileDependencyWaits } from "../storage/dependencies.ts";
@@ -233,14 +237,10 @@ export class Engine {
     const project = this.store.getProject(data.projectId);
     const repository = await inspectRepository(project.repositoryPath);
     requireClean(repository);
-    if (
-      !project.repository ||
-      project.repository.commonDirectory !== repository.commonDirectory ||
-      project.repository.root !== repository.root
-    )
+    if (!project.repository || !sameRepository(project.repository, repository))
       throw new DomainError(
         "CONFLICT",
-        "Project identity changed; reopen it before starting",
+        "Project identity changed or is unverified; reopen it before starting a new run",
       );
     const snapshot = this.presets();
     if (data.leadProfileId !== snapshot.preset.leadProfileId)
@@ -430,12 +430,11 @@ export class Engine {
           if (
             !run.repository ||
             repository.baseSha !== run.repository.baseSha ||
-            repository.commonDirectory !== run.repository.commonDirectory ||
-            repository.root !== run.repository.root
+            !sameRepository(run.repository, repository)
           )
             throw new DomainError(
               "CONFLICT",
-              "Repository identity or HEAD changed since this run started",
+              "Repository identity or HEAD changed or is unverified; reopen the project and start a new run",
             );
           if (this.stopping) break;
           const attemptId = this.scheduling.reserve(dispatch);

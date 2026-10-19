@@ -1,7 +1,11 @@
 import { runSchema, teamSnapshotSchema } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import { startTeamRunSchema } from "../../shared/teams.ts";
-import { inspectRepository, requireClean } from "../git/inspect.ts";
+import {
+  inspectRepository,
+  requireClean,
+  sameRepository,
+} from "../git/inspect.ts";
 import { mutate } from "../storage/mutations.ts";
 import { getTeam, resolveTeam } from "../storage/teams.ts";
 import type { Engine } from "./engine.ts";
@@ -17,12 +21,11 @@ export async function createTeamRun(
   const project = store.getProject(data.projectId);
   const repository = await inspectRepository(project.repositoryPath);
   requireClean(repository);
-  if (
-    !project.repository ||
-    project.repository.root !== repository.root ||
-    project.repository.commonDirectory !== repository.commonDirectory
-  )
-    throw new DomainError("CONFLICT", "Project identity changed; reopen it");
+  if (!project.repository || !sameRepository(project.repository, repository))
+    throw new DomainError(
+      "CONFLICT",
+      "Project identity changed or is unverified; reopen it before starting a new run",
+    );
   const { execution, profiles } = resolveTeam(
     store,
     getTeam(store, { id: data.teamId }),

@@ -1,0 +1,28 @@
+{
+  "simulationOnly": true,
+  "nativeModelCalls": 0,
+  "receipts": [
+    {
+      "path": "approved integration -> replacement clone -> restart",
+      "firstHttpStatus": 409,
+      "restartedHttpStatus": 409,
+      "applicationClaims": 0,
+      "originalHead": "ce446cca29c37aa8f84aaf2675cae7c430a4896a",
+      "replacementHead": "ce446cca29c37aa8f84aaf2675cae7c430a4896a",
+      "expectedHead": "ce446cca29c37aa8f84aaf2675cae7c430a4896a",
+      "persistedTask": "READY_TO_INTEGRATE"
+    },
+    {
+      "path": "unfinished writer -> replacement clone -> restart -> explicit recovery -> reopen/new FAKE run",
+      "repositoryObservation": "changed",
+      "recoveryHttpStatus": 409,
+      "freshRunHttpStatus": 200,
+      "freshFakeAttempt": "completed",
+      "oldTask": "RETRY_DECISION",
+      "oldAttemptCount": 1,
+      "partialWork": "Retained partial work\n",
+      "oldRunIdentityUnchanged": true,
+      "bothHeadsUnchanged": true
+    }
+  ]
+}

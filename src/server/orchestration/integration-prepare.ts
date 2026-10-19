@@ -8,7 +8,7 @@ import type {
   IntegrationCheck,
   IntegrationPreview,
 } from "../../shared/integration.ts";
-import { inspectRepository } from "../git/inspect.ts";
+import { inspectRepository, sameRepository } from "../git/inspect.ts";
 import {
   addIntegrationWorktree,
   applyCandidate,
@@ -107,14 +107,10 @@ export async function prepareIntegration(
     const repository = await inspectRepository(
       store.getProject(run.projectId).repositoryPath,
     );
-    if (
-      !run.repository ||
-      repository.root !== run.repository.root ||
-      repository.commonDirectory !== run.repository.commonDirectory
-    )
+    if (!run.repository || !sameRepository(run.repository, repository))
       throw new DomainError(
         "CONFLICT",
-        "Repository identity changed; reopen the project",
+        "Repository identity changed or is unverified; reopen the project and start a new run",
       );
     const branch = preview.destinationBranch;
     const destinationSha = await branchSha(repository.root, branch);

@@ -23,10 +23,18 @@ The application provides a local React GUI and one loopback Node/SQLite engine f
 | Live coverage | Only Pi has a complete live writer → review → approved integration receipt. Claude/OpenCode direct adapter write receipts do not establish that whole path. Worker Lead-tool denials were probe-originated. No automated GUI suite exists; browser QA and protocol/default tests are separate evidence. |
 | Isolation and secrets | Worktrees are working-copy isolation, not an OS sandbox or race-proof containment. Codex reads can reach outside the checkout; preview test commands run with owner permissions. Path filters cannot detect all embedded secrets; retained reports/transcripts/test output may contain sensitive data. |
 | Stop and recovery | Emergency stop covers app-owned direct children, not every descendant. Inspect pending/failed/uncertain stop evidence. Ambiguous mutations require an owner recovery decision and never automatically replay. There is no dedicated Refresh session button; use Pause → Recheck → Fresh + checkpoint → Retry. |
-| Git compatibility | Dirty, drifted or replaced checkouts, executable Git filters/custom merge drivers (including LFS), and hidden/sparse index state are refused. Preserve these safety refusals until compatibility changes are deliberately designed and verified. |
+| Git compatibility | Dirty/drifted checkouts, executable Git filters/custom merge drivers (including LFS), and hidden/sparse index state are refused. The baseline's replaced-checkout claim has a same-path root/Git-directory gap (F1 below); the post-beta source now checks filesystem identity. Preserve refusals rather than bypassing them. |
 | Costs and setup | Caps bound agents/launches, not exact provider spending. Clean-OS/network installation was not verified; local setup reused the installed dependency cache. Keep Node 26.7.0 (not LTS) and pnpm 11.22.0 pins unless an owner-approved toolchain decision changes them. |
 
 Runtime workflow authoring, OS sandboxing, automatic integration and remote-repository integration remain outside this baseline. [Usage](../usage.md), [configuration](../configuration-example.md) and [README safety notes](../../README.md#safety-before-real-work) describe the available controls.
+
+## Post-baseline safety review and hardening
+
+[POST-002](../reviews/post-002-beta.md) found three reproduced P1 defects in the tagged baseline. **POST-006 fixes F1 in the current source**, binding root/common-directory filesystem identity through integration and recovery. Legacy/unverified runs require explicit project reopening and a new run; old approvals/history/worktrees are retained, never rebound. [Owner transition instructions](../usage.md#repository-identity-and-older-data), [decision](../adr/2026-10-18-repository-filesystem-identity.md), [disposable no-native-call smoke](../evidence/post-006-identity-smoke.json).
+
+**F2/POST-007 remains open:** a recovered reviewer can record new important findings without invalidating an earlier integration approval. **F3/POST-008 remains open:** a Chat/Plan switch during asynchronous planning/startup can still permit integration or the first worker prompt. Do not treat the initial passing suite or POST-006 as release acceptance; these findings need their own fixes and regressions. [Active scope](../../backlog.md).
+
+The `beta` tag still identifies the original commit, not this hardening. No publication, native spend, integration approval or owner release sign-off is implied.
 
 ## Owner release checklist
 

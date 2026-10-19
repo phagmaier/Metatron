@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { Repository } from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import {
   type ApplyPlan,
@@ -15,7 +16,7 @@ import {
   isAncestor,
 } from "../git/apply.ts";
 import { git } from "../git/command.ts";
-import { inspectRepository } from "../git/inspect.ts";
+import { inspectRepository, sameRepository } from "../git/inspect.ts";
 import { branchSha, worktreeState } from "../git/integration.ts";
 import { listIntegrationCandidates } from "../storage/candidates.ts";
 import {
@@ -77,13 +78,10 @@ export async function planApplication(
   const repository = await inspectRepository(
     store.getProject(run.projectId).repositoryPath,
   );
-  if (
-    repository.root !== run.repository.root ||
-    repository.commonDirectory !== run.repository.commonDirectory
-  )
+  if (!sameRepository(run.repository, repository))
     throw new DomainError(
       "CONFLICT",
-      "Repository identity changed; reopen the project",
+      "Repository identity changed or is unverified; reopen the project and start a new run",
     );
   const branch = preview.destinationBranch;
   let currentSha: string | null = null;
@@ -138,14 +136,20 @@ export async function planApplication(
 // the branch (and checkout) where they were is "blocked"; anything else is
 // "interrupted" for the owner to inspect.
 async function execute(
-  root: string,
+  repository: Repository,
   branch: string,
   application: IntegrationApplication,
 ) {
+  const root = repository.root;
   const { expectedSha, resultSha, checkoutPath } = application;
   let refusal: string | null = null;
   let ran = false;
   try {
+    if (!sameRepository(repository, await inspectRepository(root)))
+      throw new DomainError(
+        "CONFLICT",
+        "Repository directories changed before applying; nothing was submitted",
+      );
     // `git merge` fast-forwards whichever branch is checked out, so the
     // checkout is rechecked immediately before it runs.
     const before = checkoutPath ? await worktreeState(checkoutPath) : null;
@@ -168,6 +172,13 @@ async function execute(
         : `the update failed (${error instanceof Error ? error.name : "unknown error"})`;
   }
   try {
+    if (!sameRepository(repository, await inspectRepository(root)))
+      return {
+        status: "interrupted" as const,
+        observedSha: null,
+        diagnostic:
+          "Repository directories changed during application; inspect the retained state before any recovery decision",
+      };
     const observedSha = await branchSha(root, branch);
     const after = checkoutPath ? await worktreeState(checkoutPath) : null;
     const at = (sha: string) =>
@@ -278,7 +289,7 @@ export async function applyIntegration(
   const { application } = claim;
   if (!application || !run.repository) return getIntegration(store, started.id);
   const outcome = await execute(
-    run.repository.root,
+    run.repository,
     preview.destinationBranch,
     application,
   );

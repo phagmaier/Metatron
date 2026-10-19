@@ -1,7 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { lstat, mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import type { Attempt, RecoveryCheck } from "../../shared/domain/entities.ts";
+import type {
+  Attempt,
+  RecoveryCheck,
+  Repository,
+} from "../../shared/domain/entities.ts";
 import { DomainError } from "../../shared/domain/states.ts";
 import {
   type Worktree,
@@ -13,13 +17,14 @@ import { revisionCandidate } from "../storage/revisions.ts";
 import type { Store } from "../storage/store.ts";
 import { captureCandidate } from "./candidate.ts";
 import { diffCheckPasses, GitError, git } from "./command.ts";
-import { inspectRepository, requireClean } from "./inspect.ts";
+import {
+  directoryIdentity,
+  inspectRepository,
+  requireClean,
+  sameRepository,
+} from "./inspect.ts";
 import { inside, sensitivePath } from "./paths.ts";
 
-async function checkoutIdentity(path: string) {
-  const stat = await lstat(path, { bigint: true });
-  return `${stat.dev}:${stat.ino}:${stat.birthtimeNs}`;
-}
 const errorCode = (error: unknown) =>
   error instanceof Error && "code" in error && typeof error.code === "string"
     ? error.code
@@ -64,13 +69,12 @@ export class Worktrees {
     requireClean(repository);
     if (
       !run.repository ||
-      repository.root !== run.repository.root ||
-      repository.commonDirectory !== run.repository.commonDirectory ||
+      !sameRepository(run.repository, repository) ||
       repository.baseSha !== run.repository.baseSha
     )
       throw new DomainError(
         "CONFLICT",
-        "Repository identity or base changed before worktree creation",
+        "Repository identity or base changed or is unverified; reopen the project and start a new run",
       );
     if (
       !["pi", "claude-code", "opencode", "codex"].includes(attempt.adapter) ||
@@ -172,7 +176,7 @@ export class Worktrees {
       const ready = worktreeSchema.parse({
         ...manifest,
         state: "ready",
-        checkoutIdentity: await checkoutIdentity(manifest.path),
+        checkoutIdentity: await directoryIdentity(manifest.path),
       });
       await this.verify(ready);
       this.save(ready);
@@ -210,15 +214,19 @@ export class Worktrees {
       ),
     );
     const actual = await inspectRepository(manifest.path);
+    const source = await inspectRepository(manifest.repository.root);
     if (
       marker.ownerToken !== manifest.ownerToken ||
       marker.attemptId !== manifest.attemptId ||
       marker.path !== manifest.path ||
+      !sameRepository(manifest.repository, source) ||
+      actual.identity?.commonDirectory !==
+        manifest.repository.identity?.commonDirectory ||
       actual.root !== manifest.path ||
       actual.commonDirectory !== manifest.repository.commonDirectory ||
       actual.branch !== manifest.branch ||
       (manifest.checkoutIdentity !== null &&
-        (await checkoutIdentity(manifest.path)) !== manifest.checkoutIdentity)
+        (await directoryIdentity(manifest.path)) !== manifest.checkoutIdentity)
     )
       throw new DomainError(
         "POLICY_DENIED",
@@ -295,13 +303,13 @@ export class Worktrees {
       );
     if (
       manifest.checkoutIdentity &&
-      (await checkoutIdentity(path)) !== manifest.checkoutIdentity
+      (await directoryIdentity(path)) !== manifest.checkoutIdentity
     )
       return result(
         "replaced",
         "A different directory now exists at the recorded path; it does not inherit the prior checkout's authority",
       );
-    let actual: Awaited<ReturnType<typeof inspectRepository>>;
+    let actual: Repository;
     try {
       actual = await inspectRepository(path);
     } catch (error) {
@@ -314,13 +322,16 @@ export class Worktrees {
     if (
       actual.root !== path ||
       actual.commonDirectory !== manifest.repository.commonDirectory ||
+      (manifest.repository.identity !== null &&
+        actual.identity?.commonDirectory !==
+          manifest.repository.identity.commonDirectory) ||
       actual.branch !== manifest.branch
     )
       return result(
         "replaced",
         "The checkout's Git root, repository or branch differs from the recorded worktree",
       );
-    if (!manifest.checkoutIdentity)
+    if (!manifest.checkoutIdentity || !manifest.repository.identity)
       return result(
         "unverified",
         manifest.state === "creating" || manifest.state === "error"
