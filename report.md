@@ -1,5 +1,7 @@
 # Superset vs. Metatron: Claude Code & Pi harness report
 
+**Historical research:** the outline, comparison and recommendations below are retained background, not current implementation instructions or a beta support claim. Use [backlog.md](backlog.md) for active work and the [beta release note](docs/releases/beta.md) for current scope/status; later native evidence is linked from the [support matrix](docs/adapter-smoke-matrix.md).
+
 ## 0. Method / evidence
 ...
 

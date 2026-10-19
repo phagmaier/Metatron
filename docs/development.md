@@ -1,6 +1,17 @@
 # Development and verification
 
-Use the pinned mise toolchain from the repository root. Read [AGENTS.md](../AGENTS.md), the tail of [progress.md](progress.md), and only the current first incomplete milestone in [todo.md](../todo.md) plus its named spec sections. Complete one item/milestone within the owner's requested scope.
+Use the pinned mise toolchain from the repository root. Read [AGENTS.md](../AGENTS.md), the tail of [progress.md](progress.md), and the selected item in [backlog.md](../backlog.md) plus its relevant spec sections. The [beta release note](releases/beta.md) records current scope and release status.
+
+## Working on one item
+
+1. Follow the owner's task; otherwise select the first unblocked **Now** item. **Next/Later** are candidates. Define the problem, acceptance criteria, relevant spec sections and safety/data boundaries before implementing. Keep one focused change per review; use short-lived branches as useful, with no required release branch scheme.
+2. For a bug, capture a reproduction and a failing regression at the affected boundary. For a feature, define observable behavior. Preserve task state, approvals, existing databases/worktrees and the guardrail tests in AGENTS.md; test persistence upgrades on disposable copies when affected.
+3. Run the default checks below and the item's focused verification/demonstration. For docs, check local links/anchors and documented commands; add no runtime tests solely for prose. Record failures and intentionally omitted native tests honestly.
+4. Update affected usage/spec/support docs, check off verified work and append a concise progress entry with the exact next item. Product changes use spec §17 and ADRs when warranted. A docs/process change alone does not change product behavior.
+
+Reviews report evidence before implementation: locations, severity, reproduction, confidence and smallest fix. Put assumptions/simplification experiments in a separate section; prioritize accepted findings as individual backlog items. No actionable findings is a valid outcome. A review does not authorize refactoring or paid native calls.
+
+The [historical beta plan](../todo.md), `progress-*-history.md`, reconnaissance, milestone audits and [harness recommendations](harness-next-steps.md) retain dated evidence. Their old “next task”, versions and auth paths are historical. Consult only the relevant section; current task selection comes from `backlog.md`. Keep ADRs and evidence, mark superseded guidance and preserve existing links rather than deleting or moving the whole history. The spec's initial build sequence remains documented in the historical plan.
 
 ## Default checks — no model turns
 

@@ -1,5 +1,7 @@
 # Harness integration: verified findings and next steps
 
+**Historical review (retired from task selection):** M8 and M9 implementation later completed within their documented limits. All “current”, “next”, blocked/unchecked status and temporary auth paths below describe earlier checkpoints. Follow [backlog.md](../backlog.md) for active work and the [beta release note](releases/beta.md) for current scope/status. This document remains as decision rationale; it grants no spending or integration authority.
+
 Date: 2026-10-17. Scope: review of [report.md](../report.md), not implementation or authorization for model spending.
 
 **Implementation update:** M8 items 1–7 retain their recorded scopes; only Codex implements Lead. The current first incomplete item is **M8 item 8: the per-adapter smoke matrix**. Codex lifecycle and corrected Pi cancellation passed; native worker role-denial and writer/review/separately approved integration remain open. See the chronological [reconnaissance](adapter-recon.md), [matrix](adapter-smoke-matrix.md) and exact continuation below. This original review is rationale, not vendor permission or model-spending authorization. Slice B is not a new prerequisite; deferred recommendations remain subject to the scheduled acceptance gates.
@@ -10,7 +12,7 @@ Date: 2026-10-17. Scope: review of [report.md](../report.md), not implementation
 
 The original report identifies real limitations, but overstates several conclusions. In particular, technical support for a subscription token is not proof that Anthropic authorizes every SDK product to use subscription authentication. Nor are stderr persistence, malformed-frame tolerance, or version floors automatically safe transfers from Superset.
 
-At review time, the first incomplete item was [M8 item 1](../todo.md#M8---complete-the-remaining-harnesses-spec-5-133). Its native evidence gaps motivated Slice A below; those gaps are now covered by the linked native receipt. This review itself did not check off a milestone; the later implementation/verification did. No OpenCode or Pi implementation was included in Slice A.
+At review time, the first incomplete item was [M8 item 1](../todo.md#m8---complete-the-remaining-harnesses-spec-5-133). Its native evidence gaps motivated Slice A below; those gaps are now covered by the linked native receipt. This review itself did not check off a milestone; the later implementation/verification did. No OpenCode or Pi implementation was included in Slice A.
 
 ## 2. Evidence and limits
 

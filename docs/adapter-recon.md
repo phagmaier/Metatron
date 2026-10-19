@@ -1,5 +1,7 @@
 # Adapter reconnaissance — M0
 
+**Historical findings:** entries below record dated versions, auth state, capabilities and then-current next steps. For current work use [backlog.md](../backlog.md); for beta scope/status use the [release note](releases/beta.md) and [support matrix](adapter-smoke-matrix.md#current-support-independent-of-completed-smoke-coverage). Old auth paths and exhausted turn allowances are not reusable authorization.
+
 Checked **2026-10-15** on this machine. These are interface findings, **not working adapters**. No model prompt, login, credential dump, configuration rewrite, global install or active-session operation was performed. Authentication/access entitlement is **unknown for all four**. Live smoke matrix spec §13.3 is intentionally omitted (cost; explicit authorization required).
 
 ## Machine and evidence

@@ -1,10 +1,12 @@
 # Local Agent Orchestrator - Ordered Implementation Checklist
 
+**Historical beta plan:** M0–M9 implementation is complete within the recorded capability limits. This file stays at its original path to preserve milestone/evidence links. Its ordering and “next” notes describe the initial beta build; choose current work from [backlog.md](backlog.md), following [AGENTS.md](AGENTS.md). See the [beta release note](docs/releases/beta.md) for current scope and the pending owner release decision. The future backlog at the end is an idea archive, not an implementation queue.
+
 Execution owner: coding agents under the human project owner  
 Source of truth: [spec.md](./spec.md)  
 Agent operating rules: [AGENTS.md](./AGENTS.md)
 
-**How to use this file**
+**Original beta execution rules (historical)**
 
 - Work in order, **one vertical slice at a time**. Do not implement the whole product in one unreviewed pass. Complete **one milestone per session** unless the owner explicitly asks for more.
 - Each milestone header lists its relevant `spec.md` sections. Read only those sections plus this milestone (see `AGENTS.md` context rules). Do not re-read the full spec each turn.
@@ -15,7 +17,7 @@ Agent operating rules: [AGENTS.md](./AGENTS.md)
 - Live model calls cost tokens/credits; use FakeAdapter for most tests and only deliberate live smoke tests when needed.
 - Build a minimal browser GUI early; don't wait until the backend is "complete."
 
-**Current release status:** M9 implementation checklist 9/9; owner beta review remains pending. Checked items record verified work within their stated capability limits, not full support for every harness control. Historical milestone notes below describe their checkpoint; see the [release checklist and known issues](docs/progress.md#2026-10-18--m9-item-9-beta-release-checklist-review-pending), [current support matrix](docs/adapter-smoke-matrix.md#current-support-independent-of-completed-smoke-coverage) and [completion/safety audit](docs/completion-safety-audit.md) for the consolidated limits.
+**Recorded beta baseline:** M9 implementation checklist 9/9; owner beta review was pending at the `beta` tag. Checked items record verified work within their stated capability limits, not full support for every harness control. Historical milestone notes below describe their checkpoint; see the [release checklist](docs/progress.md#2026-10-18--m9-item-9-beta-release-checklist-review-pending), [support matrix](docs/adapter-smoke-matrix.md#current-support-independent-of-completed-smoke-coverage) and [completion/safety audit](docs/completion-safety-audit.md) for the recorded evidence. Current release status lives in the [beta release note](docs/releases/beta.md).
 
 ## M0 - Repository preparation and adapter reconnaissance [spec §0, 3, 5, 8, 10, 13]
 

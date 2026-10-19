@@ -2,7 +2,7 @@
 
 A local GUI for one Arch Linux / Omarchy user to coordinate native **Codex, Claude Code, OpenCode and Pi** coding sessions. A Codex Lead assigns bounded work; the engine persists tasks, reports, approvals and recovery decisions. Writers use separate Git worktrees, and you review and approve local integration.
 
-**Status:** M9 implementation checklist: 9/9; **owner beta release review is still pending**. Review the [release checklist and known issues](docs/progress.md#2026-10-18--m9-item-9-beta-release-checklist-review-pending). The [four-harness smoke matrix](docs/adapter-smoke-matrix.md) records native results and unsupported controls; [acceptance scenarios A–G](todo.md) have live evidence. FAKE demos are labelled scripted playback. Local state stays on your machine; native model requests use your configured providers and may cost money.
+**Status:** the `beta` tag marks the first beta implementation baseline; M9 is 9/9, with **owner release sign-off pending**. Read the [beta scope, known issues and release checklist](docs/releases/beta.md). [Active development](backlog.md) now follows focused issues; the [original beta plan](todo.md) retains live acceptance evidence. FAKE demos are labelled scripted playback. Local state stays on your machine; native model requests use your configured providers and may cost money.
 
 ## Start locally
 
@@ -90,4 +90,4 @@ mise x -- pnpm smoke
 
 These checks use disposable state and no model turns. `smoke` checks development and production HTTP/GUI assets; build first. [Development commands](docs/development.md) distinguish fixtures, zero-prompt native probes and opt-in cost-bearing tests.
 
-Product decisions: [spec.md](spec.md). Ordered work/release gates: [todo.md](todo.md). Latest results and next action: [progress](docs/progress.md). Coding-agent instructions: [AGENTS.md](AGENTS.md). Detailed native findings: [adapter reconnaissance](docs/adapter-recon.md). GUI evidence: [status/recovery](docs/gui-status-checks.md) and [project switching](docs/project-switching-verification.md).
+Product decisions: [spec.md](spec.md). Active work: [backlog](backlog.md). Beta scope and release status: [release note](docs/releases/beta.md). Latest results: [progress](docs/progress.md). Coding-agent instructions: [AGENTS.md](AGENTS.md). [Development guide](docs/development.md#working-on-one-item) explains task selection, review and historical documents. GUI evidence: [status/recovery](docs/gui-status-checks.md) and [project switching](docs/project-switching-verification.md).
